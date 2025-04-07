@@ -1,0 +1,29 @@
+[
+  {
+    "nombre": "Ensalada César",
+    "ingredientes": [
+      { "nombre": "Lechuga", "cantidad": 1, "unidad": "u" },
+      { "nombre": "Pollo", "cantidad": 200, "unidad": "g" },
+      { "nombre": "Crutones", "cantidad": 50, "unidad": "g" },
+      { "nombre": "Queso", "cantidad": 50, "unidad": "g" },
+      { "nombre": "Salsa César", "cantidad": 30, "unidad": "ml" }
+    ]
+  },
+  {
+    "nombre": "Fideos con Tuco",
+    "ingredientes": [
+      { "nombre": "Fideos", "cantidad": 100, "unidad": "g" },
+      { "nombre": "Salsa", "cantidad": 100, "unidad": "ml" },
+      { "nombre": "Carne picada", "cantidad": 150, "unidad": "g" },
+      { "nombre": "Cebolla", "cantidad": 1, "unidad": "u" }
+    ]
+  },
+  {
+    "nombre": "Tortilla de Papas",
+    "ingredientes": [
+      { "nombre": "Papas", "cantidad": 3, "unidad": "u" },
+      { "nombre": "Huevos", "cantidad": 4, "unidad": "u" },
+      { "nombre": "Aceite", "cantidad": 50, "unidad": "ml" }
+    ]
+  }
+]
