@@ -40,3 +40,22 @@
     background-color: #e9ecef;
   }
 
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+  }
+
+  .calendar-grid .dia {
+    min-height: 100px;
+    background-color: #f8f9fa;
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    text-align: center;
+  }
+
+  .calendar-grid .fw-bold {
+    background-color: #e9ecef;
+    font-weight: bold;
+  }
