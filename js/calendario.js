@@ -13,8 +13,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const feriadosFalsos = ["2025-4-1", "2025-4-25"]; // YYYY-M-D
 
   function init() {
-    // Llenar selects
-    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    // llenar selects de mes/año
+    const meses = [
+      "Enero", "Febrero", "Marzo", "Abril",
+      "Mayo", "Junio", "Julio", "Agosto",
+      "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
     meses.forEach((m, i) => {
       const opt = document.createElement("option");
       opt.value = i;
@@ -43,11 +47,10 @@ document.addEventListener("DOMContentLoaded", function () {
         asignaciones[fecha] = receta;
         localStorage.setItem("asignaciones", JSON.stringify(asignaciones));
         bootstrapModal.hide();
-        renderCalendario();
+        renderCalendario(); // refrescar
       }
     };
 
-    // Cargar recetas
     fetch("./data/recetas.json")
       .then(res => res.json())
       .then(data => {
@@ -67,9 +70,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const mes = parseInt(mesSelect.value);
     const anio = parseInt(anioSelect.value);
-    const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
-    // Cabecera
+    // Cabecera de días
+    const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
     diasSemana.forEach(dia => {
       const div = document.createElement("div");
       div.classList.add("text-center", "fw-bold");
@@ -78,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     const primerDia = new Date(anio, mes, 1).getDay(); // 0 = domingo
-    const offset = primerDia === 0 ? 6 : primerDia - 1;
+    const offset = primerDia === 0 ? 6 : primerDia - 1; // lunes como inicio
     const diasMes = new Date(anio, mes + 1, 0).getDate();
 
     for (let i = 0; i < offset; i++) {
@@ -90,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
     for (let d = 1; d <= diasMes; d++) {
       const fechaStr = `${anio}-${mes + 1}-${d}`;
       const div = document.createElement("div");
-      div.classList.add("dia", "border", "p-2", "rounded");
+      div.classList.add("dia", "border", "p-2");
 
       const fecha = new Date(anio, mes, d);
       const diaSemana = fecha.getDay();
