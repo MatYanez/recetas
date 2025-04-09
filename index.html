@@ -26,8 +26,23 @@
   </div>
 </nav>
 
+<!-- Filtros de mes y año -->
+<div class="container mb-3">
+  <div class="row">
+    <div class="col">
+      <label for="mes">Mes:</label>
+      <select id="mes" class="form-select"></select>
+    </div>
+    <div class="col">
+      <label for="anio">Año:</label>
+      <select id="anio" class="form-select"></select>
+    </div>
+  </div>
+</div>
+
+<!-- Calendario -->
 <div class="container">
-  <div id="calendario"></div>
+  <div id="calendario" class="row row-cols-7 g-2"></div>
 </div>
 
 <!-- Modal Día -->
@@ -35,11 +50,12 @@
   <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Día <span id="modalFecha"></span></h5>
+        <h5 class="modal-title">Asignar receta a <span id="fecha-seleccionada"></span></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body" id="modalContent">
-        <!-- Contenido dinámico -->
+      <div class="modal-body">
+        <select id="seleccionar-receta" class="form-select mb-3"></select>
+        <button id="guardar-asignacion" class="btn btn-primary">Guardar</button>
       </div>
     </div>
   </div>
