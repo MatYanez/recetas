@@ -20,3 +20,23 @@
 .ingrediente-nombre {
   font-weight: bold;
 }
+
+  #calendario {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  }
+
+  #calendario .dia {
+    min-height: 100px;
+    background-color: #f8f9fa;
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  #calendario .fw-bold {
+    background-color: #e9ecef;
+  }
+
