@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
           seleccionarReceta.appendChild(opt);
         });
         renderCalendario();
+        console.log("Calendario generado con", diasMes, "días.");
       });
   }
 
