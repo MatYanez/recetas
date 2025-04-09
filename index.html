@@ -3,68 +3,286 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>📅 Calendario de Comidas</title>
-
-  <!-- Estilos -->
+  <title>Calendario de Comidas</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
-  <link href="css/estilos.css" rel="stylesheet" />
+  <style>
+    body {
+      padding: 20px;
+    }
+
+    #calendario {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    .dia {
+      min-height: 100px;
+      background-color: #f8f9fa;
+      padding: 8px;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      text-align: center;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .fw-bold {
+      background-color: #e9ecef;
+    }
+
+    .finde {
+      background-color: #fddcdc !important;
+    }
+
+    .receta-card {
+      position: relative;
+    }
+
+    .receta-card .remove-receta {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      background: #fff;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      color: red;
+    }
+
+    .tab-content .receta-opcion {
+      cursor: pointer;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 5px;
+    }
+
+    .receta-opcion:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-  <div class="container">
-    <a class="navbar-brand" href="index.html">🥗 Recetario Planner</a>
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link active" href="index.html">📅 Calendario</a></li>
-        <li class="nav-item"><a class="nav-link" href="recetas.html">📋 Recetas</a></li>
-        <li class="nav-item"><a class="nav-link" href="planificacion.html">🧾 Planificación</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
+<h1 class="mb-4">📅 Calendario de Comidas</h1>
 
-<!-- Filtros de mes y año -->
-<div class="container mb-3">
-  <div class="row">
-    <div class="col">
-      <label for="mes">Mes:</label>
-      <select id="mes" class="form-select"></select>
-    </div>
-    <div class="col">
-      <label for="anio">Año:</label>
-      <select id="anio" class="form-select"></select>
-    </div>
-  </div>
+<div class="mb-3">
+  <label for="mes">Mes</label>
+  <select id="mes" class="form-select w-auto d-inline-block me-3"></select>
+
+  <label for="anio">Año</label>
+  <select id="anio" class="form-select w-auto d-inline-block"></select>
 </div>
 
-<!-- Calendario -->
-<div class="container">
-  <div id="calendario" class="calendar-grid mt-4"></div>
-</div>
+<div id="calendario"></div>
 
-<!-- Modal Día -->
+<!-- Modal -->
 <div class="modal fade" id="diaModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-scrollable">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Asignar receta a <span id="fecha-seleccionada"></span></h5>
+        <h5 class="modal-title">Día <span id="fecha-seleccionada"></span></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        <select id="seleccionar-receta" class="form-select mb-3"></select>
-        <button id="guardar-asignacion" class="btn btn-primary">Guardar</button>
-      </div>
+      <div class="modal-body" id="modalContent"></div>
     </div>
   </div>
 </div>
 
-
-<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<script src="js/calendario.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const calendario = document.getElementById("calendario");
+    const mesSelect = document.getElementById("mes");
+    const anioSelect = document.getElementById("anio");
+    const modal = new bootstrap.Modal(document.getElementById("diaModal"));
+    const modalContent = document.getElementById("modalContent");
+    const fechaSpan = document.getElementById("fecha-seleccionada");
+
+    let recetas = [
+      { nombre: "Ensalada César", tipo: "ensalada", descripcion: "Clásica con pollo y crutones.", imagen: "https://via.placeholder.com/150x100?text=Ensalada" },
+      { nombre: "Lentejas", tipo: "fondo", descripcion: "Ricas lentejas caseras.", imagen: "https://via.placeholder.com/150x100?text=Lentejas" },
+      { nombre: "Fruta Fresca", tipo: "postre", descripcion: "Combinación de frutas naturales.", imagen: "https://via.placeholder.com/150x100?text=Fruta" },
+      { nombre: "Jugo natural", tipo: "bebida", descripcion: "Jugo de naranja recién exprimido.", imagen: "https://via.placeholder.com/150x100?text=Jugo" },
+      { nombre: "Pan integral", tipo: "acompañamiento", descripcion: "Ideal para acompañar platos.", imagen: "https://via.placeholder.com/150x100?text=Pan" }
+    ];
+
+    let asignaciones = {};
+    const categorias = ["ensalada", "fondo", "postre", "bebida", "acompañamiento"];
+
+    function init() {
+      const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+      meses.forEach((m, i) => {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.textContent = m;
+        mesSelect.appendChild(opt);
+      });
+
+      const actual = new Date();
+      for (let a = 2023; a <= 2026; a++) {
+        const opt = document.createElement("option");
+        opt.value = a;
+        opt.textContent = a;
+        anioSelect.appendChild(opt);
+      }
+
+      mesSelect.value = actual.getMonth();
+      anioSelect.value = actual.getFullYear();
+
+      mesSelect.addEventListener("change", renderCalendario);
+      anioSelect.addEventListener("change", renderCalendario);
+
+      renderCalendario();
+    }
+
+    function renderCalendario() {
+      calendario.innerHTML = "";
+      const mes = parseInt(mesSelect.value);
+      const anio = parseInt(anioSelect.value);
+      const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+      diasSemana.forEach(dia => {
+        const div = document.createElement("div");
+        div.classList.add("fw-bold", "dia");
+        div.textContent = dia;
+        calendario.appendChild(div);
+      });
+
+      const primerDia = new Date(anio, mes, 1).getDay();
+      const offset = primerDia === 0 ? 6 : primerDia - 1;
+      const diasMes = new Date(anio, mes + 1, 0).getDate();
+
+      for (let i = 0; i < offset; i++) {
+        calendario.appendChild(document.createElement("div"));
+      }
+
+      for (let d = 1; d <= diasMes; d++) {
+        const fechaStr = `${anio}-${mes + 1}-${d}`;
+        const div = document.createElement("div");
+        div.classList.add("dia");
+        const date = new Date(anio, mes, d);
+        if (date.getDay() === 0 || date.getDay() === 6) {
+          div.classList.add("finde");
+        }
+
+        const label = document.createElement("strong");
+        label.textContent = d;
+        div.appendChild(label);
+
+        if (asignaciones[fechaStr]) {
+          const receta = asignaciones[fechaStr];
+          const card = document.createElement("div");
+          card.classList.add("receta-card", "mt-2");
+
+          const img = document.createElement("img");
+          img.src = receta.imagen;
+          img.classList.add("img-fluid", "rounded");
+          card.appendChild(img);
+
+          const closeBtn = document.createElement("button");
+          closeBtn.textContent = "×";
+          closeBtn.classList.add("remove-receta");
+          closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            delete asignaciones[fechaStr];
+            renderCalendario();
+          };
+          card.appendChild(closeBtn);
+
+          const desc = document.createElement("div");
+          desc.textContent = receta.nombre;
+          card.appendChild(desc);
+
+          div.appendChild(card);
+        }
+
+        div.onclick = () => abrirModal(fechaStr);
+        calendario.appendChild(div);
+      }
+    }
+
+    function abrirModal(fecha) {
+      fechaSpan.textContent = fecha;
+      modalContent.innerHTML = "";
+
+      if (asignaciones[fecha]) {
+        const r = asignaciones[fecha];
+        modalContent.innerHTML = `
+          <div class='text-center'>
+            <div class="receta-card">
+              <button class="remove-receta" onclick="removeReceta('${fecha}')">×</button>
+              <img src="${r.imagen}" class="img-fluid rounded mb-2">
+              <h5>${r.nombre}</h5>
+              <p>${r.descripcion}</p>
+            </div>
+          </div>
+        `;
+      } else {
+        modalContent.innerHTML = `
+          <div class="text-center">
+            <button class="btn btn-outline-primary" onclick="mostrarSelector()">Agregar receta</button>
+            <div id="selector-receta" class="mt-4 d-none">
+              <input type="text" class="form-control mb-2" id="buscador" placeholder="Buscar receta...">
+              <ul class="nav nav-tabs" id="tabsRecetas"></ul>
+              <div class="tab-content mt-2" id="tabContenidoRecetas"></div>
+            </div>
+          </div>
+        `;
+        setTimeout(() => {
+          cargarTabs(fecha);
+        }, 10);
+      }
+
+      modal.show();
+    }
+
+    window.removeReceta = function (fecha) {
+      delete asignaciones[fecha];
+      modal.hide();
+      renderCalendario();
+    };
+
+    window.mostrarSelector = function () {
+      document.getElementById("selector-receta").classList.remove("d-none");
+    };
+
+    function cargarTabs(fecha) {
+      const tabs = document.getElementById("tabsRecetas");
+      const tabContent = document.getElementById("tabContenidoRecetas");
+      tabs.innerHTML = "";
+      tabContent.innerHTML = "";
+
+      categorias.forEach((cat, i) => {
+        const tabId = "tab-" + cat;
+        const li = document.createElement("li");
+        li.classList.add("nav-item");
+        li.innerHTML = `<button class="nav-link ${i === 0 ? 'active' : ''}" data-bs-toggle="tab" data-bs-target="#${tabId}">${cat}</button>`;
+        tabs.appendChild(li);
+
+        const recetasFiltradas = recetas.filter(r => r.tipo === cat);
+        const tabPane = document.createElement("div");
+        tabPane.classList.add("tab-pane", "fade", ...(i === 0 ? ["show", "active"] : []));
+        tabPane.id = tabId;
+
+        recetasFiltradas.forEach(r => {
+          const div = document.createElement("div");
+          div.classList.add("receta-opcion");
+          div.innerHTML = `<strong>${r.nombre}</strong><br><small>${r.descripcion}</small>`;
+          div.onclick = () => {
+            asignaciones[fecha] = r;
+            modal.hide();
+            renderCalendario();
+          };
+          tabPane.appendChild(div);
+        });
+
+        tabContent.appendChild(tabPane);
+      });
+    }
+
+    init();
+  });
+</script>
 </body>
 </html>
