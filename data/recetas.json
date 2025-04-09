@@ -1,187 +1,42 @@
 [
   {
     "nombre": "Ensalada Caprese",
+    "tipo": "ensalada",
+    "descripcion": "Una deliciosa receta de ensalada caprese ideal para cualquier ocasión.",
+    "imagen": "https://via.placeholder.com/150x100?text=Ensalada+Caprese",
     "ingredientes": [
       { "nombre": "Tomate", "cantidad": 2, "unidad": "u" },
       { "nombre": "Mozzarella", "cantidad": 150, "unidad": "g" },
       { "nombre": "Albahaca", "cantidad": 10, "unidad": "g" },
       { "nombre": "Aceite de oliva", "cantidad": 20, "unidad": "ml" }
-    ]
+    ],
+    "preparacion": "Para preparar Ensalada Caprese, mezcle todos los ingredientes según se indica y cocine según su preferencia."
   },
   {
     "nombre": "Arroz con Pollo",
+    "tipo": "fondo",
+    "descripcion": "Una deliciosa receta de arroz con pollo ideal para cualquier ocasión.",
+    "imagen": "https://via.placeholder.com/150x100?text=Arroz+con+Pollo",
     "ingredientes": [
       { "nombre": "Arroz", "cantidad": 200, "unidad": "g" },
       { "nombre": "Pollo", "cantidad": 300, "unidad": "g" },
       { "nombre": "Pimiento", "cantidad": 1, "unidad": "u" },
       { "nombre": "Zanahoria", "cantidad": 1, "unidad": "u" }
-    ]
+    ],
+    "preparacion": "Para preparar Arroz con Pollo, mezcle todos los ingredientes según se indica y cocine según su preferencia."
   },
   {
     "nombre": "Sopa de Verduras",
+    "tipo": "entrada",
+    "descripcion": "Una deliciosa receta de sopa de verduras ideal para cualquier ocasión.",
+    "imagen": "https://via.placeholder.com/150x100?text=Sopa+de+Verduras",
     "ingredientes": [
       { "nombre": "Zanahoria", "cantidad": 2, "unidad": "u" },
       { "nombre": "Papa", "cantidad": 2, "unidad": "u" },
       { "nombre": "Apio", "cantidad": 1, "unidad": "u" },
       { "nombre": "Cebolla", "cantidad": 1, "unidad": "u" },
       { "nombre": "Agua", "cantidad": 1000, "unidad": "ml" }
-    ]
-  },
-  {
-    "nombre": "Panqueques Dulces",
-    "ingredientes": [
-      { "nombre": "Harina", "cantidad": 100, "unidad": "g" },
-      { "nombre": "Leche", "cantidad": 200, "unidad": "ml" },
-      { "nombre": "Huevos", "cantidad": 2, "unidad": "u" },
-      { "nombre": "Azúcar", "cantidad": 30, "unidad": "g" },
-      { "nombre": "Mantequilla", "cantidad": 20, "unidad": "g" }
-    ]
-  },
-  {
-    "nombre": "Hamburguesa Clásica",
-    "ingredientes": [
-      { "nombre": "Pan de hamburguesa", "cantidad": 1, "unidad": "u" },
-      { "nombre": "Carne molida", "cantidad": 150, "unidad": "g" },
-      { "nombre": "Queso", "cantidad": 30, "unidad": "g" },
-      { "nombre": "Lechuga", "cantidad": 1, "unidad": "u" },
-      { "nombre": "Tomate", "cantidad": 1, "unidad": "u" }
-    ]
-  },
-  {
-    "nombre": "Pizza Margarita",
-    "ingredientes": [
-      { "nombre": "Masa de pizza", "cantidad": 1, "unidad": "u" },
-      { "nombre": "Salsa de tomate", "cantidad": 100, "unidad": "ml" },
-      { "nombre": "Mozzarella", "cantidad": 150, "unidad": "g" },
-      { "nombre": "Albahaca", "cantidad": 5, "unidad": "g" }
-    ]
-  },
-  {
-    "nombre": "Puré de Papas",
-    "ingredientes": [
-      { "nombre": "Papas", "cantidad": 4, "unidad": "u" },
-      { "nombre": "Leche", "cantidad": 100, "unidad": "ml" },
-      { "nombre": "Mantequilla", "cantidad": 30, "unidad": "g" },
-      { "nombre": "Sal", "cantidad": 5, "unidad": "g" }
-    ]
-  },
-  {
-    "nombre": "Tostadas Francesas",
-    "ingredientes": [
-      { "nombre": "Pan de molde", "cantidad": 2, "unidad": "u" },
-      { "nombre": "Huevos", "cantidad": 2, "unidad": "u" },
-      { "nombre": "Leche", "cantidad": 50, "unidad": "ml" },
-      { "nombre": "Canela", "cantidad": 2, "unidad": "g" }
-    ]
-  },
-  {
-    "nombre": "Lasaña de Carne",
-    "ingredientes": [
-      { "nombre": "Láminas de lasaña", "cantidad": 6, "unidad": "u" },
-      { "nombre": "Carne molida", "cantidad": 250, "unidad": "g" },
-      { "nombre": "Salsa de tomate", "cantidad": 150, "unidad": "ml" },
-      { "nombre": "Queso rallado", "cantidad": 100, "unidad": "g" }
-    ]
-  },
-  {
-    "nombre": "Omelette de Verduras",
-    "ingredientes": [
-      { "nombre": "Huevos", "cantidad": 3, "unidad": "u" },
-      { "nombre": "Pimiento", "cantidad": 1, "unidad": "u" },
-      { "nombre": "Champiñones", "cantidad": 100, "unidad": "g" },
-      { "nombre": "Cebolla", "cantidad": 0.5, "unidad": "u" }
-    ]
-  },
-  {
-    "nombre": "Empanadas de Queso",
-    "ingredientes": [
-      { "nombre": "Masa de empanada", "cantidad": 6, "unidad": "u" },
-      { "nombre": "Queso", "cantidad": 200, "unidad": "g" },
-      { "nombre": "Huevo", "cantidad": 1, "unidad": "u" }
-    ]
-  },
-  {
-    "nombre": "Cazuela",
-    "ingredientes": [
-      { "nombre": "Carne de vacuno", "cantidad": 300, "unidad": "g" },
-      { "nombre": "Papa", "cantidad": 1, "unidad": "u" },
-      { "nombre": "Choclo", "cantidad": 1, "unidad": "u" },
-      { "nombre": "Zanahoria", "cantidad": 1, "unidad": "u" },
-      { "nombre": "Zapallo", "cantidad": 100, "unidad": "g" }
-    ]
-  },
-  {
-    "nombre": "Arroz Chaufa",
-    "ingredientes": [
-      { "nombre": "Arroz cocido", "cantidad": 200, "unidad": "g" },
-      { "nombre": "Huevo", "cantidad": 2, "unidad": "u" },
-      { "nombre": "Cebollín", "cantidad": 30, "unidad": "g" },
-      { "nombre": "Pollo", "cantidad": 150, "unidad": "g" },
-      { "nombre": "Salsa de soya", "cantidad": 30, "unidad": "ml" }
-    ]
-  },
-  {
-    "nombre": "Tallarines al Pesto",
-    "ingredientes": [
-      { "nombre": "Tallarines", "cantidad": 150, "unidad": "g" },
-      { "nombre": "Albahaca", "cantidad": 30, "unidad": "g" },
-      { "nombre": "Queso rallado", "cantidad": 50, "unidad": "g" },
-      { "nombre": "Aceite de oliva", "cantidad": 40, "unidad": "ml" },
-      { "nombre": "Ajo", "cantidad": 1, "unidad": "u" }
-    ]
-  },
-  {
-    "nombre": "Papas Fritas",
-    "ingredientes": [
-      { "nombre": "Papas", "cantidad": 3, "unidad": "u" },
-      { "nombre": "Aceite", "cantidad": 500, "unidad": "ml" },
-      { "nombre": "Sal", "cantidad": 5, "unidad": "g" }
-    ]
-  },
-  {
-    "nombre": "Sándwich de Atún",
-    "ingredientes": [
-      { "nombre": "Pan de molde", "cantidad": 2, "unidad": "u" },
-      { "nombre": "Atún", "cantidad": 100, "unidad": "g" },
-      { "nombre": "Mayonesa", "cantidad": 20, "unidad": "g" },
-      { "nombre": "Lechuga", "cantidad": 1, "unidad": "u" }
-    ]
-  },
-  {
-    "nombre": "Croquetas de Arroz",
-    "ingredientes": [
-      { "nombre": "Arroz cocido", "cantidad": 200, "unidad": "g" },
-      { "nombre": "Queso", "cantidad": 50, "unidad": "g" },
-      { "nombre": "Huevo", "cantidad": 1, "unidad": "u" },
-      { "nombre": "Pan rallado", "cantidad": 50, "unidad": "g" }
-    ]
-  },
-  {
-    "nombre": "Budín de Pan",
-    "ingredientes": [
-      { "nombre": "Pan", "cantidad": 200, "unidad": "g" },
-      { "nombre": "Leche", "cantidad": 500, "unidad": "ml" },
-      { "nombre": "Huevos", "cantidad": 3, "unidad": "u" },
-      { "nombre": "Azúcar", "cantidad": 100, "unidad": "g" }
-    ]
-  },
-  {
-    "nombre": "Porotos Granados",
-    "ingredientes": [
-      { "nombre": "Porotos", "cantidad": 300, "unidad": "g" },
-      { "nombre": "Zapallo", "cantidad": 200, "unidad": "g" },
-      { "nombre": "Choclo", "cantidad": 1, "unidad": "u" },
-      { "nombre": "Albahaca", "cantidad": 5, "unidad": "g" }
-    ]
-  },
-  {
-    "nombre": "Tacos de Carne",
-    "ingredientes": [
-      { "nombre": "Tortillas", "cantidad": 4, "unidad": "u" },
-      { "nombre": "Carne picada", "cantidad": 200, "unidad": "g" },
-      { "nombre": "Cebolla", "cantidad": 1, "unidad": "u" },
-      { "nombre": "Tomate", "cantidad": 1, "unidad": "u" },
-      { "nombre": "Cilantro", "cantidad": 10, "unidad": "g" }
-    ]
+    ],
+    "preparacion": "Para preparar Sopa de Verduras, mezcle todos los ingredientes según se indica y cocine según su preferencia."
   }
 ]
