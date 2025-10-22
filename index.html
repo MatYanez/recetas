@@ -4,8 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Comidas Futuristas 🍽️</title>
+
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fuente SF Pro Display -->
   <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
+
   <style>
     body {
       font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -21,7 +26,15 @@
     @media (max-width: 768px) {
       .card {
         width: 100vw !important;
-        border-radius: 0;
+      }
+      .margen-card {
+        padding-top: 1.5rem;
+        padding-bottom: 3.5rem;
+        margin-top: -2rem;
+      }
+      .position-movil {
+        bottom: -2rem;
+        position: absolute;
       }
     }
   </style>
@@ -29,7 +42,7 @@
 
 <body class="flex flex-col md:flex-row h-full text-gray-900">
 
-  <!-- IZQUIERDA -->
+  <!-- SECCIÓN IZQUIERDA -->
   <div class="w-full md:w-1/2 flex flex-col justify-between md:p-16">
     <div class="p-8">
       <h1 class="text-5xl md:text-7xl font-bold leading-tight">
@@ -40,33 +53,35 @@
       </p>
     </div>
 
-    <!-- Bloques (móvil) -->
-    <div class="flex flex-col items-center justify-end md:hidden h-full">
-      <div class="card bg-pink-100 py-10 text-center font-semibold text-2xl w-full">Desayunos Energéticos</div>
-      <div class="card bg-blue-100 py-10 text-center font-semibold text-2xl w-full mt-[-4rem]">Almuerzos Saludables</div>
-      <div class="card bg-green-100 py-10 text-center font-semibold text-2xl w-full mt-[-4rem]">Cenas Ligeras</div>
+    <!-- Bloques (solo visible en móvil) -->
+    <div class="flex flex-col items-center justify-end md:hidden h-full position-movil">
+      <div class="card bg-pink-100 margen-card text-center font-semibold text-2xl w-full">
+        Desayunos Energéticos
+      </div>
+      <div class="card bg-blue-100 margen-card text-center font-semibold text-2xl w-full">
+        Almuerzos Saludables
+      </div>
+      <div class="card bg-green-100 margen-card text-center font-semibold text-2xl w-full">
+        Cenas Ligeras
+      </div>
     </div>
   </div>
 
-  <!-- DERECHA (Desktop) -->
+  <!-- SECCIÓN DERECHA (solo visible en desktop) -->
   <div class="hidden md:flex w-1/2 flex-col justify-end bg-gray-50 p-10">
     <div class="flex flex-col items-center justify-end h-full relative">
-
-      <!-- el más grande (abajo del todo) -->
+      <!-- Grande (abajo) -->
       <div class="card bg-pink-100 w-3/4 text-center font-semibold text-2xl py-24">
         Desayunos Energéticos
       </div>
-
-      <!-- mediano -->
+      <!-- Mediano -->
       <div class="card bg-blue-100 w-3/4 text-center font-semibold text-2xl py-20 mt-[-6rem]">
         Almuerzos Saludables
       </div>
-
-      <!-- pequeño (arriba del todo) -->
+      <!-- Pequeño (arriba) -->
       <div class="card bg-green-100 w-3/4 text-center font-semibold text-2xl py-16 mt-[-6rem]">
         Cenas Ligeras
       </div>
-
     </div>
   </div>
 
