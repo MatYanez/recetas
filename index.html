@@ -7,19 +7,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
   <style>
-    :root {
-      /* fallback para navegadores que no soportan dvh */
-      --vh: 100vh;
-    }
-
     body {
       font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: #fff;
-      height: 100dvh;              /* Safari / iOS modernos */
-      height: var(--vh);           /* fallback */
-      overflow: hidden;            /* sin scroll */
-      display: flex;
-      flex-direction: column;
+      height: 100dvh;
+      overflow: hidden;
     }
 
     @media (max-width: 768px) {
@@ -28,14 +20,17 @@
         border-radius: 0;
       }
     }
+
+    .card {
+      border-radius: 40px 40px 0 0;
+    }
   </style>
 </head>
 
-<body class="md:flex-row text-gray-900">
+<body class="flex flex-col md:flex-row h-full text-gray-900">
 
   <!-- IZQUIERDA -->
-  <div class="w-full md:w-1/2 flex flex-col justify-between md:p-16 h-full">
-    <!-- Saludo arriba -->
+  <div class="w-full md:w-1/2 flex flex-col justify-between md:p-16">
     <div class="p-8">
       <h1 class="text-5xl md:text-7xl font-bold leading-tight">
         Hola, <span class="text-gray-400">Nombre</span> 👋
@@ -45,40 +40,24 @@
       </p>
     </div>
 
-    <!-- Cards abajo (móvil) -->
-<div class="flex flex-col items-center">
-  <div class="card bg-pink-100 py-6 text-center font-semibold text-2xl rounded-t-[40px] z-30">Desayunos Energéticos</div>
-  <div class="card bg-blue-100 py-6 text-center font-semibold text-2xl rounded-t-[40px] -mt-6 z-20">Almuerzos Saludables</div>
-  <div class="card bg-green-100 py-6 text-center font-semibold text-2xl rounded-t-[40px] -mt-6 z-10">Cenas Ligeras</div>
-</div>
-
-
-  </div>
-
-  <!-- DERECHA (solo desktop) -->
-  <div class="hidden md:flex w-1/2 flex-col justify-between bg-gray-50 p-10 h-full">
-    <div></div>
-    <div class="flex flex-col items-center space-y-4">
-      <div class="card bg-pink-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl w-3/4">
-        Desayunos Energéticos
-      </div>
-      <div class="card bg-blue-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl w-3/4">
-        Almuerzos Saludables
-      </div>
-      <div class="card bg-green-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl w-3/4">
-        Cenas Ligeras
-      </div>
+    <!-- Móvil -->
+    <div class="flex flex-col items-center mt-8 md:hidden">
+      <div class="card bg-pink-100 py-12 text-center font-semibold text-2xl w-full">Desayunos Energéticos</div>
+      <div class="card bg-blue-100 py-12 text-center font-semibold text-2xl w-full">Almuerzos Saludables</div>
+      <div class="card bg-green-100 py-12 text-center font-semibold text-2xl w-full">Cenas Ligeras</div>
     </div>
   </div>
 
-  <!-- Fallback JS para Safari viejo -->
-  <script>
-    function setVH() {
-      document.documentElement.style.setProperty('--vh', `${window.innerHeight}px`);
-    }
-    setVH();
-    window.addEventListener('resize', setVH);
-  </script>
+  <!-- DERECHA -->
+  <div class="hidden md:flex w-1/2 flex-col justify-end bg-gray-50">
+    <div class="flex flex-col items-center w-full">
+
+      <div class="card bg-pink-100 text-center font-semibold text-2xl w-3/4 py-16">Desayunos Energéticos</div>
+      <div class="card bg-blue-100 text-center font-semibold text-2xl w-3/4 py-16 mt-[-2rem] z-10">Almuerzos Saludables</div>
+      <div class="card bg-green-100 text-center font-semibold text-2xl w-3/4 py-16 mt-[-2rem] z-0">Cenas Ligeras</div>
+
+    </div>
+  </div>
 
 </body>
 </html>
