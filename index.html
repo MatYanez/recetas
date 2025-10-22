@@ -13,11 +13,10 @@
       overflow: hidden; /* sin scroll */
     }
 
-    /* Ajustes personalizados para móviles */
     @media (max-width: 768px) {
       .card {
-        width: 100vw !important;  /* ocupa todo el ancho del viewport */
-        border-radius: 0;          /* sin esquinas redondeadas en móvil */
+        width: 100vw !important;
+        border-radius: 0;
       }
     }
   </style>
@@ -36,26 +35,26 @@
   </div>
 
   <!-- Columna derecha -->
-  <div class="w-full md:w-1/2 flex flex-col justify-center items-center relative overflow-hidden">
+  <div class="w-full md:w-1/2 relative flex items-end justify-center overflow-hidden bg-gray-50">
 
-    <!-- Espacio para que respire debajo del texto -->
-    <div class="mt-10 md:mt-0 relative w-full flex flex-col items-center justify-center">
+    <!-- Contenedor de los tabs, anclado abajo -->
+    <div class="absolute bottom-0 w-full flex flex-col items-center justify-end pb-10">
 
-      <!-- Contenedor de los tabs -->
-      <div class="relative w-full max-w-md md:max-w-lg h-[70vh] flex flex-col items-center justify-center">
+      <!-- STACK de cards -->
+      <div class="relative w-full max-w-md md:max-w-lg h-[260px] flex flex-col items-center justify-end">
 
         <!-- TAB 1 -->
-        <div class="card absolute bg-pink-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl transform translate-y-[-3rem] transition-all w-[90%] md:w-full">
+        <div class="card absolute bg-pink-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl w-[90%] md:w-full transform translate-y-[-3rem] transition-all">
           Desayunos Energéticos
         </div>
 
         <!-- TAB 2 -->
-        <div class="card absolute bg-blue-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl transform translate-y-[0rem] transition-all w-[90%] md:w-full">
+        <div class="card absolute bg-blue-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl w-[90%] md:w-full transform translate-y-[0rem] transition-all">
           Almuerzos Saludables
         </div>
 
         <!-- TAB 3 -->
-        <div class="card absolute bg-green-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl transform translate-y-[3rem] transition-all w-[90%] md:w-full">
+        <div class="card absolute bg-green-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl w-[90%] md:w-full transform translate-y-[3rem] transition-all">
           Cenas Ligeras
         </div>
 
