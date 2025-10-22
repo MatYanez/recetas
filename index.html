@@ -12,12 +12,15 @@
       background-color: #fff;
       height: 100dvh;
       overflow: hidden;
+      position: relative;
     }
 
     .card {
       border-radius: 40px 40px 0 0;
       transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
       cursor: pointer;
+      position: relative;
+      z-index: 10;
     }
 
     .card.open {
@@ -42,54 +45,45 @@
       transform: translateY(0);
       transition-delay: 0.3s;
     }
+
+    .stack {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+    }
   </style>
 </head>
 
-<body class="flex flex-col md:flex-row h-full text-gray-900 relative">
+<body class="text-gray-900">
 
-  <!-- IZQUIERDA -->
-  <div class="w-full md:w-1/2 flex flex-col justify-between md:p-16">
-    <div class="p-8 z-40">
-      <h1 class="text-5xl md:text-7xl font-bold leading-tight">
-        Hola, <span class="text-gray-400">Nombre</span> 👋
-      </h1>
-      <p class="text-lg text-gray-500 mt-4 max-w-sm">
-        Bienvenido a mi proyecto personal de comidas.
-      </p>
+  <!-- Bloques apilados -->
+  <div class="stack flex flex-col items-center justify-end">
+
+    <!-- Card 1 -->
+    <div class="card bg-pink-100 text-center font-semibold text-2xl py-16"
+         onclick="openCard(this)">
+      <div class="title">Desayunos Energéticos</div>
+      <div class="card-content text-base text-gray-700 p-8">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque.</p>
+      </div>
     </div>
-  </div>
 
-  <!-- DERECHA -->
-  <div class="hidden md:flex w-1/2 flex-col justify-end bg-gray-50 p-10 relative overflow-hidden">
-    <div class="flex flex-col items-center justify-end h-full relative">
-
-      <!-- CARD 1 -->
-      <div class="card bg-pink-100 w-3/4 text-center font-semibold text-2xl py-24"
-           onclick="openCard(this)">
-        <div class="title">Desayunos Energéticos</div>
-        <div class="card-content text-base text-gray-700 p-10">
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</p>
-        </div>
+    <!-- Card 2 -->
+    <div class="card bg-blue-100 text-center font-semibold text-2xl py-14 mt-[-3rem]"
+         onclick="openCard(this)">
+      <div class="title">Almuerzos Saludables</div>
+      <div class="card-content text-base text-gray-700 p-8">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec turpis a quam tincidunt commodo. Integer imperdiet orci ut sapien posuere.</p>
       </div>
+    </div>
 
-      <!-- CARD 2 -->
-      <div class="card bg-blue-100 w-3/4 text-center font-semibold text-2xl py-20 mt-[-6rem]"
-           onclick="openCard(this)">
-        <div class="title">Almuerzos Saludables</div>
-        <div class="card-content text-base text-gray-700 p-10">
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nec turpis a quam tincidunt commodo. Integer imperdiet orci ut sapien posuere.</p>
-        </div>
+    <!-- Card 3 -->
+    <div class="card bg-green-100 text-center font-semibold text-2xl py-12 mt-[-3rem]"
+         onclick="openCard(this)">
+      <div class="title">Cenas Ligeras</div>
+      <div class="card-content text-base text-gray-700 p-8">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur facilisis ligula in turpis fermentum, nec volutpat nulla commodo.</p>
       </div>
-
-      <!-- CARD 3 -->
-      <div class="card bg-green-100 w-3/4 text-center font-semibold text-2xl py-16 mt-[-6rem]"
-           onclick="openCard(this)">
-        <div class="title">Cenas Ligeras</div>
-        <div class="card-content text-base text-gray-700 p-10">
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur facilisis ligula in turpis fermentum, nec volutpat nulla commodo.</p>
-        </div>
-      </div>
-
     </div>
   </div>
 
@@ -97,10 +91,12 @@
     let open = null;
 
     function openCard(card) {
+      // Cierra la abierta anterior
       if (open && open !== card) {
         open.classList.remove('open');
       }
 
+      // Alterna la card actual
       card.classList.toggle('open');
       open = card.classList.contains('open') ? card : null;
     }
