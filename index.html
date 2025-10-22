@@ -7,22 +7,24 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
   <style>
-    body{
-      font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,sans-serif;
-      background-color:#fff;
-      overflow:hidden;
+    body {
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: white;
+      overflow: hidden; /* sin scroll */
     }
-    @media(max-width:768px){
-      .card{
-        width:100vw!important;
-        border-radius:0;
+
+    @media (max-width: 768px) {
+      .card {
+        width: 100vw !important;
+        border-radius: 0;
       }
     }
   </style>
 </head>
+
 <body class="flex flex-col md:flex-row h-screen text-gray-900">
 
-  <!-- Izquierda -->
+  <!-- Columna izquierda -->
   <div class="w-full md:w-1/2 flex flex-col justify-center items-center p-10 md:p-16">
     <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
       Hola, <span class="text-gray-400">Nombre</span> 👋
@@ -32,28 +34,32 @@
     </p>
   </div>
 
-  <!-- Derecha -->
-  <div class="w-full md:w-1/2 relative flex items-end justify-center bg-gray-50">
+  <!-- Columna derecha -->
+  <div class="w-full md:w-1/2 bg-gray-50 flex flex-col justify-end items-center min-h-[50vh] md:min-h-0 md:h-full relative">
 
-    <!-- contenedor fijo al fondo -->
-    <div class="absolute bottom-0 w-full flex flex-col items-center justify-end pb-12">
+    <!-- Contenedor de tabs -->
+    <div class="w-full flex flex-col items-center justify-end md:absolute md:bottom-0 md:pb-12">
 
       <div class="relative w-full max-w-md md:max-w-lg h-[260px] flex flex-col items-center justify-end">
 
+        <!-- TAB 1 -->
         <div class="card absolute bg-pink-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl w-[90%] md:w-full transform translate-y-[-3rem]">
           Desayunos Energéticos
         </div>
 
+        <!-- TAB 2 -->
         <div class="card absolute bg-blue-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl w-[90%] md:w-full transform translate-y-[0rem]">
           Almuerzos Saludables
         </div>
 
+        <!-- TAB 3 -->
         <div class="card absolute bg-green-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl w-[90%] md:w-full transform translate-y-[3rem]">
           Cenas Ligeras
         </div>
 
       </div>
     </div>
+
   </div>
 
 </body>
