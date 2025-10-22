@@ -10,14 +10,23 @@
     body { 
       font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: white;
+      overflow: hidden; /* sin scroll */
+    }
+
+    /* Ajustes personalizados para móviles */
+    @media (max-width: 768px) {
+      .card {
+        width: 100vw !important;  /* ocupa todo el ancho del viewport */
+        border-radius: 0;          /* sin esquinas redondeadas en móvil */
+      }
     }
   </style>
 </head>
 
-<body class="text-gray-900 flex flex-col md:flex-row h-screen overflow-hidden">
+<body class="text-gray-900 flex flex-col md:flex-row h-screen">
 
   <!-- Columna izquierda -->
-  <div class="w-full md:w-1/2 flex flex-col justify-center items-center p-10">
+  <div class="w-full md:w-1/2 flex flex-col justify-center items-center p-10 md:p-16">
     <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
       Hola, <span class="text-gray-400">Nombre</span> 👋
     </h1>
@@ -26,27 +35,31 @@
     </p>
   </div>
 
-  <!-- Columna derecha: superposición de tabs -->
+  <!-- Columna derecha -->
   <div class="w-full md:w-1/2 flex flex-col justify-center items-center relative overflow-hidden">
 
-    <!-- Contenedor de los tabs -->
-    <div class="relative w-full max-w-md h-[70vh] flex flex-col items-center justify-center">
+    <!-- Espacio para que respire debajo del texto -->
+    <div class="mt-10 md:mt-0 relative w-full flex flex-col items-center justify-center">
 
-      <!-- TAB 1 -->
-      <div class="absolute w-11/12 md:w-full bg-pink-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl transform translate-y-[-3rem] transition-all">
-        Desayunos Energéticos
+      <!-- Contenedor de los tabs -->
+      <div class="relative w-full max-w-md md:max-w-lg h-[70vh] flex flex-col items-center justify-center">
+
+        <!-- TAB 1 -->
+        <div class="card absolute bg-pink-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl transform translate-y-[-3rem] transition-all w-[90%] md:w-full">
+          Desayunos Energéticos
+        </div>
+
+        <!-- TAB 2 -->
+        <div class="card absolute bg-blue-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl transform translate-y-[0rem] transition-all w-[90%] md:w-full">
+          Almuerzos Saludables
+        </div>
+
+        <!-- TAB 3 -->
+        <div class="card absolute bg-green-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl transform translate-y-[3rem] transition-all w-[90%] md:w-full">
+          Cenas Ligeras
+        </div>
+
       </div>
-
-      <!-- TAB 2 -->
-      <div class="absolute w-11/12 md:w-full bg-blue-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl transform translate-y-[0rem] transition-all">
-        Almuerzos Saludables
-      </div>
-
-      <!-- TAB 3 -->
-      <div class="absolute w-11/12 md:w-full bg-green-100 rounded-3xl shadow-md py-6 text-center font-semibold text-2xl transform translate-y-[3rem] transition-all">
-        Cenas Ligeras
-      </div>
-
     </div>
   </div>
 
