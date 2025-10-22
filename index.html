@@ -14,15 +14,15 @@
       overflow: hidden;
     }
 
+    .card {
+      border-radius: 40px 40px 0 0;
+    }
+
     @media (max-width: 768px) {
       .card {
         width: 100vw !important;
         border-radius: 0;
       }
-    }
-
-    .card {
-      border-radius: 40px 40px 0 0;
     }
   </style>
 </head>
@@ -40,21 +40,32 @@
       </p>
     </div>
 
-    <!-- Móvil -->
-    <div class="flex flex-col items-center mt-8 md:hidden">
-      <div class="card bg-pink-100 py-12 text-center font-semibold text-2xl w-full">Desayunos Energéticos</div>
-      <div class="card bg-blue-100 py-12 text-center font-semibold text-2xl w-full">Almuerzos Saludables</div>
-      <div class="card bg-green-100 py-12 text-center font-semibold text-2xl w-full">Cenas Ligeras</div>
+    <!-- Bloques (móvil) -->
+    <div class="flex flex-col items-center justify-end md:hidden h-full">
+      <div class="card bg-pink-100 py-10 text-center font-semibold text-2xl w-full">Desayunos Energéticos</div>
+      <div class="card bg-blue-100 py-10 text-center font-semibold text-2xl w-full mt-[-4rem]">Almuerzos Saludables</div>
+      <div class="card bg-green-100 py-10 text-center font-semibold text-2xl w-full mt-[-4rem]">Cenas Ligeras</div>
     </div>
   </div>
 
-  <!-- DERECHA -->
-  <div class="hidden md:flex w-1/2 flex-col justify-end bg-gray-50">
-    <div class="flex flex-col items-center w-full">
+  <!-- DERECHA (Desktop) -->
+  <div class="hidden md:flex w-1/2 flex-col justify-end bg-gray-50 p-10">
+    <div class="flex flex-col items-center justify-end h-full relative">
 
-      <div class="card bg-pink-100 text-center font-semibold text-2xl w-3/4 py-16">Desayunos Energéticos</div>
-      <div class="card bg-blue-100 text-center font-semibold text-2xl w-3/4 py-16 mt-[-2rem] z-10">Almuerzos Saludables</div>
-      <div class="card bg-green-100 text-center font-semibold text-2xl w-3/4 py-16 mt-[-2rem] z-0">Cenas Ligeras</div>
+      <!-- el más grande (abajo del todo) -->
+      <div class="card bg-pink-100 w-3/4 text-center font-semibold text-2xl py-24">
+        Desayunos Energéticos
+      </div>
+
+      <!-- mediano -->
+      <div class="card bg-blue-100 w-3/4 text-center font-semibold text-2xl py-20 mt-[-6rem]">
+        Almuerzos Saludables
+      </div>
+
+      <!-- pequeño (arriba del todo) -->
+      <div class="card bg-green-100 w-3/4 text-center font-semibold text-2xl py-16 mt-[-6rem]">
+        Cenas Ligeras
+      </div>
 
     </div>
   </div>
