@@ -58,16 +58,13 @@ function expandCard(card) {
   // Desvanece saludo y tarjetas
   animate(saludo, { opacity: [1, 0] }, { duration: 0.4 });
   animate(app, { opacity: [1, 0] }, { duration: 0.4 });
-
-  // Oculta el header superior
   header.style.display = "none";
 
-  // tras el fade, construye la vista de detalle
   setTimeout(() => {
     app.removeAttribute("style");
     app.innerHTML = "";
 
-    // barra superior de color
+    // --- barra superior de color ---
     const topBar = document.createElement("div");
     Object.assign(topBar.style, {
       backgroundColor: card.color,
@@ -83,32 +80,20 @@ function expandCard(card) {
     });
     topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${card.title}</h2>`;
 
-    // contenido principal
+    // --- contenedor de contenido dinámico ---
     const content = document.createElement("div");
     Object.assign(content.style, {
       backgroundColor: "#fff",
       flex: "1",
       padding: "2rem",
       color: "#333",
-      height: "calc(100dvh - 10rem)", // dejamos espacio para el menú inferior
+      height: "calc(100dvh - 10rem)",
       overflowY: "auto",
     });
-    content.innerHTML = `
-      <p style="font-size:1.1rem;line-height:1.6;">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras non eros ac urna pulvinar aliquet.
-        Praesent eget libero a sapien ultrices imperdiet. Nullam id augue a nisi luctus tempor.
-      </p>
-      <button id="backBtn" style="
-        margin-top:2rem;
-        background-color:${card.color};
-        padding:0.75rem 1.5rem;
-        border-radius:12px;
-        font-weight:600;
-        box-shadow:0 2px 10px rgba(0,0,0,0.1);
-      ">Volver</button>
-    `;
+    app.appendChild(topBar);
+    app.appendChild(content);
 
-    // ✅ barra inferior tipo menú
+    // --- barra inferior tipo menú ---
     const bottomBar = document.createElement("div");
     Object.assign(bottomBar.style, {
       position: "fixed",
@@ -133,7 +118,7 @@ function expandCard(card) {
       <div id="indicator"></div>
     `;
 
-    // estilos base para los iconos y el indicador
+    // estilos del indicador
     const style = document.createElement("style");
     style.textContent = `
       .tab-item {
@@ -159,49 +144,89 @@ function expandCard(card) {
     `;
     document.head.appendChild(style);
 
-    // agregamos todo al app
-    app.appendChild(topBar);
-    app.appendChild(content);
     document.body.appendChild(bottomBar);
+    animate(bottomBar, { y: ["100%", "0%"], opacity: [0, 1] }, { duration: 0.6 });
 
-    // animación de entrada del menú
-    animate(bottomBar, { y: ["100%", "0%"], opacity: [0, 1] }, { duration: 0.6, easing: "ease-out" });
-
-    // mover indicador dinámicamente
+    // --- comportamiento del indicador ---
     const indicator = bottomBar.querySelector("#indicator");
     const items = bottomBar.querySelectorAll(".tab-item");
 
     function moveIndicatorTo(el) {
       const rect = el.getBoundingClientRect();
       const center = rect.left + rect.width / 2;
-      indicator.style.left = `${center - 10}px`; // centramos
+      indicator.style.left = `${center - 10}px`;
     }
-
-    // posición inicial del indicador (home)
-    setTimeout(() => moveIndicatorTo(items[0]), 10);
+    setTimeout(() => moveIndicatorTo(items[0]), 50);
 
     items.forEach((btn) => {
       btn.addEventListener("click", () => {
         items.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         moveIndicatorTo(btn);
+
+        const target = btn.dataset.id;
+        updateContent(target);
       });
     });
 
-    // botón volver
-    document.getElementById("backBtn").addEventListener("click", () => {
-      selected = null;
-      body.style.backgroundColor = "#fff";
-      saludo.removeAttribute("style");
-      header.style.display = "block";
-      animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
+    // --- función que actualiza el contenido central ---
+    function updateContent(section) {
+      if (section === "home") {
+        // salir al home
+        selected = null;
+        animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 }).finished.then(() => bottomBar.remove());
+        body.style.backgroundColor = "#fff";
+        saludo.removeAttribute("style");
+        header.style.display = "block";
+        animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
+        render();
+        return;
+      }
 
-      // animar salida del menú
-      animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 }).finished.then(() => {
-        bottomBar.remove();
+      let html = "";
+      switch (section) {
+        case "calendario":
+          html = `
+            <h3 style="font-weight:600;">📅 Calendario</h3>
+            <p style="margin-top:1rem;">Aquí puedes ver tu planificación semanal y agregar nuevas comidas.</p>
+          `;
+          break;
+        case "almuerzos":
+          html = `
+            <h3 style="font-weight:600;">🍽️ Almuerzos</h3>
+            <p style="margin-top:1rem;">Recetas, ideas y sugerencias para tus almuerzos diarios.</p>
+          `;
+          break;
+        case "compras":
+          html = `
+            <h3 style="font-weight:600;">🛒 Compras</h3>
+            <p style="margin-top:1rem;">Lista automática de compras basada en tus comidas planificadas.</p>
+          `;
+          break;
+      }
+
+      animate(content, { opacity: [1, 0], y: [0, 20] }, { duration: 0.2 }).finished.then(() => {
+        content.innerHTML = html;
+        animate(content, { opacity: [0, 1], y: [20, 0] }, { duration: 0.4 });
       });
+    }
 
-      render();
+    // botón volver
+    const backBtn = document.createElement("button");
+    backBtn.id = "backBtn";
+    backBtn.textContent = "Volver";
+    Object.assign(backBtn.style, {
+      marginTop: "2rem",
+      backgroundColor: card.color,
+      padding: "0.75rem 1.5rem",
+      borderRadius: "12px",
+      fontWeight: "600",
+      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    });
+    content.appendChild(backBtn);
+
+    backBtn.addEventListener("click", () => {
+      updateContent("home");
     });
   }, 400);
 }
