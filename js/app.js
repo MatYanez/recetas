@@ -280,16 +280,28 @@ function updateView(sectionId) {
     Carne mongoliana con arroz
   </h3>
 
-  <div style="
-    width:100%;
-    border-radius:20px;
-    overflow:hidden;
-    box-shadow:0 4px 15px rgba(0,0,0,0.1);
-  ">
-    <img src="https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg"
-      alt="Carne mongoliana con arroz"
-      style="width:100%; height:auto; display:block;">
-  </div>
+<div style="
+  width:100%;
+  height:220px;                /* 👈 altura controlada */
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 4px 15px rgba(0,0,0,0.1);
+  margin-bottom:1rem;
+  background-color:#f9f9f9;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+">
+  <img src="https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg"
+    alt="Carne mongoliana con arroz"
+    style="
+      width:100%;
+      height:100%;
+      object-fit:cover;         /* 👈 recorta sin deformar */
+      display:block;
+    ">
+</div>
+
 </div>
       `;
 
