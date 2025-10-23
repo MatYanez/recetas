@@ -1,8 +1,5 @@
-// Importamos las funciones de Motion One
-import { animate, stagger } from "https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.mjs";
+import { animate, stagger } from "https://cdn.jsdelivr.net/npm/@motionone/dom/dist/motion.mjs";
 
-
-// Datos de tus tarjetas
 const cards = [
   { id: "calendario", color: "bg-pink-100", title: "Calendario", content: "Tu calendario semanal de comidas." },
   { id: "almuerzos", color: "bg-blue-100", title: "Almuerzos", content: "Tus almuerzos favoritos y recetas." },
@@ -31,10 +28,8 @@ function render() {
   const allCards = document.querySelectorAll(".card");
 
   if (!selected) {
-    // Animación inicial (aparecen las tarjetas)
     animate(allCards, { opacity: [0, 1], y: [50, 0] }, { duration: 0.5, delay: stagger(0.1) });
   } else {
-    // Animar la tarjeta seleccionada hacia arriba
     allCards.forEach((card) => {
       if (card.textContent.toLowerCase() === selected) {
         animate(card, { y: ["0", "-200"], scale: [1, 1.05] }, { duration: 0.6, easing: "ease-in-out" });
@@ -43,7 +38,6 @@ function render() {
       }
     });
 
-    // Mostrar contenido
     const content = document.createElement("div");
     content.className = "section-content";
     content.innerHTML = `<p>${cards.find((c) => c.id === selected).content}</p>`;
