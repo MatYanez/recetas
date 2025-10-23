@@ -85,8 +85,10 @@ function expandCard(initialCard) {
       flex: "1",
       padding: "2rem",
       color: "#333",
-      height: "calc(100dvh - 11rem)",
-      overflowY: "auto",
+flex: "1",
+height: "calc(100dvh - 11rem)",
+overflowY: "hidden",  // 👈 no permite scroll interno
+position: "relative",
       transition: "opacity 0.3s ease",
     });
 
@@ -221,6 +223,7 @@ animate(content, { opacity: [1, 0], x: [0, -50 * direction] }, { duration: 0.25 
 
 
       moveIndicatorTo([...items].find((b) => b.dataset.id === sectionId));
+      content.scrollTo({ top: 0, behavior: "instant" });
     }
 
     // Inicializar
