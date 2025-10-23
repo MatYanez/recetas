@@ -211,7 +211,12 @@ Object.assign(indicator.style, {
 
     // --- inicializar vista ---
     updateView(initialCard.id);
-    setTimeout(() => moveIndicatorTo(items[0]), 50);
+// encuentra el botón correspondiente al card inicial
+const activeBtn = [...items].find((b) => b.dataset.id === initialCard.id);
+setTimeout(() => {
+  moveIndicatorTo(activeBtn);
+  activeBtn.classList.add("active");
+}, 50);
 
     items.forEach((btn) => {
       btn.addEventListener("click", () => {
