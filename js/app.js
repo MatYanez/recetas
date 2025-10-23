@@ -310,8 +310,14 @@ function updateView(sectionId) {
   content.scrollTo({ top: 0, behavior: "instant" });
 
   // --- SWIPE LATERAL ENTRE TABS ---
-  let startX = 0;
-  let endX = 0;
+let startX = 0;
+let endX = 0;
+let touchStartTime = 0;
+
+content.ontouchstart = (e) => {
+  startX = e.touches[0].clientX;
+  touchStartTime = Date.now();
+};
   content.ontouchstart = (e) => { startX = e.touches[0].clientX; };
   content.ontouchmove = (e) => { endX = e.touches[0].clientX; };
   content.ontouchend = () => {
@@ -319,7 +325,9 @@ function updateView(sectionId) {
     const delta = endX - startX;
     const tabs = ["calendario", "almuerzos", "compras"];
     const current = tabs.indexOf(sectionId);
-    if (Math.abs(delta) > 50) {
+   const moved = Math.abs(delta) > 60; // más de 60px reales
+const holdTime = Date.now() - touchStartTime;
+if (moved && holdTime < 500) {
       if (delta < 0 && current < tabs.length - 1) {
         const next = tabs[current + 1];
         const nextBtn = [...items].find(b => b.dataset.id === next);
