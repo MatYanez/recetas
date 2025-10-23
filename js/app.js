@@ -103,8 +103,12 @@ function expandCard(card, element) {
 
       // 4️⃣ Insertar elementos
       body.style.backgroundColor = "#fff";
+      app.innerHTML = "";
       app.appendChild(topBar);
       app.appendChild(content);
+
+      // 👇 fuerza la visibilidad del contenedor
+      app.style.opacity = "1";
 
       // 5️⃣ Animaciones de entrada
       animate(topBar, { y: ["-100%", "0%"], opacity: [0, 1] }, { duration: 0.6, easing: "ease-out" });
