@@ -1,5 +1,6 @@
 import { animate, stagger } from "https://cdn.jsdelivr.net/npm/@motionone/dom/+esm";
 
+const header = document.querySelector(".header");
 const cards = [
   {
     id: "calendario",
@@ -58,9 +59,12 @@ function expandCard(card) {
   animate(saludo, { opacity: [1, 0] }, { duration: 0.4 });
   animate(app, { opacity: [1, 0] }, { duration: 0.4 });
 
+  // 👇 Oculta completamente la cabecera para liberar espacio arriba
+  header.style.display = "none";
+
   // tras el fade, construye la vista de detalle
   setTimeout(() => {
-    app.removeAttribute("style"); // limpia estilos de animaciones previas
+    app.removeAttribute("style");
     app.innerHTML = "";
 
     // barra superior de color
@@ -79,7 +83,7 @@ function expandCard(card) {
     });
     topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${card.title}</h2>`;
 
-    // contenido blanco con texto y botón
+    // contenido blanco
     const content = document.createElement("div");
     Object.assign(content.style, {
       backgroundColor: "#fff",
@@ -108,7 +112,6 @@ function expandCard(card) {
     app.appendChild(topBar);
     app.appendChild(content);
 
-    // anima la entrada de los nuevos bloques
     animate(topBar, { y: ["-100%", "0%"], opacity: [0, 1] }, { duration: 0.6 });
     animate(content, { opacity: [0, 1], y: [30, 0] }, { duration: 0.8, delay: 0.2 });
 
@@ -118,10 +121,15 @@ function expandCard(card) {
       body.style.backgroundColor = "#fff";
       saludo.removeAttribute("style");
       animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
+
+      // 👇 vuelve a mostrar la cabecera
+      header.style.display = "block";
+
       render();
     });
   }, 400);
 }
+
 
 /* ---------- Inicio ---------- */
 render();
