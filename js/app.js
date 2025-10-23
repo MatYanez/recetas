@@ -168,6 +168,35 @@ Object.assign(indicator.style, {
     // --- función de actualización de vista ---
     function updateView(sectionId) {
       const section = cards.find((c) => c.id === sectionId);
+
+      // --- configuración swipe lateral ---
+let startX = 0;
+let endX = 0;
+content.ontouchstart = (e) => { startX = e.touches[0].clientX; };
+content.ontouchmove = (e) => { endX = e.touches[0].clientX; };
+content.ontouchend = () => {
+  const delta = endX - startX;
+  const order = ["calendario", "almuerzos", "compras"];
+  const currentIndex = order.indexOf(sectionId);
+
+  if (Math.abs(delta) > 50) { // gesto válido
+    if (delta < 0 && currentIndex < order.length - 1) {
+      // 👉 swipe izquierda: siguiente tab
+      const next = order[currentIndex + 1];
+      const nextBtn = [...items].find((b) => b.dataset.id === next);
+      moveIndicatorTo(nextBtn);
+      updateView(next);
+    } else if (delta > 0 && currentIndex > 0) {
+      // 👈 swipe derecha: tab anterior
+      const prev = order[currentIndex - 1];
+      const prevBtn = [...items].find((b) => b.dataset.id === prev);
+      moveIndicatorTo(prevBtn);
+      updateView(prev);
+    }
+  }
+};
+
+
       if (!section) {
         body.style.overflow = "auto";
         bottomBar.remove();
