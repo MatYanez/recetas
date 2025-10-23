@@ -52,22 +52,23 @@ function render() {
 }
 
 /* ---------- Expande la tarjeta seleccionada ---------- */
-function expandCard(card) {
+function expandCard(initialCard) {
   const body = document.body;
+  header.style.display = "none";
 
-  // Desvanece saludo y tarjetas
+  // fade out inicial
   animate(saludo, { opacity: [1, 0] }, { duration: 0.4 });
   animate(app, { opacity: [1, 0] }, { duration: 0.4 });
-  header.style.display = "none";
 
   setTimeout(() => {
     app.removeAttribute("style");
     app.innerHTML = "";
 
-    // --- barra superior de color ---
+    /* --- crear topBar y content dinámicos --- */
     const topBar = document.createElement("div");
+    const content = document.createElement("div");
+
     Object.assign(topBar.style, {
-      backgroundColor: card.color,
       height: "5rem",
       width: "100%",
       display: "flex",
@@ -77,11 +78,9 @@ function expandCard(card) {
       borderBottomLeftRadius: "20px",
       borderBottomRightRadius: "20px",
       boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+      transition: "background-color 0.3s ease",
     });
-    topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${card.title}</h2>`;
 
-    // --- contenedor de contenido dinámico ---
-    const content = document.createElement("div");
     Object.assign(content.style, {
       backgroundColor: "#fff",
       flex: "1",
@@ -89,11 +88,13 @@ function expandCard(card) {
       color: "#333",
       height: "calc(100dvh - 10rem)",
       overflowY: "auto",
+      transition: "opacity 0.3s ease",
     });
+
     app.appendChild(topBar);
     app.appendChild(content);
 
-    // --- barra inferior tipo menú ---
+    /* --- crear bottom bar --- */
     const bottomBar = document.createElement("div");
     Object.assign(bottomBar.style, {
       position: "fixed",
@@ -111,126 +112,95 @@ function expandCard(card) {
     });
 
     bottomBar.innerHTML = `
-      <button class="tab-item active" data-id="home">🏠</button>
       <button class="tab-item" data-id="calendario">📅</button>
       <button class="tab-item" data-id="almuerzos">🍽️</button>
       <button class="tab-item" data-id="compras">🛒</button>
+      <button class="tab-item" data-id="home">🏠</button>
       <div id="indicator"></div>
     `;
-
-    // estilos del indicador
-    const style = document.createElement("style");
-    style.textContent = `
-      .tab-item {
-        font-size: 1.5rem;
-        border: none;
-        background: transparent;
-        outline: none;
-        position: relative;
-        z-index: 2;
-        transition: color 0.3s;
-      }
-      .tab-item.active { color: #111; }
-      #indicator {
-        position: absolute;
-        bottom: 8px;
-        height: 3px;
-        width: 20px;
-        background-color: #111;
-        border-radius: 4px;
-        z-index: 1;
-        transition: left 0.3s ease;
-      }
-    `;
-    document.head.appendChild(style);
 
     document.body.appendChild(bottomBar);
     animate(bottomBar, { y: ["100%", "0%"], opacity: [0, 1] }, { duration: 0.6 });
 
-    // --- comportamiento del indicador ---
     const indicator = bottomBar.querySelector("#indicator");
-    const items = bottomBar.querySelectorAll(".tab-item");
-
-    function moveIndicatorTo(el) {
-      const rect = el.getBoundingClientRect();
-      const center = rect.left + rect.width / 2;
-      indicator.style.left = `${center - 10}px`;
-    }
-    setTimeout(() => moveIndicatorTo(items[0]), 50);
-
-    items.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        items.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        moveIndicatorTo(btn);
-
-        const target = btn.dataset.id;
-        updateContent(target);
-      });
+    Object.assign(indicator.style, {
+      position: "absolute",
+      bottom: "8px",
+      height: "3px",
+      width: "20px",
+      backgroundColor: "#111",
+      borderRadius: "4px",
+      transition: "left 0.3s ease",
     });
 
-    // --- función que actualiza el contenido central ---
-    function updateContent(section) {
-      if (section === "home") {
-        // salir al home
+    const items = bottomBar.querySelectorAll(".tab-item");
+
+    /* --- función: actualizar vista según sección --- */
+    function updateView(sectionId) {
+      // obtener los datos del bloque correspondiente
+      const section = cards.find((c) => c.id === sectionId);
+
+      if (!section) {
+        // si tocó Home
         selected = null;
         animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 }).finished.then(() => bottomBar.remove());
-        body.style.backgroundColor = "#fff";
-        saludo.removeAttribute("style");
         header.style.display = "block";
+        saludo.removeAttribute("style");
         animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
+        body.style.backgroundColor = "#fff";
         render();
         return;
       }
 
-      let html = "";
-      switch (section) {
-        case "calendario":
-          html = `
-            <h3 style="font-weight:600;">📅 Calendario</h3>
-            <p style="margin-top:1rem;">Aquí puedes ver tu planificación semanal y agregar nuevas comidas.</p>
-          `;
-          break;
-        case "almuerzos":
-          html = `
-            <h3 style="font-weight:600;">🍽️ Almuerzos</h3>
-            <p style="margin-top:1rem;">Recetas, ideas y sugerencias para tus almuerzos diarios.</p>
-          `;
-          break;
-        case "compras":
-          html = `
-            <h3 style="font-weight:600;">🛒 Compras</h3>
-            <p style="margin-top:1rem;">Lista automática de compras basada en tus comidas planificadas.</p>
-          `;
-          break;
-      }
+      // actualizar color, título y contenido
+      topBar.style.backgroundColor = section.color;
+      topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${section.title}</h2>`;
+      body.style.backgroundColor = section.color;
 
-      animate(content, { opacity: [1, 0], y: [0, 20] }, { duration: 0.2 }).finished.then(() => {
-        content.innerHTML = html;
-        animate(content, { opacity: [0, 1], y: [20, 0] }, { duration: 0.4 });
+      // fade-out del contenido anterior
+      animate(content, { opacity: [1, 0] }, { duration: 0.2 }).finished.then(() => {
+        content.innerHTML = `
+          <p style="font-size:1.1rem; line-height:1.6;">
+            ${section.content}
+          </p>
+          <button id="backBtn" style="
+            margin-top:2rem;
+            background-color:${section.color};
+            padding:0.75rem 1.5rem;
+            border-radius:12px;
+            font-weight:600;
+            box-shadow:0 2px 10px rgba(0,0,0,0.1);
+          ">Volver</button>
+        `;
+        animate(content, { opacity: [0, 1] }, { duration: 0.3 });
+
+        // evento volver
+        document.getElementById("backBtn").addEventListener("click", () => {
+          updateView("home");
+        });
       });
+
+      // mover el indicador
+      const btn = [...items].find((b) => b.dataset.id === sectionId);
+      if (btn) {
+        const rect = btn.getBoundingClientRect();
+        const center = rect.left + rect.width / 2;
+        indicator.style.left = `${center - 10}px`;
+      }
     }
 
-    // botón volver
-    const backBtn = document.createElement("button");
-    backBtn.id = "backBtn";
-    backBtn.textContent = "Volver";
-    Object.assign(backBtn.style, {
-      marginTop: "2rem",
-      backgroundColor: card.color,
-      padding: "0.75rem 1.5rem",
-      borderRadius: "12px",
-      fontWeight: "600",
-      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-    });
-    content.appendChild(backBtn);
+    // inicializa la vista según la card que abriste
+    updateView(initialCard.id);
 
-    backBtn.addEventListener("click", () => {
-      updateContent("home");
+    // eventos del menú inferior
+    items.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const sectionId = btn.dataset.id;
+        updateView(sectionId);
+      });
     });
   }, 400);
 }
-
 
 
 /* ---------- Inicio ---------- */
