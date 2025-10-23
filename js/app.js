@@ -27,6 +27,7 @@ let selected = null;
 
 function render() {
   app.innerHTML = "";
+  app.style.opacity = "1";
 
   cards.forEach((card) => {
     const div = document.createElement("div");
@@ -115,15 +116,17 @@ function expandCard(card, element) {
       animate(content, { opacity: [0, 1], y: [30, 0] }, { duration: 0.8, delay: 0.2 });
 
       // 6️⃣ Botón volver
-      document.getElementById("backBtn").addEventListener("click", () => {
-        selected = null;
-        body.style.backgroundColor = "#fff";
+    document.getElementById("backBtn").addEventListener("click", () => {
+  selected = null;
+  body.style.backgroundColor = "#fff";
 
-        // limpiar estilos inline de #saludo y hacerlo reaparecer
-        saludo.removeAttribute("style");
-        animate(saludo, { opacity: [0, 1] }, { duration: 0.5, easing: "ease-out" });
+  saludo.removeAttribute("style");
+  app.removeAttribute("style"); // 👈 limpia opacidad o transform previos
+  animate(saludo, { opacity: [0, 1] }, { duration: 0.5, easing: "ease-out" });
 
-        render();
+  render();
+});
+
       });
     }, 400);
   }
