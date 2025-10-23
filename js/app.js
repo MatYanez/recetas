@@ -95,24 +95,25 @@ function expandCard(initialCard) {
 
     // --- Barra inferior flotante ---
     const bottomBar = document.createElement("div");
-    Object.assign(bottomBar.style, {
-      position: "fixed",
-      bottom: "1rem",
-      left: "50%",
-      transform: "translateX(-50%)",
-      width: "90%",
-      height: "4.5rem",
-      background: "rgba(255, 255, 255, 0.6)",
-      backdropFilter: "blur(12px)",
-      WebkitBackdropFilter: "blur(12px)",
-      display: "flex",
-      justifyContent: "space-around",
-      alignItems: "center",
-      borderRadius: "20px",
-      boxShadow: "0 -2px 20px rgba(0,0,0,0.15)",
-      zIndex: "50",
-      border: "1px solid rgba(255,255,255,0.4)",
-    });
+Object.assign(bottomBar.style, {
+  position: "fixed",
+  bottom: "1rem",
+  width: "90%",
+  margin: "0 auto",        // ✅ centra correctamente
+  left: "0",
+  right: "0",              // asegura que esté centrado dentro del viewport
+  height: "4.5rem",
+  background: "rgba(255, 255, 255, 0.6)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  display: "flex",
+  justifyContent: "space-around",
+  alignItems: "center",
+  borderRadius: "20px",
+  boxShadow: "0 -2px 20px rgba(0,0,0,0.15)",
+  zIndex: "50",
+  border: "1px solid rgba(255,255,255,0.4)",
+});
 
     // --- Íconos SVG ---
     bottomBar.innerHTML = `
