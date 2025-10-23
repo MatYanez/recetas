@@ -70,14 +70,15 @@ function expandCard(initialCard) {
 
     Object.assign(topBar.style, {
       height: "5rem",
-      width: "100%",
+      width: "90%",
+      margin: "0 auto",
+      marginTop: "1rem",
       display: "flex",
       alignItems: "center",
       justifyContent: "flex-start",
       paddingLeft: "1.5rem",
-      borderBottomLeftRadius: "20px",
-      borderBottomRightRadius: "20px",
-      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+      borderRadius: "20px", // ✅ redondeada completa
+      boxShadow: "0 2px 15px rgba(0,0,0,0.08)",
       transition: "background-color 0.3s ease",
     });
 
@@ -86,7 +87,7 @@ function expandCard(initialCard) {
       flex: "1",
       padding: "2rem",
       color: "#333",
-      height: "calc(100dvh - 10rem)",
+      height: "calc(100dvh - 12rem)",
       overflowY: "auto",
       transition: "opacity 0.3s ease",
     });
@@ -94,28 +95,31 @@ function expandCard(initialCard) {
     app.appendChild(topBar);
     app.appendChild(content);
 
-    /* --- crear bottom bar --- */
+    /* --- barra inferior tipo menú --- */
     const bottomBar = document.createElement("div");
     Object.assign(bottomBar.style, {
       position: "fixed",
-      bottom: "0",
-      left: "0",
-      width: "100%",
-      height: "5rem",
+      bottom: "1rem", // ✅ margen inferior
+      left: "50%",
+      transform: "translateX(-50%)",
+      width: "90%", // ✅ no ocupa todo el ancho
+      height: "4.5rem",
       background: "#f8f8f8",
       display: "flex",
       justifyContent: "space-around",
       alignItems: "center",
-      borderTop: "1px solid #e5e5e5",
-      boxShadow: "0 -2px 10px rgba(0,0,0,0.05)",
+      borderRadius: "20px", // ✅ bordes redondeados
+      boxShadow: "0 -2px 15px rgba(0,0,0,0.1)",
       zIndex: "50",
+      border: "1px solid #e5e5e5",
     });
 
+    // ✅ Home va primero ahora
     bottomBar.innerHTML = `
+      <button class="tab-item" data-id="home">🏠</button>
       <button class="tab-item" data-id="calendario">📅</button>
       <button class="tab-item" data-id="almuerzos">🍽️</button>
       <button class="tab-item" data-id="compras">🛒</button>
-      <button class="tab-item" data-id="home">🏠</button>
       <div id="indicator"></div>
     `;
 
@@ -137,7 +141,6 @@ function expandCard(initialCard) {
 
     /* --- función: actualizar vista según sección --- */
     function updateView(sectionId) {
-      // obtener los datos del bloque correspondiente
       const section = cards.find((c) => c.id === sectionId);
 
       if (!section) {
@@ -201,6 +204,7 @@ function expandCard(initialCard) {
     });
   }, 400);
 }
+
 
 
 /* ---------- Inicio ---------- */
