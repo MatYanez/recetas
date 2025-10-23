@@ -188,7 +188,6 @@ Object.assign(bottomBar.style, {
 
       topBar.style.backgroundColor = section.color;
       topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${section.title}</h2>`;
-      body.style.backgroundColor = section.color;
 
       // --- swipe lateral entre tabs ---
       const order = ["home", "calendario", "almuerzos", "compras"];
