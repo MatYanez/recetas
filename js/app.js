@@ -77,7 +77,7 @@ function expandCard(card) {
       alignItems: "center",
       justifyContent: "flex-start",
       paddingLeft: "1.5rem",
-      border-radius: "20px",
+      borderRadius: "20px",
       boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
     });
     topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${card.title}</h2>`;
