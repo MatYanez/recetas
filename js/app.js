@@ -98,6 +98,7 @@ function expandCard(initialCard) {
     Object.assign(bottomBar.style, {
       position: "fixed",
       bottom: "1rem",
+      left: "50%",
       transform: "translateX(-50%)",
       width: "90%",
       height: "4.5rem",
