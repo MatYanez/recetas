@@ -264,10 +264,11 @@ function updateView(sectionId) {
   text-align:left;
 ">
   <h3 style="
-    font-size:1.3rem;
+    font-size:2rem;
     font-weight:700;
     margin-bottom:0.75rem;
     color:#222;
+        line-height: 1;
   ">
     Carne mongoliana con arroz
   </h3>
