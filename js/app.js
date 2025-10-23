@@ -1,5 +1,6 @@
 // Importamos las funciones de Motion One
-import { animate, stagger } from "https://cdn.jsdelivr.net/npm/motion@11.11.9/+esm";
+import { animate, stagger } from "https://cdn.jsdelivr.net/npm/motion@10.16.4/dist/motion.mjs";
+
 
 // Datos de tus tarjetas
 const cards = [
