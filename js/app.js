@@ -52,44 +52,80 @@ function expandCard(card, element) {
   const cardsContainer = document.querySelector(".cards-container");
 
   if (selected === card.id) {
-    // Expandir
     saludo.style.opacity = 0;
     cardsContainer.style.gap = "0";
     animate(cardsContainer, { opacity: [1, 0] }, { duration: 0.4 });
     body.style.backgroundColor = card.color;
 
-    // Esperar a que se desvanezcan las otras y expandir la seleccionada
+    // Esperar animación
     setTimeout(() => {
       app.innerHTML = "";
 
+      // Bloque expandido inicial
       const expanded = document.createElement("div");
       expanded.className = "card";
       expanded.style.backgroundColor = card.color;
       expanded.style.height = "100dvh";
       expanded.style.borderRadius = "0";
+      expanded.style.display = "flex";
+      expanded.style.flexDirection = "column";
+      expanded.style.justifyContent = "center";
+      expanded.style.alignItems = "center";
+
       expanded.innerHTML = `
         <h2 style="font-size:2rem; font-weight:700; margin-top:2rem;">${card.title}</h2>
-        <div class="content-expanded">${card.content}</div>
-        <button id="backBtn" style="
-          margin-top:2rem; 
-          background-color:white; 
-          padding:0.75rem 1.5rem; 
-          border-radius:12px; 
-          font-weight:600;
-          box-shadow:0 2px 10px rgba(0,0,0,0.1);
-        ">Volver</button>
       `;
-
       app.appendChild(expanded);
 
       animate(expanded, { scale: [0.9, 1], opacity: [0, 1] }, { duration: 0.6, easing: "ease-out" });
 
-      document.getElementById("backBtn").addEventListener("click", () => {
-        selected = null;
-        saludo.style.opacity = 1;
+      // Segunda fase: retraer hacia arriba
+      setTimeout(() => {
+        animate(
+          expanded,
+          { height: ["100dvh", "5rem"], borderRadius: ["0", "0 0 20px 20px"] },
+          { duration: 0.6, easing: "ease-in-out" }
+        );
+
+        expanded.style.justifyContent = "center";
+        expanded.style.alignItems = "flex-start";
+        expanded.style.paddingLeft = "1.5rem";
+
+        // Añadir contenido blanco debajo
+        const content = document.createElement("div");
+        content.style.backgroundColor = "#fff";
+        content.style.flex = "1";
+        content.style.padding = "2rem";
+        content.style.color = "#333";
+        content.style.overflowY = "auto";
+        content.innerHTML = `
+          <p style="font-size:1.1rem; line-height:1.6;">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras non eros ac urna pulvinar aliquet.
+            Praesent eget libero a sapien ultrices imperdiet. Nullam id augue a nisi luctus tempor.
+            Duis et lorem nec erat tempor ultricies sed a augue. Sed vel enim eu mi bibendum dignissim.
+          </p>
+          <button id="backBtn" style="
+            margin-top:2rem; 
+            background-color:${card.color};
+            padding:0.75rem 1.5rem; 
+            border-radius:12px; 
+            font-weight:600;
+            box-shadow:0 2px 10px rgba(0,0,0,0.1);
+          ">Volver</button>
+        `;
+
+        // Insertar el contenido debajo del bloque superior
         body.style.backgroundColor = "#fff";
-        render();
-      });
+        app.appendChild(content);
+
+        // Evento para volver atrás
+        document.getElementById("backBtn").addEventListener("click", () => {
+          selected = null;
+          saludo.style.opacity = 1;
+          body.style.backgroundColor = "#fff";
+          render();
+        });
+      }, 1000);
     }, 400);
   }
 }
