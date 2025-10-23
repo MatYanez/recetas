@@ -8,7 +8,10 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Fuente SF Pro Display -->
+  <!-- Framer Motion -->
+  <script src="https://cdn.jsdelivr.net/npm/framer-motion@11.0.0/dist/framer-motion.umd.js"></script>
+
+  <!-- SF Pro Display -->
   <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
 
   <style>
@@ -17,81 +20,101 @@
       background-color: #fff;
       height: 100dvh;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
 
     .card {
       border-radius: 20px;
+      width: 90%;
+      text-align: center;
+      padding: 2rem;
+      font-weight: 600;
+      font-size: 1.75rem;
+      margin: 0.75rem 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transition: box-shadow 0.25s ease;
     }
 
-    @media (max-width: 768px) {
-      .card {
-        width: 100vw !important;
-      }
-      .margen-card {
-        padding-top: 1.5rem;
-        padding-bottom: 1.5rem;
-        margin: 0.5rem  0rem;
-      }
-      .position-movil {
-        position: absolute;
-      }
-      .text-2xl {
-    font-size: 3rem;
-    line-height: 2.5rem;
-    padding-left: 1rem;
-}
-.text-5xl {
-    font-size: 4rem;
+    .card:hover {
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
 
-}
+    .section-content {
+      padding: 1.5rem;
+      text-align: left;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 
-<body class="flex flex-col md:flex-row h-full text-gray-900">
+<body>
+  <div id="app"></div>
 
-  <!-- SECCIÓN IZQUIERDA -->
-  <div class="w-full md:w-1/2 flex flex-col justify-between md:p-16">
-    <div class="p-8">
-      <h1 class="text-5xl md:text-7xl font-bold leading-tight">
-        Hola, <span class="text-gray-400">Matías</span>
-      </h1>
-      <p class="text-lg text-gray-500 mt-4 max-w-sm">
-        Bienvenido a mi proyecto personal de comidas.
-      </p>
-    </div>
+  <script>
+    const { motion, AnimatePresence } = window.framerMotion;
 
-    <!-- Bloques (solo visible en móvil) -->
-    <div class="flex flex-col items-center justify-end md:hidden h-full position-movil">
-      <div class="card bg-pink-100 margen-card text-center font-semibold text-2xl w-full">
-Calendario
-      </div>
-      <div class="card bg-blue-100 margen-card text-center font-semibold text-2xl w-full">
-Almuerzos
-      </div>
-      <div class="card bg-green-100 margen-card text-center font-semibold text-2xl w-full">
- Compras
-      </div>
-    </div>
-  </div>
+    const app = document.getElementById('app');
 
-  <!-- SECCIÓN DERECHA (solo visible en desktop) -->
-  <div class="hidden md:flex w-1/2 flex-col justify-end bg-gray-50 p-10">
-    <div class="flex flex-col items-center justify-end h-full relative">
-      <!-- Grande (abajo) -->
-      <div class="card bg-pink-100 w-3/4 text-center font-semibold text-2xl py-24">
-Calendario
-      </div>
-      <!-- Mediano -->
-      <div class="card bg-blue-100 w-3/4 text-center font-semibold text-2xl py-20 mt-[-6rem]">
-        Almuerzos 
-      </div>
-      <!-- Pequeño (arriba) -->
-      <div class="card bg-green-100 w-3/4 text-center font-semibold text-2xl py-16 mt-[-6rem]">
-Compras
-      </div>
-    </div>
-  </div>
+    const cards = [
+      { id: 'calendario', color: 'bg-pink-100', title: 'Calendario', content: 'Aquí aparecerá tu calendario semanal con comidas planificadas.' },
+      { id: 'almuerzos', color: 'bg-blue-100', title: 'Almuerzos', content: 'Ideas, recetas y registros de tus almuerzos favoritos.' },
+      { id: 'compras', color: 'bg-green-100', title: 'Compras', content: 'Lista dinámica de compras según tus comidas planificadas.' }
+    ];
 
+    let selected = null;
+
+    function render() {
+      app.innerHTML = '';
+      cards.forEach((card, index) => {
+        const div = document.createElement('div');
+        div.id = card.id;
+
+        const isActive = selected === card.id;
+
+        const motionDiv = motion.div({
+          initial: { opacity: 0, y: 30 },
+          animate: {
+            opacity: isActive ? 1 : 1,
+            y: isActive ? -window.innerHeight / 2 + 150 : 0,
+            scale: isActive ? 1.05 : 1,
+            zIndex: isActive ? 10 : 1
+          },
+          exit: { opacity: 0 },
+          transition: { duration: 0.5, ease: 'easeInOut' }
+        });
+
+        motionDiv.className = `card ${card.color}`;
+        motionDiv.textContent = card.title;
+
+        motionDiv.style.opacity = selected && !isActive ? 0 : 1;
+        motionDiv.onclick = () => {
+          if (selected === card.id) selected = null;
+          else selected = card.id;
+          render();
+        };
+
+        div.appendChild(motionDiv);
+        app.appendChild(div);
+
+        // Si está activa, mostramos contenido
+        if (isActive) {
+          const content = document.createElement('div');
+          content.className = 'section-content';
+          content.innerHTML = `<p>${card.content}</p>`;
+          app.appendChild(content);
+        }
+      });
+    }
+
+    render();
+  </script>
 </body>
 </html>
