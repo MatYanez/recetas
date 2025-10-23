@@ -52,105 +52,91 @@ function render() {
 /* ---------- Expandir tarjeta ---------- */
 function expandCard(initialCard) {
   const body = document.body;
-  body.style.overflow = "hidden"; // ✅ bloquea scroll global
+  body.style.overflow = "hidden"; // bloquea scroll global
   header.style.display = "none";
 
-  animate(saludo, { opacity: [1, 0] }, { duration: 0.4 });
-  animate(app, { opacity: [1, 0] }, { duration: 0.4 });
+  animate(saludo, { opacity: [1, 0] }, { duration: 0.3 });
+  animate(app, { opacity: [1, 0] }, { duration: 0.3 });
 
   setTimeout(() => {
-    app.removeAttribute("style");
     app.innerHTML = "";
+
+    // --- Contenedor principal de vista ---
+    const view = document.createElement("div");
+    Object.assign(view.style, {
+      position: "fixed",
+      inset: "0",
+      backgroundColor: "#fff",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "space-between",
+      zIndex: "10",
+    });
+    document.body.appendChild(view);
 
     // --- Barra superior ---
     const topBar = document.createElement("div");
-    const content = document.createElement("div");
-
     Object.assign(topBar.style, {
       height: "5rem",
       width: "90%",
-      margin: "1rem auto 0 auto",
+      marginTop: "1rem",
       display: "flex",
       alignItems: "center",
       justifyContent: "flex-start",
       paddingLeft: "1.5rem",
       borderRadius: "20px",
-      boxShadow: "0 2px 15px rgba(0,0,0,0.08)",
+      boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
       transition: "background-color 0.3s ease",
+      backgroundColor: initialCard.color,
     });
+    view.appendChild(topBar);
 
-Object.assign(content.style, {
-  backgroundColor: "#fff",
-  color: "#333",
-  position: "absolute",       // ✅ saca del flujo
-  top: "6.5rem",              // deja espacio para topBar
-  left: "0",
-  right: "0",
-  bottom: "6.5rem",           // deja espacio para bottomBar
-  padding: "2rem",
-  overflow: "hidden",
-  transition: "opacity 0.3s ease",
-});
+    // --- Contenido central ---
+    const content = document.createElement("div");
+    Object.assign(content.style, {
+      flex: "1",
+      width: "100%",
+      overflow: "hidden",
+      padding: "2rem",
+      color: "#333",
+      textAlign: "left",
+      backgroundColor: "#fff",
+      position: "relative",
+    });
+    view.appendChild(content);
 
-
-    app.appendChild(topBar);
-    app.appendChild(content);
-
-    // --- Barra inferior flotante ---
+    // --- Barra inferior fija ---
     const bottomBar = document.createElement("div");
-Object.assign(bottomBar.style, {
-  position: "fixed",
-  bottom: "1rem",
-  width: "90%",
-  margin: "0 auto",        // ✅ centra correctamente
-  left: "0",
-  right: "0",              // asegura que esté centrado dentro del viewport
-  height: "4.5rem",
-  background: "rgba(255, 255, 255, 0.6)",
-  backdropFilter: "blur(12px)",
-  WebkitBackdropFilter: "blur(12px)",
-  display: "flex",
-  justifyContent: "space-around",
-  alignItems: "center",
-  borderRadius: "20px",
-  boxShadow: "0 -2px 20px rgba(0,0,0,0.15)",
-  zIndex: "50",
-  border: "1px solid rgba(255,255,255,0.4)",
-});
-
-    // --- Íconos SVG ---
+    Object.assign(bottomBar.style, {
+      position: "fixed",
+      bottom: "1rem",
+      left: "0",
+      right: "0",
+      width: "90%",
+      margin: "0 auto",
+      height: "4.5rem",
+      background: "rgba(255,255,255,0.6)",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+      display: "flex",
+      justifyContent: "space-around",
+      alignItems: "center",
+      borderRadius: "20px",
+      boxShadow: "0 -2px 20px rgba(0,0,0,0.15)",
+      border: "1px solid rgba(255,255,255,0.4)",
+      zIndex: "50",
+    });
     bottomBar.innerHTML = `
-      <button class="tab-item" data-id="home" title="Inicio">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="28" height="28">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 9.75L12 3l9 6.75M4.5 10.5V21h15V10.5" />
-        </svg>
-      </button>
-
-      <button class="tab-item" data-id="calendario" title="Calendario">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="28" height="28">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 8.25h18M4.5 21h15a1.5 1.5 0 001.5-1.5v-11a1.5 1.5 0 00-1.5-1.5h-15A1.5 1.5 0 003 8.25v11A1.5 1.5 0 004.5 21z" />
-        </svg>
-      </button>
-
-      <button class="tab-item" data-id="almuerzos" title="Almuerzos">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="28" height="28">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m-12 4.5V7.5a1.5 1.5 0 011.5-1.5h9a1.5 1.5 0 011.5 1.5v9a1.5 1.5 0 01-1.5 1.5h-9a1.5 1.5 0 01-1.5-1.5z" />
-        </svg>
-      </button>
-
-      <button class="tab-item" data-id="compras" title="Compras">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="28" height="28">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.5l1.5 14.25a1.5 1.5 0 001.5 1.5h10.5a1.5 1.5 0 001.5-1.5L20.25 3h1.5M8.25 9h7.5M8.25 12h7.5M8.25 15h7.5" />
-        </svg>
-      </button>
-
+      <button class="tab-item" data-id="home">🏠</button>
+      <button class="tab-item" data-id="calendario">📅</button>
+      <button class="tab-item" data-id="almuerzos">🍽️</button>
+      <button class="tab-item" data-id="compras">🛒</button>
       <div id="indicator"></div>
     `;
-
     document.body.appendChild(bottomBar);
-    animate(bottomBar, { y: ["100%", "0%"], opacity: [0, 1] }, { duration: 0.6 });
 
-    // --- Indicador cuadrado ---
+    // --- Indicador ---
     const indicator = bottomBar.querySelector("#indicator");
     Object.assign(indicator.style, {
       position: "absolute",
@@ -160,31 +146,26 @@ Object.assign(bottomBar.style, {
       height: "46px",
       backgroundColor: "rgb(237 237 237)",
       borderRadius: "12px",
-      transition: "left 0.3s ease, transform 0.3s ease",
+      transition: "left 0.3s ease",
       zIndex: "-1",
     });
 
     const items = bottomBar.querySelectorAll(".tab-item");
-
-    function moveIndicatorTo(el) {
+    const moveIndicatorTo = (el) => {
       const rect = el.getBoundingClientRect();
       const center = rect.left + rect.width / 2;
       indicator.style.left = `${center - 23}px`;
-    }
+    };
 
-    // --- Actualizar vista ---
+    // --- función de actualización de vista ---
     function updateView(sectionId) {
       const section = cards.find((c) => c.id === sectionId);
-
       if (!section) {
-        // Volver al home
-        selected = null;
-        body.style.overflow = "auto"; // ✅ vuelve a activar scroll global
-        animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 }).finished.then(() => bottomBar.remove());
+        body.style.overflow = "auto";
+        bottomBar.remove();
+        view.remove();
         header.style.display = "block";
-        saludo.removeAttribute("style");
-        animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
-        body.style.backgroundColor = "#fff";
+        animate(saludo, { opacity: [0, 1] }, { duration: 0.4 });
         render();
         return;
       }
@@ -192,42 +173,35 @@ Object.assign(bottomBar.style, {
       topBar.style.backgroundColor = section.color;
       topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${section.title}</h2>`;
 
-// Detectar dirección del swipe (izquierda/derecha)
-const order = ["home", "calendario", "almuerzos", "compras"];
-const currentIndex = order.indexOf(sectionId);
-const previousIndex = order.indexOf(selected);
-const direction = currentIndex > previousIndex ? 1 : -1;
-selected = sectionId;
+      // swipe lateral controlado sin layout shift
+      const order = ["home", "calendario", "almuerzos", "compras"];
+      const currentIndex = order.indexOf(sectionId);
+      const previousIndex = order.indexOf(selected);
+      const direction = currentIndex > previousIndex ? 1 : -1;
+      selected = sectionId;
 
-// Animación estable sin empujar layout
-animate(content, { opacity: [1, 0], x: [0, -30 * direction] }, { duration: 0.2 }).finished.then(() => {
-  content.innerHTML = `
-    <p style="font-size:1.1rem; line-height:1.6;">
-      ${section.content}
-    </p>
-    <button id="backBtn" style="
-      margin-top:2rem;
-      background-color:${section.color};
-      padding:0.75rem 1.5rem;
-      border-radius:12px;
-      font-weight:600;
-      box-shadow:0 2px 10px rgba(0,0,0,0.1);
-    ">Volver</button>
-  `;
-
-  // Fuerza reflow y animación de entrada
-  content.getBoundingClientRect();
-  animate(content, { opacity: [0, 1], x: [30 * direction, 0] }, { duration: 0.3, easing: "ease-out" });
-
-  document.getElementById("backBtn").addEventListener("click", () => {
-    updateView("home");
-  });
-});
+      animate(content, { opacity: [1, 0], x: [0, -40 * direction] }, { duration: 0.25 }).finished.then(() => {
+        content.innerHTML = `
+          <p style="font-size:1.1rem; line-height:1.6;">
+            ${section.content}
+          </p>
+          <button id="backBtn" style="
+            margin-top:2rem;
+            background-color:${section.color};
+            padding:0.75rem 1.5rem;
+            border-radius:12px;
+            font-weight:600;
+            box-shadow:0 2px 10px rgba(0,0,0,0.1);
+          ">Volver</button>
+        `;
+        animate(content, { opacity: [0, 1], x: [40 * direction, 0] }, { duration: 0.3, easing: "ease-out" });
+        document.getElementById("backBtn").addEventListener("click", () => updateView("home"));
+      });
 
       moveIndicatorTo([...items].find((b) => b.dataset.id === sectionId));
-      content.scrollTo({ top: 0, behavior: "instant" });
     }
-animate(bottomBar, { y: [0, 0] }, { duration: 0.01 });
+
+    // --- inicializar vista ---
     updateView(initialCard.id);
     setTimeout(() => moveIndicatorTo(items[0]), 50);
 
@@ -239,8 +213,9 @@ animate(bottomBar, { y: [0, 0] }, { duration: 0.01 });
         updateView(btn.dataset.id);
       });
     });
-  }, 400);
+  }, 300);
 }
+
 
 /* ---------- Inicio ---------- */
 render();
