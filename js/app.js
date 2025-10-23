@@ -138,25 +138,33 @@ function expandCard(initialCard) {
 
     // --- Indicador ---
     const indicator = bottomBar.querySelector("#indicator");
-    Object.assign(indicator.style, {
-      position: "absolute",
-      top: "50%",
-      transform: "translateY(-50%)",
-      width: "46px",
-      height: "46px",
-      backgroundColor: "rgb(237 237 237)",
-      borderRadius: "12px",
-      transition: "left 0.3s ease",
-      zIndex: "-1",
-    });
+Object.assign(indicator.style, {
+  position: "absolute",
+  top: "50%",
+  transform: "translateY(-50%)",
+  width: "46px",
+  height: "46px",
+  backgroundColor: "rgb(237 237 237)",
+  borderRadius: "12px",
+  transition: "left 0.25s ease, transform 0.3s ease",
+  zIndex: "-1",
+});
+
 
     const items = bottomBar.querySelectorAll(".tab-item");
-    const moveIndicatorTo = (el) => {
-      const rect = el.getBoundingClientRect();
-      const center = rect.left + rect.width / 2;
-      indicator.style.left = `${center - 23}px`;
-    };
 
+    function moveIndicatorTo(el) {
+  const barRect = bottomBar.getBoundingClientRect();
+  const btnRect = el.getBoundingClientRect();
+
+  // centro del botón dentro del bottomBar
+  const center = btnRect.left - barRect.left + btnRect.width / 2;
+
+  // resta la mitad del tamaño del cuadrado (46 / 2)
+  indicator.style.left = `${center - 23}px`;
+}
+
+    
     // --- función de actualización de vista ---
     function updateView(sectionId) {
       const section = cards.find((c) => c.id === sectionId);
