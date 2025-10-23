@@ -198,7 +198,117 @@ function updateView(sectionId) {
   animate(content, { opacity: [1, 0], x: [0, -40 * direction] }, { duration: 0.25 }).finished.then(() => {
 
    // --- ALMUERZOS ---
-else if (sectionId === "almuerzos") {
+
+
+
+
+    // --- CALENDARIO ---
+    if (sectionId === "calendario") {
+      const today = new Date();
+      const monthName = today.toLocaleString("es-ES", { month: "long", year: "numeric" });
+      const year = today.getFullYear();
+      const month = today.getMonth();
+
+      // generar los días del mes (solo L–V)
+      const days = [];
+      const date = new Date(year, month, 1);
+      while (date.getMonth() === month) {
+        const day = date.getDay(); // 0=domingo, 1=lunes...
+        if (day >= 1 && day <= 5) days.push(new Date(date));
+        date.setDate(date.getDate() + 1);
+      }
+
+      content.innerHTML = `
+        <div style="display:flex; flex-direction:column; width:100%;">
+          <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:1rem; text-transform:capitalize;">
+            ${monthName}
+          </h2>
+
+          <div class="scroll-cal" style="
+            overflow-x:auto;
+            white-space:nowrap;
+            scroll-behavior:smooth;
+            padding-bottom:1rem;
+          ">
+            <div style="display:inline-flex; flex-direction:column;">
+              <!-- Encabezado de días -->
+              <div style="display:flex; gap:1rem; justify-content:flex-start; margin-bottom:0.5rem;">
+                ${days.map(d => {
+                  const initials = ["D","L","M","X","J","V","S"];
+                  return `<div style="min-width:50px; text-align:center; font-weight:600;">
+                    ${initials[d.getDay()]}
+                  </div>`;
+                }).join("")}
+              </div>
+              <!-- Números -->
+              <div style="display:flex; gap:1rem; justify-content:flex-start;">
+                ${days.map(d => {
+                  const todayClass = (d.toDateString() === new Date().toDateString())
+                    ? "background-color:#000; color:#fff; border-radius:12px;"
+                    : "";
+                  return `<div style="
+                    min-width:50px;
+                    height:50px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-weight:600;
+                    ${todayClass}">
+                    ${d.getDate()}
+                  </div>`;
+                }).join("")}
+              </div>
+            </div>
+</div>
+</div>
+
+<!-- Contenido dinámico: título + imagen -->
+<div style="
+  width:100%;
+  margin-top:1rem;
+  text-align:left;
+">
+  <h3 style="
+    font-size:2rem;
+    font-weight:700;
+    margin-bottom:0.75rem;
+    color:#222;
+        line-height: 1;
+  ">
+    Carne mongoliana con arroz
+  </h3>
+
+  <div style="
+    width:100%;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+  ">
+    <img src="https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg"
+      alt="Carne mongoliana con arroz"
+      style="width:100%; height:auto; display:block;">
+  </div>
+</div>
+      `;
+
+
+      
+
+      // Centrar semana actual al cargar
+      const scrollContainer = content.querySelector(".scroll-cal");
+      const todayIndex = days.findIndex(d => d.toDateString() === new Date().toDateString());
+      if (todayIndex !== -1) {
+        const scrollPos = todayIndex * 60 - 150;
+        scrollContainer.scrollTo({ left: scrollPos, behavior: "instant" });
+      }
+
+      // Bloquear swipe lateral mientras se hace scroll horizontal
+      scrollContainer.addEventListener("touchstart", () => (swipeEnabled = false));
+      scrollContainer.addEventListener("touchend", () => setTimeout(() => (swipeEnabled = true), 150));
+
+    } 
+    
+    else if (sectionId === "almuerzos") {
   const recipes = [
     {
       name: "Carne mongoliana con arroz",
@@ -296,110 +406,7 @@ else if (sectionId === "almuerzos") {
 }
 
 
-
-
-    // --- CALENDARIO ---
-    if (sectionId === "calendario") {
-      const today = new Date();
-      const monthName = today.toLocaleString("es-ES", { month: "long", year: "numeric" });
-      const year = today.getFullYear();
-      const month = today.getMonth();
-
-      // generar los días del mes (solo L–V)
-      const days = [];
-      const date = new Date(year, month, 1);
-      while (date.getMonth() === month) {
-        const day = date.getDay(); // 0=domingo, 1=lunes...
-        if (day >= 1 && day <= 5) days.push(new Date(date));
-        date.setDate(date.getDate() + 1);
-      }
-
-      content.innerHTML = `
-        <div style="display:flex; flex-direction:column; width:100%;">
-          <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:1rem; text-transform:capitalize;">
-            ${monthName}
-          </h2>
-
-          <div class="scroll-cal" style="
-            overflow-x:auto;
-            white-space:nowrap;
-            scroll-behavior:smooth;
-            padding-bottom:1rem;
-          ">
-            <div style="display:inline-flex; flex-direction:column;">
-              <!-- Encabezado de días -->
-              <div style="display:flex; gap:1rem; justify-content:flex-start; margin-bottom:0.5rem;">
-                ${days.map(d => {
-                  const initials = ["D","L","M","X","J","V","S"];
-                  return `<div style="min-width:50px; text-align:center; font-weight:600;">
-                    ${initials[d.getDay()]}
-                  </div>`;
-                }).join("")}
-              </div>
-              <!-- Números -->
-              <div style="display:flex; gap:1rem; justify-content:flex-start;">
-                ${days.map(d => {
-                  const todayClass = (d.toDateString() === new Date().toDateString())
-                    ? "background-color:#000; color:#fff; border-radius:12px;"
-                    : "";
-                  return `<div style="
-                    min-width:50px;
-                    height:50px;
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    font-weight:600;
-                    ${todayClass}">
-                    ${d.getDate()}
-                  </div>`;
-                }).join("")}
-              </div>
-            </div>
-</div>
-</div>
-
-<!-- Contenido dinámico: título + imagen -->
-<div style="
-  width:100%;
-  margin-top:1rem;
-  text-align:left;
-">
-  <h3 style="
-    font-size:2rem;
-    font-weight:700;
-    margin-bottom:0.75rem;
-    color:#222;
-        line-height: 1;
-  ">
-    Carne mongoliana con arroz
-  </h3>
-
-  <div style="
-    width:100%;
-    border-radius:20px;
-    overflow:hidden;
-    box-shadow:0 4px 15px rgba(0,0,0,0.1);
-  ">
-    <img src="https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg"
-      alt="Carne mongoliana con arroz"
-      style="width:100%; height:auto; display:block;">
-  </div>
-</div>
-      `;
-
-      // Centrar semana actual al cargar
-      const scrollContainer = content.querySelector(".scroll-cal");
-      const todayIndex = days.findIndex(d => d.toDateString() === new Date().toDateString());
-      if (todayIndex !== -1) {
-        const scrollPos = todayIndex * 60 - 150;
-        scrollContainer.scrollTo({ left: scrollPos, behavior: "instant" });
-      }
-
-      // Bloquear swipe lateral mientras se hace scroll horizontal
-      scrollContainer.addEventListener("touchstart", () => (swipeEnabled = false));
-      scrollContainer.addEventListener("touchend", () => setTimeout(() => (swipeEnabled = true), 150));
-
-    } else {
+    else {
       // --- CONTENIDO GENERAL ---
       content.innerHTML = `
         <p style="font-size:1.1rem; line-height:1.6;">
@@ -483,6 +490,7 @@ setTimeout(() => {
     });
   }, 300);
 }
+
 
 
 /* ---------- Inicio ---------- */
