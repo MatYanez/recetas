@@ -95,24 +95,25 @@ function expandCard(initialCard) {
 
     // --- Barra inferior flotante ---
     const bottomBar = document.createElement("div");
-    Object.assign(bottomBar.style, {
-      position: "fixed",
-      bottom: "1rem",
-      width: "90%",
-      left: "0",
-      right: "0",
-      margin: "0 auto",
-      height: "4.5rem",
-      background: "#f8f8f8",
-      display: "flex",
-      justifyContent: "space-around",
-      alignItems: "center",
-      borderRadius: "20px",
-      boxShadow: "0 -2px 15px rgba(0,0,0,0.1)",
-      zIndex: "50",
-      border: "1px solid #e5e5e5",
-      position: "fixed",
-    });
+Object.assign(bottomBar.style, {
+  position: "fixed",
+  bottom: "1rem",
+  width: "90%",
+  left: "0",
+  right: "0",
+  margin: "0 auto",
+  height: "4.5rem",
+  background: "rgba(255, 255, 255, 0.6)", // translúcido
+  backdropFilter: "blur(12px)",           // efecto frosted glass 🍎
+  WebkitBackdropFilter: "blur(12px)",     // compatibilidad Safari/iOS
+  display: "flex",
+  justifyContent: "space-around",
+  alignItems: "center",
+  borderRadius: "20px",
+  boxShadow: "0 -2px 20px rgba(0,0,0,0.15)",
+  zIndex: "50",
+  border: "1px solid rgba(255,255,255,0.4)",
+});
 
     // --- Íconos SVG planos (Heroicons Outline) ---
     bottomBar.innerHTML = `
@@ -187,26 +188,36 @@ function expandCard(initialCard) {
       topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${section.title}</h2>`;
       body.style.backgroundColor = section.color;
 
-      animate(content, { opacity: [1, 0] }, { duration: 0.2 }).finished.then(() => {
-        content.innerHTML = `
-          <p style="font-size:1.1rem; line-height:1.6;">
-            ${section.content}
-          </p>
-          <button id="backBtn" style="
-            margin-top:2rem;
-            background-color:${section.color};
-            padding:0.75rem 1.5rem;
-            border-radius:12px;
-            font-weight:600;
-            box-shadow:0 2px 10px rgba(0,0,0,0.1);
-          ">Volver</button>
-        `;
-        animate(content, { opacity: [0, 1] }, { duration: 0.3 });
+// Detectar dirección del swipe (izquierda/derecha) según el orden del menú
+const order = ["home", "calendario", "almuerzos", "compras"];
+const currentIndex = order.indexOf(sectionId);
+const previousIndex = order.indexOf(selected);
+const direction = currentIndex > previousIndex ? 1 : -1;
+selected = sectionId;
 
-        document.getElementById("backBtn").addEventListener("click", () => {
-          updateView("home");
-        });
-      });
+// Salida lateral
+animate(content, { opacity: [1, 0], x: [0, -50 * direction] }, { duration: 0.25 }).finished.then(() => {
+  content.innerHTML = `
+    <p style="font-size:1.1rem; line-height:1.6;">
+      ${section.content}
+    </p>
+    <button id="backBtn" style="
+      margin-top:2rem;
+      background-color:${section.color};
+      padding:0.75rem 1.5rem;
+      border-radius:12px;
+      font-weight:600;
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    ">Volver</button>
+  `;
+  // Entrada lateral opuesta
+  animate(content, { opacity: [0, 1], x: [50 * direction, 0] }, { duration: 0.35, easing: "ease-out" });
+
+  document.getElementById("backBtn").addEventListener("click", () => {
+    updateView("home");
+  });
+});
+
 
       moveIndicatorTo([...items].find((b) => b.dataset.id === sectionId));
     }
