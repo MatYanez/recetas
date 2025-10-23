@@ -3,19 +3,19 @@ import { animate, stagger } from "https://cdn.jsdelivr.net/npm/@motionone/dom/+e
 const cards = [
   {
     id: "calendario",
-    color: "#fce7f3", // bg-pink-100
+    color: "#fce7f3",
     title: "Calendario",
     content: "Aquí puedes planificar tus comidas semanales de manera visual y ordenada."
   },
   {
     id: "almuerzos",
-    color: "#dbeafe", // bg-blue-100
+    color: "#dbeafe",
     title: "Almuerzos",
     content: "Encuentra ideas rápidas y saludables para tus almuerzos diarios."
   },
   {
     id: "compras",
-    color: "#dcfce7", // bg-green-100
+    color: "#dcfce7",
     title: "Compras",
     content: "Tu lista dinámica de compras basada en tu planificación semanal."
   }
@@ -25,9 +25,11 @@ const app = document.getElementById("app");
 const saludo = document.getElementById("saludo");
 let selected = null;
 
+/* ---------- Dibuja las tarjetas iniciales ---------- */
 function render() {
+  // siempre visible al iniciar
+  app.removeAttribute("style");
   app.innerHTML = "";
-  app.style.opacity = "1";
 
   cards.forEach((card) => {
     const div = document.createElement("div");
@@ -36,101 +38,90 @@ function render() {
     div.textContent = card.title;
 
     div.addEventListener("click", () => {
-      selected = selected === card.id ? null : card.id;
-      expandCard(card, div);
+      selected = card.id;
+      expandCard(card);
     });
 
     app.appendChild(div);
   });
 
-  // Animación inicial
+  // animación de aparición
   const allCards = document.querySelectorAll(".card");
-  animate(allCards, { opacity: [0, 1], y: [50, 0] }, { duration: 0.5, delay: stagger(0.1) });
+  animate(allCards, { opacity: [0, 1], y: [40, 0] }, { duration: 0.6, delay: stagger(0.1) });
 }
 
-function expandCard(card, element) {
+/* ---------- Expande la tarjeta seleccionada ---------- */
+function expandCard(card) {
   const body = document.body;
-  const cardsContainer = document.querySelector(".cards-container");
 
-  if (selected === card.id) {
-    // 1️⃣ Desvanecer saludo y tarjetas
-    animate(saludo, { opacity: [1, 0] }, { duration: 0.4 });
-    animate(cardsContainer, { opacity: [1, 0] }, { duration: 0.4 });
-    body.style.backgroundColor = card.color;
+  // Desvanece saludo y tarjetas
+  animate(saludo, { opacity: [1, 0] }, { duration: 0.4 });
+  animate(app, { opacity: [1, 0] }, { duration: 0.4 });
 
-    // Espera el fade-out
-    setTimeout(() => {
-      app.innerHTML = "";
+  // tras el fade, construye la vista de detalle
+  setTimeout(() => {
+    app.removeAttribute("style"); // limpia estilos de animaciones previas
+    app.innerHTML = "";
 
-      // 2️⃣ Crear bloque superior
-      const topBar = document.createElement("div");
-      topBar.style.backgroundColor = card.color;
-      topBar.style.height = "5rem";
-      topBar.style.width = "100%";
-      topBar.style.display = "flex";
-      topBar.style.alignItems = "center";
-      topBar.style.justifyContent = "flex-start";
-      topBar.style.paddingLeft = "1.5rem";
-      topBar.style.borderBottomLeftRadius = "20px";
-      topBar.style.borderBottomRightRadius = "20px";
-      topBar.style.boxShadow = "0 2px 10px rgba(0,0,0,0.1)";
-      topBar.innerHTML = `
-        <h2 style="font-size:1.5rem; font-weight:700;">${card.title}</h2>
-      `;
+    // barra superior de color
+    const topBar = document.createElement("div");
+    Object.assign(topBar.style, {
+      backgroundColor: card.color,
+      height: "5rem",
+      width: "100%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-start",
+      paddingLeft: "1.5rem",
+      borderBottomLeftRadius: "20px",
+      borderBottomRightRadius: "20px",
+      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    });
+    topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${card.title}</h2>`;
 
-      // 3️⃣ Contenido blanco con texto
-      const content = document.createElement("div");
-      content.style.backgroundColor = "#fff";
-      content.style.flex = "1";
-      content.style.padding = "2rem";
-      content.style.color = "#333";
-      content.style.height = "calc(100dvh - 5rem)";
-      content.style.overflowY = "auto";
-      content.innerHTML = `
-        <p style="font-size:1.1rem; line-height:1.6;">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras non eros ac urna pulvinar aliquet.
-          Praesent eget libero a sapien ultrices imperdiet. Nullam id augue a nisi luctus tempor.
-          Duis et lorem nec erat tempor ultricies sed a augue. Sed vel enim eu mi bibendum dignissim.
-        </p>
-        <button id="backBtn" style="
-          margin-top:2rem; 
-          background-color:${card.color};
-          padding:0.75rem 1.5rem; 
-          border-radius:12px; 
-          font-weight:600;
-          box-shadow:0 2px 10px rgba(0,0,0,0.1);
-        ">Volver</button>
-      `;
+    // contenido blanco con texto y botón
+    const content = document.createElement("div");
+    Object.assign(content.style, {
+      backgroundColor: "#fff",
+      flex: "1",
+      padding: "2rem",
+      color: "#333",
+      height: "calc(100dvh - 5rem)",
+      overflowY: "auto",
+    });
+    content.innerHTML = `
+      <p style="font-size:1.1rem;line-height:1.6;">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras non eros ac urna pulvinar aliquet.
+        Praesent eget libero a sapien ultrices imperdiet. Nullam id augue a nisi luctus tempor.
+        Duis et lorem nec erat tempor ultricies sed a augue. Sed vel enim eu mi bibendum dignissim.
+      </p>
+      <button id="backBtn" style="
+        margin-top:2rem;
+        background-color:${card.color};
+        padding:0.75rem 1.5rem;
+        border-radius:12px;
+        font-weight:600;
+        box-shadow:0 2px 10px rgba(0,0,0,0.1);
+      ">Volver</button>
+    `;
 
-      // 4️⃣ Insertar elementos
-      body.style.backgroundColor = "#fff";
-      app.innerHTML = "";
-      app.appendChild(topBar);
-      app.appendChild(content);
+    app.appendChild(topBar);
+    app.appendChild(content);
 
-      // 👇 fuerza la visibilidad del contenedor
-      app.style.opacity = "1";
+    // anima la entrada de los nuevos bloques
+    animate(topBar, { y: ["-100%", "0%"], opacity: [0, 1] }, { duration: 0.6 });
+    animate(content, { opacity: [0, 1], y: [30, 0] }, { duration: 0.8, delay: 0.2 });
 
-      // 5️⃣ Animaciones de entrada
-      animate(topBar, { y: ["-100%", "0%"], opacity: [0, 1] }, { duration: 0.6, easing: "ease-out" });
-      animate(content, { opacity: [0, 1], y: [30, 0] }, { duration: 0.8, delay: 0.2 });
-
-      // 6️⃣ Botón volver
+    // botón volver
     document.getElementById("backBtn").addEventListener("click", () => {
-  selected = null;
-  body.style.backgroundColor = "#fff";
-
-  saludo.removeAttribute("style");
-  app.removeAttribute("style"); // 👈 limpia opacidad o transform previos
-  animate(saludo, { opacity: [0, 1] }, { duration: 0.5, easing: "ease-out" });
-
-  render();
-});
-
-      });
-    }, 400);
-  }
+      selected = null;
+      body.style.backgroundColor = "#fff";
+      saludo.removeAttribute("style");
+      animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
+      render();
+    });
+  }, 400);
 }
 
-
+/* ---------- Inicio ---------- */
 render();
