@@ -26,9 +26,8 @@ const app = document.getElementById("app");
 const saludo = document.getElementById("saludo");
 let selected = null;
 
-/* ---------- Dibuja las tarjetas iniciales ---------- */
+/* ---------- Render inicial ---------- */
 function render() {
-  // siempre visible al iniciar
   app.removeAttribute("style");
   app.innerHTML = "";
 
@@ -46,14 +45,14 @@ function render() {
     app.appendChild(div);
   });
 
-  // animación de aparición
   const allCards = document.querySelectorAll(".card");
   animate(allCards, { opacity: [0, 1], y: [40, 0] }, { duration: 0.6, delay: stagger(0.1) });
 }
 
-/* ---------- Expande la tarjeta seleccionada ---------- */
+/* ---------- Expandir tarjeta ---------- */
 function expandCard(initialCard) {
   const body = document.body;
+  body.style.overflow = "hidden"; // ✅ bloquea scroll global
   header.style.display = "none";
 
   animate(saludo, { opacity: [1, 0] }, { duration: 0.4 });
@@ -85,10 +84,9 @@ function expandCard(initialCard) {
       flex: "1",
       padding: "2rem",
       color: "#333",
-flex: "1",
-height: "calc(100dvh - 11rem)",
-overflowY: "hidden",  // 👈 no permite scroll interno
-position: "relative",
+      height: "calc(100dvh - 11rem)",
+      overflow: "hidden",  // ✅ no scroll interno
+      position: "relative",
       transition: "opacity 0.3s ease",
     });
 
@@ -97,25 +95,26 @@ position: "relative",
 
     // --- Barra inferior flotante ---
     const bottomBar = document.createElement("div");
-Object.assign(bottomBar.style, {
-bottom: "1rem",
-left: "50%",
-transform: "translateX(-50%)",
-width: "90%",
-height: "4.5rem",
-  background: "rgba(255, 255, 255, 0.6)", // translúcido
-  backdropFilter: "blur(12px)",           // efecto frosted glass 🍎
-  WebkitBackdropFilter: "blur(12px)",     // compatibilidad Safari/iOS
-  display: "flex",
-  justifyContent: "space-around",
-  alignItems: "center",
-  borderRadius: "20px",
-  boxShadow: "0 -2px 20px rgba(0,0,0,0.15)",
-  zIndex: "50",
-  border: "1px solid rgba(255,255,255,0.4)",
-});
+    Object.assign(bottomBar.style, {
+      position: "fixed",
+      bottom: "1rem",
+      left: "50%",
+      transform: "translateX(-50%)",
+      width: "90%",
+      height: "4.5rem",
+      background: "rgba(255, 255, 255, 0.6)",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+      display: "flex",
+      justifyContent: "space-around",
+      alignItems: "center",
+      borderRadius: "20px",
+      boxShadow: "0 -2px 20px rgba(0,0,0,0.15)",
+      zIndex: "50",
+      border: "1px solid rgba(255,255,255,0.4)",
+    });
 
-    // --- Íconos SVG planos (Heroicons Outline) ---
+    // --- Íconos SVG ---
     bottomBar.innerHTML = `
       <button class="tab-item" data-id="home" title="Inicio">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="28" height="28">
@@ -147,37 +146,36 @@ height: "4.5rem",
     document.body.appendChild(bottomBar);
     animate(bottomBar, { y: ["100%", "0%"], opacity: [0, 1] }, { duration: 0.6 });
 
-    // --- Fondo indicador (ya no línea) ---
+    // --- Indicador cuadrado ---
     const indicator = bottomBar.querySelector("#indicator");
-Object.assign(indicator.style, {
-  position: "absolute",
-  top: "50%",
-  transform: "translateY(-50%)",
-  width: "46px",
-  height: "46px",
-  backgroundColor: "rgb(237 237 237)",
-  borderRadius: "12px",
-  transition: "left 0.3s ease, transform 0.3s ease",
-  zIndex: "-1", // 👈 debajo de los íconos, visible pero no tapa
-});
-
-
+    Object.assign(indicator.style, {
+      position: "absolute",
+      top: "50%",
+      transform: "translateY(-50%)",
+      width: "46px",
+      height: "46px",
+      backgroundColor: "rgb(237 237 237)",
+      borderRadius: "12px",
+      transition: "left 0.3s ease, transform 0.3s ease",
+      zIndex: "-1",
+    });
 
     const items = bottomBar.querySelectorAll(".tab-item");
 
-function moveIndicatorTo(el) {
-  const rect = el.getBoundingClientRect();
-  const center = rect.left + rect.width / 2;
-  indicator.style.left = `${center - 23}px`;
-}
+    function moveIndicatorTo(el) {
+      const rect = el.getBoundingClientRect();
+      const center = rect.left + rect.width / 2;
+      indicator.style.left = `${center - 23}px`;
+    }
 
-    // --- Actualizar vista según sección ---
+    // --- Actualizar vista ---
     function updateView(sectionId) {
       const section = cards.find((c) => c.id === sectionId);
 
       if (!section) {
-        // Home
+        // Volver al home
         selected = null;
+        body.style.overflow = "auto"; // ✅ vuelve a activar scroll global
         animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 }).finished.then(() => bottomBar.remove());
         header.style.display = "block";
         saludo.removeAttribute("style");
@@ -191,42 +189,38 @@ function moveIndicatorTo(el) {
       topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${section.title}</h2>`;
       body.style.backgroundColor = section.color;
 
-// Detectar dirección del swipe (izquierda/derecha) según el orden del menú
-const order = ["home", "calendario", "almuerzos", "compras"];
-const currentIndex = order.indexOf(sectionId);
-const previousIndex = order.indexOf(selected);
-const direction = currentIndex > previousIndex ? 1 : -1;
-selected = sectionId;
+      // --- swipe lateral entre tabs ---
+      const order = ["home", "calendario", "almuerzos", "compras"];
+      const currentIndex = order.indexOf(sectionId);
+      const previousIndex = order.indexOf(selected);
+      const direction = currentIndex > previousIndex ? 1 : -1;
+      selected = sectionId;
 
-// Salida lateral
-animate(content, { opacity: [1, 0], x: [0, -50 * direction] }, { duration: 0.25 }).finished.then(() => {
-  content.innerHTML = `
-    <p style="font-size:1.1rem; line-height:1.6;">
-      ${section.content}
-    </p>
-    <button id="backBtn" style="
-      margin-top:2rem;
-      background-color:${section.color};
-      padding:0.75rem 1.5rem;
-      border-radius:12px;
-      font-weight:600;
-      box-shadow:0 2px 10px rgba(0,0,0,0.1);
-    ">Volver</button>
-  `;
-  // Entrada lateral opuesta
-  animate(content, { opacity: [0, 1], x: [50 * direction, 0] }, { duration: 0.35, easing: "ease-out" });
+      animate(content, { opacity: [1, 0], x: [0, -50 * direction] }, { duration: 0.25 }).finished.then(() => {
+        content.innerHTML = `
+          <p style="font-size:1.1rem; line-height:1.6;">
+            ${section.content}
+          </p>
+          <button id="backBtn" style="
+            margin-top:2rem;
+            background-color:${section.color};
+            padding:0.75rem 1.5rem;
+            border-radius:12px;
+            font-weight:600;
+            box-shadow:0 2px 10px rgba(0,0,0,0.1);
+          ">Volver</button>
+        `;
 
-  document.getElementById("backBtn").addEventListener("click", () => {
-    updateView("home");
-  });
-});
-
+        animate(content, { opacity: [0, 1], x: [50 * direction, 0] }, { duration: 0.35, easing: "ease-out" });
+        document.getElementById("backBtn").addEventListener("click", () => {
+          updateView("home");
+        });
+      });
 
       moveIndicatorTo([...items].find((b) => b.dataset.id === sectionId));
       content.scrollTo({ top: 0, behavior: "instant" });
     }
 
-    // Inicializar
     updateView(initialCard.id);
     setTimeout(() => moveIndicatorTo(items[0]), 50);
 
@@ -240,8 +234,6 @@ animate(content, { opacity: [1, 0], x: [0, -50 * direction] }, { duration: 0.25 
     });
   }, 400);
 }
-
-
 
 /* ---------- Inicio ---------- */
 render();
