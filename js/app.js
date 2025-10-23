@@ -308,7 +308,7 @@ function updateView(sectionId) {
 
     } 
     
-    else if (sectionId === "almuerzos") {
+else if (sectionId === "almuerzos") {
   const recipes = [
     {
       name: "Carne mongoliana con arroz",
@@ -360,15 +360,44 @@ function updateView(sectionId) {
     }
   ];
 
-  // render de grilla
+  // --- HTML del buscador + grilla ---
   content.innerHTML = `
+    <!-- Buscador -->
     <div style="
+      width:100%;
+      display:flex;
+      align-items:center;
+      gap:0.5rem;
+      background:#f3f4f6;
+      border-radius:14px;
+      padding:0.6rem 1rem;
+      margin-bottom:1rem;
+      box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    ">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+        style="width:20px;height:20px;color:#888;">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M21 21l-4.35-4.35m1.6-5.4a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input id="searchInput" type="text" placeholder="Buscar almuerzo..."
+        style="
+          width:100%;
+          border:none;
+          background:transparent;
+          outline:none;
+          font-size:1rem;
+          color:#333;
+        ">
+    </div>
+
+    <!-- Grilla de recetas -->
+    <div id="recipesGrid" style="
       display:grid;
       grid-template-columns:repeat(2, 1fr);
       gap:1rem;
       padding-bottom:2rem;
       overflow-y:auto;
-      height:100%;
+      height:calc(100% - 60px);
     ">
       ${recipes.map(r => `
         <div style="
@@ -379,39 +408,38 @@ function updateView(sectionId) {
           display:flex;
           flex-direction:column;
         ">
-<div style="
-  width:100%;
-  height:180px;               /* 👈 altura fija */
-  overflow:hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background-color:#f9f9f9;   /* 👈 por si la imagen tarda en cargar */
-">
-  <img src="${r.img}" alt="${r.name}" style="
-    width:100%;
-    height:100%;
-    object-fit:cover;          /* 👈 recorta y rellena perfectamente */
-    display:block;
-  ">
-</div>
+          <div style="
+            width:100%;
+            height:180px;
+            overflow:hidden;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background-color:#f9f9f9;
+          ">
+            <img src="${r.img}" alt="${r.name}" style="
+              width:100%;
+              height:100%;
+              object-fit:cover;
+              display:block;
+            ">
+          </div>
           <div style="padding:0.75rem 0.75rem 1rem 0.75rem;">
-<h3 style="
-  font-size:1rem;
-  font-weight:700;
-  color:#222;
-  margin-bottom:0.5rem;
-  height:2.4rem;              /* 👈 altura fija del bloque de título */
-  line-height:1.2rem;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  display:-webkit-box;
-  -webkit-line-clamp:2;       /* 👈 máximo 2 líneas visibles */
-  -webkit-box-orient:vertical;
-">
-  ${r.name}
-</h3>
-
+            <h3 style="
+              font-size:1rem;
+              font-weight:700;
+              color:#222;
+              margin-bottom:0.5rem;
+              height:2.4rem;
+              line-height:1.2rem;
+              overflow:hidden;
+              text-overflow:ellipsis;
+              display:-webkit-box;
+              -webkit-line-clamp:2;
+              -webkit-box-orient:vertical;
+            ">
+              ${r.name}
+            </h3>
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <span style="
                 font-size:0.8rem;
@@ -427,7 +455,71 @@ function updateView(sectionId) {
       `).join("")}
     </div>
   `;
+
+  // --- Búsqueda dinámica ---
+  const searchInput = content.querySelector("#searchInput");
+  const recipesGrid = content.querySelector("#recipesGrid");
+
+  searchInput.addEventListener("input", (e) => {
+    const query = e.target.value.toLowerCase();
+    const filtered = recipes.filter(r => r.name.toLowerCase().includes(query));
+
+    recipesGrid.innerHTML = filtered.map(r => `
+      <div style="
+        background:#fff;
+        border-radius:18px;
+        box-shadow:0 4px 15px rgba(0,0,0,0.08);
+        overflow:hidden;
+        display:flex;
+        flex-direction:column;
+      ">
+        <div style="
+          width:100%;
+          height:180px;
+          overflow:hidden;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          background-color:#f9f9f9;
+        ">
+          <img src="${r.img}" alt="${r.name}" style="
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            display:block;
+          ">
+        </div>
+        <div style="padding:0.75rem 0.75rem 1rem 0.75rem;">
+          <h3 style="
+            font-size:1rem;
+            font-weight:700;
+            color:#222;
+            margin-bottom:0.5rem;
+            height:2.4rem;
+            line-height:1.2rem;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            display:-webkit-box;
+            -webkit-line-clamp:2;
+            -webkit-box-orient:vertical;
+          ">${r.name}</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="
+              font-size:0.8rem;
+              background-color:#f3f4f6;
+              color:#555;
+              padding:3px 8px;
+              border-radius:8px;
+            ">${r.difficulty}</span>
+            <span style="font-size:0.8rem; color:#777;">${r.time}</span>
+          </div>
+        </div>
+      </div>
+    `).join("");
+  });
 }
+
+
 
 
     else {
