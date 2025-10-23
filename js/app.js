@@ -59,7 +59,7 @@ function expandCard(card) {
   animate(saludo, { opacity: [1, 0] }, { duration: 0.4 });
   animate(app, { opacity: [1, 0] }, { duration: 0.4 });
 
-  // 👇 Oculta completamente la cabecera para liberar espacio arriba
+  // Oculta el header superior
   header.style.display = "none";
 
   // tras el fade, construye la vista de detalle
@@ -77,26 +77,26 @@ function expandCard(card) {
       alignItems: "center",
       justifyContent: "flex-start",
       paddingLeft: "1.5rem",
-      borderRadius: "20px",
+      borderBottomLeftRadius: "20px",
+      borderBottomRightRadius: "20px",
       boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
     });
     topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${card.title}</h2>`;
 
-    // contenido blanco
+    // contenido principal
     const content = document.createElement("div");
     Object.assign(content.style, {
       backgroundColor: "#fff",
       flex: "1",
       padding: "2rem",
       color: "#333",
-      height: "calc(100dvh - 5rem)",
+      height: "calc(100dvh - 10rem)", // dejamos espacio para el menú inferior
       overflowY: "auto",
     });
     content.innerHTML = `
       <p style="font-size:1.1rem;line-height:1.6;">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras non eros ac urna pulvinar aliquet.
         Praesent eget libero a sapien ultrices imperdiet. Nullam id augue a nisi luctus tempor.
-        Duis et lorem nec erat tempor ultricies sed a augue. Sed vel enim eu mi bibendum dignissim.
       </p>
       <button id="backBtn" style="
         margin-top:2rem;
@@ -108,26 +108,104 @@ function expandCard(card) {
       ">Volver</button>
     `;
 
+    // ✅ barra inferior tipo menú
+    const bottomBar = document.createElement("div");
+    Object.assign(bottomBar.style, {
+      position: "fixed",
+      bottom: "0",
+      left: "0",
+      width: "100%",
+      height: "5rem",
+      background: "#f8f8f8",
+      display: "flex",
+      justifyContent: "space-around",
+      alignItems: "center",
+      borderTop: "1px solid #e5e5e5",
+      boxShadow: "0 -2px 10px rgba(0,0,0,0.05)",
+      zIndex: "50",
+    });
+
+    bottomBar.innerHTML = `
+      <button class="tab-item active" data-id="home">🏠</button>
+      <button class="tab-item" data-id="calendario">📅</button>
+      <button class="tab-item" data-id="almuerzos">🍽️</button>
+      <button class="tab-item" data-id="compras">🛒</button>
+      <div id="indicator"></div>
+    `;
+
+    // estilos base para los iconos y el indicador
+    const style = document.createElement("style");
+    style.textContent = `
+      .tab-item {
+        font-size: 1.5rem;
+        border: none;
+        background: transparent;
+        outline: none;
+        position: relative;
+        z-index: 2;
+        transition: color 0.3s;
+      }
+      .tab-item.active { color: #111; }
+      #indicator {
+        position: absolute;
+        bottom: 8px;
+        height: 3px;
+        width: 20px;
+        background-color: #111;
+        border-radius: 4px;
+        z-index: 1;
+        transition: left 0.3s ease;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // agregamos todo al app
     app.appendChild(topBar);
     app.appendChild(content);
+    document.body.appendChild(bottomBar);
 
-    animate(topBar, { y: ["-100%", "0%"], opacity: [0, 1] }, { duration: 0.6 });
-    animate(content, { opacity: [0, 1], y: [30, 0] }, { duration: 0.8, delay: 0.2 });
+    // animación de entrada del menú
+    animate(bottomBar, { y: ["100%", "0%"], opacity: [0, 1] }, { duration: 0.6, easing: "ease-out" });
+
+    // mover indicador dinámicamente
+    const indicator = bottomBar.querySelector("#indicator");
+    const items = bottomBar.querySelectorAll(".tab-item");
+
+    function moveIndicatorTo(el) {
+      const rect = el.getBoundingClientRect();
+      const center = rect.left + rect.width / 2;
+      indicator.style.left = `${center - 10}px`; // centramos
+    }
+
+    // posición inicial del indicador (home)
+    setTimeout(() => moveIndicatorTo(items[0]), 10);
+
+    items.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        items.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        moveIndicatorTo(btn);
+      });
+    });
 
     // botón volver
     document.getElementById("backBtn").addEventListener("click", () => {
       selected = null;
       body.style.backgroundColor = "#fff";
       saludo.removeAttribute("style");
+      header.style.display = "block";
       animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
 
-      // 👇 vuelve a mostrar la cabecera
-      header.style.display = "block";
+      // animar salida del menú
+      animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 }).finished.then(() => {
+        bottomBar.remove();
+      });
 
       render();
     });
   }, 400);
 }
+
 
 
 /* ---------- Inicio ---------- */
