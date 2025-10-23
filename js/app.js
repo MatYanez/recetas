@@ -79,16 +79,19 @@ function expandCard(initialCard) {
       transition: "background-color 0.3s ease",
     });
 
-    Object.assign(content.style, {
-      backgroundColor: "#fff",
-      flex: "1",
-      padding: "2rem",
-      color: "#333",
-      height: "calc(100dvh - 11rem)",
-      overflow: "hidden",  // ✅ no scroll interno
-      position: "relative",
-      transition: "opacity 0.3s ease",
-    });
+Object.assign(content.style, {
+  backgroundColor: "#fff",
+  color: "#333",
+  position: "absolute",       // ✅ saca del flujo
+  top: "6.5rem",              // deja espacio para topBar
+  left: "0",
+  right: "0",
+  bottom: "6.5rem",           // deja espacio para bottomBar
+  padding: "2rem",
+  overflow: "hidden",
+  transition: "opacity 0.3s ease",
+});
+
 
     app.appendChild(topBar);
     app.appendChild(content);
@@ -189,36 +192,37 @@ Object.assign(bottomBar.style, {
       topBar.style.backgroundColor = section.color;
       topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${section.title}</h2>`;
 
-      // --- swipe lateral entre tabs ---
-      const order = ["home", "calendario", "almuerzos", "compras"];
-      const currentIndex = order.indexOf(sectionId);
-      const previousIndex = order.indexOf(selected);
-      const direction = currentIndex > previousIndex ? 1 : -1;
-      selected = sectionId;
+// Detectar dirección del swipe (izquierda/derecha)
+const order = ["home", "calendario", "almuerzos", "compras"];
+const currentIndex = order.indexOf(sectionId);
+const previousIndex = order.indexOf(selected);
+const direction = currentIndex > previousIndex ? 1 : -1;
+selected = sectionId;
 
-      animate(content, { opacity: [1, 0], x: [0, -50 * direction] }, { duration: 0.25 }).finished.then(() => {
-        content.innerHTML = `
-          <p style="font-size:1.1rem; line-height:1.6;">
-            ${section.content}
-          </p>
-          <button id="backBtn" style="
-            margin-top:2rem;
-            background-color:${section.color};
-            padding:0.75rem 1.5rem;
-            border-radius:12px;
-            font-weight:600;
-            box-shadow:0 2px 10px rgba(0,0,0,0.1);
-          ">Volver</button>
-        `;
+// Animación estable sin empujar layout
+animate(content, { opacity: [1, 0], x: [0, -30 * direction] }, { duration: 0.2 }).finished.then(() => {
+  content.innerHTML = `
+    <p style="font-size:1.1rem; line-height:1.6;">
+      ${section.content}
+    </p>
+    <button id="backBtn" style="
+      margin-top:2rem;
+      background-color:${section.color};
+      padding:0.75rem 1.5rem;
+      border-radius:12px;
+      font-weight:600;
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    ">Volver</button>
+  `;
 
-        // 🩹 fuerza recalculo del layout para evitar salto visual
-bottomBar.getBoundingClientRect();
+  // Fuerza reflow y animación de entrada
+  content.getBoundingClientRect();
+  animate(content, { opacity: [0, 1], x: [30 * direction, 0] }, { duration: 0.3, easing: "ease-out" });
 
-        animate(content, { opacity: [0, 1], x: [50 * direction, 0] }, { duration: 0.35, easing: "ease-out" });
-        document.getElementById("backBtn").addEventListener("click", () => {
-          updateView("home");
-        });
-      });
+  document.getElementById("backBtn").addEventListener("click", () => {
+    updateView("home");
+  });
+});
 
       moveIndicatorTo([...items].find((b) => b.dataset.id === sectionId));
       content.scrollTo({ top: 0, behavior: "instant" });
