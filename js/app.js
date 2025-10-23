@@ -223,7 +223,7 @@ bottomBar.getBoundingClientRect();
       moveIndicatorTo([...items].find((b) => b.dataset.id === sectionId));
       content.scrollTo({ top: 0, behavior: "instant" });
     }
-
+animate(bottomBar, { y: [0, 0] }, { duration: 0.01 });
     updateView(initialCard.id);
     setTimeout(() => moveIndicatorTo(items[0]), 50);
 
