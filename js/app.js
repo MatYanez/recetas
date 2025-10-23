@@ -85,7 +85,7 @@ function expandCard(initialCard) {
       flex: "1",
       padding: "2rem",
       color: "#333",
-      height: "calc(100dvh - 12rem)",
+      height: "calc(100dvh - 11rem)",
       overflowY: "auto",
       transition: "opacity 0.3s ease",
     });
@@ -96,13 +96,11 @@ function expandCard(initialCard) {
     // --- Barra inferior flotante ---
     const bottomBar = document.createElement("div");
 Object.assign(bottomBar.style, {
-  position: "fixed",
-  bottom: "1rem",
-  width: "90%",
-  left: "0",
-  right: "0",
-  margin: "0 auto",
-  height: "4.5rem",
+bottom: "1rem",
+left: "50%",
+transform: "translateX(-50%)",
+width: "90%",
+height: "4.5rem",
   background: "rgba(255, 255, 255, 0.6)", // translúcido
   backdropFilter: "blur(12px)",           // efecto frosted glass 🍎
   WebkitBackdropFilter: "blur(12px)",     // compatibilidad Safari/iOS
@@ -155,11 +153,12 @@ Object.assign(indicator.style, {
   transform: "translateY(-50%)",
   width: "46px",
   height: "46px",
-  backgroundColor: "#e5e5e5",
+  backgroundColor: "rgb(237 237 237)",
   borderRadius: "12px",
   transition: "left 0.3s ease, transform 0.3s ease",
-  zIndex: "0", // 👈 debajo de los iconos
+  zIndex: "-1", // 👈 debajo de los íconos, visible pero no tapa
 });
+
 
 
     const items = bottomBar.querySelectorAll(".tab-item");
@@ -167,7 +166,7 @@ Object.assign(indicator.style, {
 function moveIndicatorTo(el) {
   const rect = el.getBoundingClientRect();
   const center = rect.left + rect.width / 2;
-  indicator.style.left = `${center - 23}px`; // 👈 centra el cuadrado
+  indicator.style.left = `${center - 23}px`;
 }
 
     // --- Actualizar vista según sección ---
