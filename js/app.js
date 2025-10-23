@@ -197,6 +197,107 @@ function updateView(sectionId) {
   // --- Animación de salida ---
   animate(content, { opacity: [1, 0], x: [0, -40 * direction] }, { duration: 0.25 }).finished.then(() => {
 
+   // --- ALMUERZOS ---
+else if (sectionId === "almuerzos") {
+  const recipes = [
+    {
+      name: "Carne mongoliana con arroz",
+      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg",
+      difficulty: "Fácil",
+      time: "30 min"
+    },
+    {
+      name: "Pollo teriyaki",
+      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000546%2Fv3%2Frect.jpeg",
+      difficulty: "Medio",
+      time: "40 min"
+    },
+    {
+      name: "Pasta carbonara",
+      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000215%2Fv3%2Frect.jpeg",
+      difficulty: "Fácil",
+      time: "25 min"
+    },
+    {
+      name: "Salmón con verduras",
+      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000123%2Fv3%2Frect.jpeg",
+      difficulty: "Difícil",
+      time: "50 min"
+    },
+    {
+      name: "Ensalada César",
+      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000522%2Fv3%2Frect.jpeg",
+      difficulty: "Fácil",
+      time: "15 min"
+    },
+    {
+      name: "Bowl de quinoa",
+      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000333%2Fv3%2Frect.jpeg",
+      difficulty: "Medio",
+      time: "35 min"
+    },
+    {
+      name: "Tacos de carne",
+      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000190%2Fv3%2Frect.jpeg",
+      difficulty: "Medio",
+      time: "30 min"
+    },
+    {
+      name: "Paella tradicional",
+      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000101%2Fv3%2Frect.jpeg",
+      difficulty: "Difícil",
+      time: "120 min"
+    }
+  ];
+
+  // render de grilla
+  content.innerHTML = `
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(2, 1fr);
+      gap:1rem;
+      padding-bottom:2rem;
+      overflow-y:auto;
+      height:100%;
+    ">
+      ${recipes.map(r => `
+        <div style="
+          background:#fff;
+          border-radius:18px;
+          box-shadow:0 4px 15px rgba(0,0,0,0.08);
+          overflow:hidden;
+          display:flex;
+          flex-direction:column;
+        ">
+          <div style="
+            width:100%;
+            aspect-ratio:1/1;
+            overflow:hidden;
+          ">
+            <img src="${r.img}" alt="${r.name}" style="width:100%; height:100%; object-fit:cover;">
+          </div>
+          <div style="padding:0.75rem 0.75rem 1rem 0.75rem;">
+            <h3 style="font-size:1rem; font-weight:700; color:#222; margin-bottom:0.5rem;">${r.name}</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="
+                font-size:0.8rem;
+                background-color:#f3f4f6;
+                color:#555;
+                padding:3px 8px;
+                border-radius:8px;
+              ">${r.difficulty}</span>
+              <span style="font-size:0.8rem; color:#777;">${r.time}</span>
+            </div>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+
+
+
     // --- CALENDARIO ---
     if (sectionId === "calendario") {
       const today = new Date();
