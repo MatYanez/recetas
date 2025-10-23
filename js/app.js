@@ -1,4 +1,4 @@
-import { animate, stagger } from "https://cdn.jsdelivr.net/npm/@motionone/dom/dist/motion.mjs";
+import { animate, stagger } from "https://cdn.jsdelivr.net/npm/@motionone/dom/+esm";
 
 const cards = [
   { id: "calendario", color: "bg-pink-100", title: "Calendario", content: "Tu calendario semanal de comidas." },
