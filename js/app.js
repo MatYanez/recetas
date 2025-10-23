@@ -218,19 +218,87 @@ content.ontouchend = () => {
       selected = sectionId;
 
       animate(content, { opacity: [1, 0], x: [0, -40 * direction] }, { duration: 0.25 }).finished.then(() => {
-        content.innerHTML = `
-          <p style="font-size:1.1rem; line-height:1.6;">
-            ${section.content}
-          </p>
-          <button id="backBtn" style="
-            margin-top:2rem;
-            background-color:${section.color};
-            padding:0.75rem 1.5rem;
-            border-radius:12px;
-            font-weight:600;
-            box-shadow:0 2px 10px rgba(0,0,0,0.1);
-          ">Volver</button>
-        `;
+if (sectionId === "calendario") {
+  const today = new Date();
+  const monthName = today.toLocaleString("es-ES", { month: "long", year: "numeric" });
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  
+  // Generamos los días del mes (solo lunes a viernes)
+  const days = [];
+  const date = new Date(year, month, 1);
+  while (date.getMonth() === month) {
+    const day = date.getDay(); // 0=domingo, 1=lunes...
+    if (day >= 1 && day <= 5) {
+      days.push(new Date(date));
+    }
+    date.setDate(date.getDate() + 1);
+  }
+
+  // Contenedor principal horizontal
+  content.innerHTML = `
+    <div style="display:flex; flex-direction:column; width:100%;">
+      <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:1rem; text-transform:capitalize;">
+        ${monthName}
+      </h2>
+      <div style="overflow-x:auto; white-space:nowrap; scroll-behavior:smooth; padding-bottom:1rem;">
+        <div style="display:inline-flex; flex-direction:column;">
+          <!-- Encabezado de días -->
+          <div style="display:flex; gap:1rem; justify-content:flex-start; margin-bottom:0.5rem;">
+            ${days.map(d => {
+              const initials = ["D","L","M","X","J","V","S"];
+              return `<div style="min-width:50px; text-align:center; font-weight:600;">${initials[d.getDay()]}</div>`;
+            }).join("")}
+          </div>
+          <!-- Números -->
+          <div style="display:flex; gap:1rem; justify-content:flex-start;">
+            ${days.map(d => {
+              const todayClass = (d.toDateString() === new Date().toDateString()) 
+                ? "background-color:#000; color:#fff; border-radius:12px; padding:6px 0;" 
+                : "";
+              return `<div style="min-width:50px; text-align:center; font-weight:600; ${todayClass}">
+                ${d.getDate()}
+              </div>`;
+            }).join("")}
+          </div>
+        </div>
+      </div>
+    </div>
+    <button id="backBtn" style="
+      margin-top:1rem;
+      background-color:${section.color};
+      padding:0.75rem 1.5rem;
+      border-radius:12px;
+      font-weight:600;
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    ">Volver</button>
+  `;
+
+  // centramos la semana actual
+  const scrollContainer = content.querySelector("div[style*='overflow-x:auto']");
+  const todayIndex = days.findIndex(d => d.toDateString() === new Date().toDateString());
+  if (todayIndex !== -1) {
+    const scrollPos = todayIndex * 60 - 150;
+    scrollContainer.scrollTo({ left: scrollPos, behavior: "instant" });
+  }
+
+} else {
+  // el resto de tabs normales
+  content.innerHTML = `
+    <p style="font-size:1.1rem; line-height:1.6;">
+      ${section.content}
+    </p>
+    <button id="backBtn" style="
+      margin-top:2rem;
+      background-color:${section.color};
+      padding:0.75rem 1.5rem;
+      border-radius:12px;
+      font-weight:600;
+      box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    ">Volver</button>
+  `;
+}
+
         animate(content, { opacity: [0, 1], x: [40 * direction, 0] }, { duration: 0.3, easing: "ease-out" });
         document.getElementById("backBtn").addEventListener("click", () => updateView("home"));
       });
