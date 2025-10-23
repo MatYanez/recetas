@@ -396,7 +396,22 @@ function updateView(sectionId) {
   ">
 </div>
           <div style="padding:0.75rem 0.75rem 1rem 0.75rem;">
-            <h3 style="font-size:1rem; font-weight:700; color:#222; margin-bottom:0.5rem;">${r.name}</h3>
+<h3 style="
+  font-size:1rem;
+  font-weight:700;
+  color:#222;
+  margin-bottom:0.5rem;
+  height:2.4rem;              /* 👈 altura fija del bloque de título */
+  line-height:1.2rem;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  display:-webkit-box;
+  -webkit-line-clamp:2;       /* 👈 máximo 2 líneas visibles */
+  -webkit-box-orient:vertical;
+">
+  ${r.name}
+</h3>
+
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <span style="
                 font-size:0.8rem;
