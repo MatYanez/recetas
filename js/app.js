@@ -211,6 +211,9 @@ Object.assign(bottomBar.style, {
           ">Volver</button>
         `;
 
+        // 🩹 fuerza recalculo del layout para evitar salto visual
+bottomBar.getBoundingClientRect();
+
         animate(content, { opacity: [0, 1], x: [50 * direction, 0] }, { duration: 0.35, easing: "ease-out" });
         document.getElementById("backBtn").addEventListener("click", () => {
           updateView("home");
