@@ -149,24 +149,26 @@ Object.assign(bottomBar.style, {
 
     // --- Fondo indicador (ya no línea) ---
     const indicator = bottomBar.querySelector("#indicator");
-    Object.assign(indicator.style, {
-      position: "absolute",
-      bottom: "0.5rem",
-      width: "60px",
-      height: "60%",
-      backgroundColor: "#e5e5e5",
-      borderRadius: "12px",
-      transition: "left 0.3s ease, width 0.3s ease",
-      zIndex: "1",
-    });
+Object.assign(indicator.style, {
+  position: "absolute",
+  top: "50%",
+  transform: "translateY(-50%)",
+  width: "46px",
+  height: "46px",
+  backgroundColor: "#e5e5e5",
+  borderRadius: "12px",
+  transition: "left 0.3s ease, transform 0.3s ease",
+  zIndex: "0", // 👈 debajo de los iconos
+});
+
 
     const items = bottomBar.querySelectorAll(".tab-item");
 
-    function moveIndicatorTo(el) {
-      const rect = el.getBoundingClientRect();
-      const center = rect.left + rect.width / 2;
-      indicator.style.left = `${center - 30}px`;
-    }
+function moveIndicatorTo(el) {
+  const rect = el.getBoundingClientRect();
+  const center = rect.left + rect.width / 2;
+  indicator.style.left = `${center - 23}px`; // 👈 centra el cuadrado
+}
 
     // --- Actualizar vista según sección ---
     function updateView(sectionId) {
