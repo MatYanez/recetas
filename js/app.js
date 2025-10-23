@@ -254,17 +254,35 @@ function updateView(sectionId) {
                 }).join("")}
               </div>
             </div>
-          </div>
-        </div>
+</div>
+</div>
 
-        <button id="backBtn" style="
-          margin-top:1rem;
-          background-color:${section.color};
-          padding:0.75rem 1.5rem;
-          border-radius:12px;
-          font-weight:600;
-          box-shadow:0 2px 10px rgba(0,0,0,0.1);
-        ">Volver</button>
+<!-- Contenido dinámico: título + imagen -->
+<div style="
+  width:100%;
+  margin-top:1rem;
+  text-align:left;
+">
+  <h3 style="
+    font-size:1.3rem;
+    font-weight:700;
+    margin-bottom:0.75rem;
+    color:#222;
+  ">
+    Carne mongoliana con arroz
+  </h3>
+
+  <div style="
+    width:100%;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+  ">
+    <img src="https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg"
+      alt="Carne mongoliana con arroz"
+      style="width:100%; height:auto; display:block;">
+  </div>
+</div>
       `;
 
       // Centrar semana actual al cargar
