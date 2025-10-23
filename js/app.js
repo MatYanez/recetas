@@ -95,16 +95,18 @@ function expandCard(initialCard) {
 
     // --- Contenido central ---
     const content = document.createElement("div");
-    Object.assign(content.style, {
-      flex: "1",
-      width: "100%",
-      overflow: "hidden",
-      padding: "2rem",
-      color: "#333",
-      textAlign: "left",
-      backgroundColor: "#fff",
-      position: "relative",
-    });
+Object.assign(content.style, {
+  backgroundColor: "#fff",
+  flex: "1",
+  padding: "1.5rem 1.5rem 5rem 1.5rem", // 👈 deja espacio para la barra inferior
+  color: "#333",
+  position: "relative",
+  overflowY: "auto",                    // 👈 scroll vertical real
+  WebkitOverflowScrolling: "touch",     // 👈 scroll suave en iOS
+  transition: "opacity 0.3s ease",
+});
+
+
     view.appendChild(content);
 
     // --- Barra inferior fija ---
@@ -391,14 +393,14 @@ else if (sectionId === "almuerzos") {
     </div>
 
     <!-- Grilla de recetas -->
-    <div id="recipesGrid" style="
-      display:grid;
-      grid-template-columns:repeat(2, 1fr);
-      gap:1rem;
-      padding-bottom:2rem;
-      overflow-y:auto;
-      height:calc(100% - 60px);
-    ">
+<div id="recipesGrid" style="
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:1rem;
+  padding-bottom:2rem;
+  height:auto;               /* 👈 altura automática */
+">
+
       ${recipes.map(r => `
         <div style="
           background:#fff;
