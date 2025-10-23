@@ -8,10 +8,9 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Framer Motion -->
-  <script src="https://cdn.jsdelivr.net/npm/framer-motion@11.0.0/dist/framer-motion.umd.js"></script>
+  <!-- Motion One (de los creadores de Framer Motion) -->
+  <script src="https://cdn.jsdelivr.net/npm/motion@11.11.9/dist/motion.min.js"></script>
 
-  <!-- SF Pro Display -->
   <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
 
   <style>
@@ -22,8 +21,8 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
     }
 
     .card {
@@ -43,8 +42,8 @@
     }
 
     .section-content {
-      padding: 1.5rem;
       text-align: left;
+      padding: 1.5rem;
       animation: fadeIn 0.4s ease forwards;
     }
 
@@ -59,9 +58,7 @@
   <div id="app"></div>
 
   <script>
-    const { motion, AnimatePresence } = window.framerMotion;
-
-    const app = document.getElementById('app');
+    const { animate, stagger } = motion; // motion viene de Motion One
 
     const cards = [
       { id: 'calendario', color: 'bg-pink-100', title: 'Calendario', content: 'Aquí aparecerá tu calendario semanal con comidas planificadas.' },
@@ -69,49 +66,49 @@
       { id: 'compras', color: 'bg-green-100', title: 'Compras', content: 'Lista dinámica de compras según tus comidas planificadas.' }
     ];
 
+    const app = document.getElementById('app');
     let selected = null;
 
     function render() {
       app.innerHTML = '';
-      cards.forEach((card, index) => {
+
+      cards.forEach(card => {
         const div = document.createElement('div');
-        div.id = card.id;
+        div.className = `card ${card.color}`;
+        div.textContent = card.title;
 
-        const isActive = selected === card.id;
-
-        const motionDiv = motion.div({
-          initial: { opacity: 0, y: 30 },
-          animate: {
-            opacity: isActive ? 1 : 1,
-            y: isActive ? -window.innerHeight / 2 + 150 : 0,
-            scale: isActive ? 1.05 : 1,
-            zIndex: isActive ? 10 : 1
-          },
-          exit: { opacity: 0 },
-          transition: { duration: 0.5, ease: 'easeInOut' }
-        });
-
-        motionDiv.className = `card ${card.color}`;
-        motionDiv.textContent = card.title;
-
-        motionDiv.style.opacity = selected && !isActive ? 0 : 1;
-        motionDiv.onclick = () => {
+        div.addEventListener('click', () => {
           if (selected === card.id) selected = null;
           else selected = card.id;
           render();
-        };
+        });
 
-        div.appendChild(motionDiv);
         app.appendChild(div);
-
-        // Si está activa, mostramos contenido
-        if (isActive) {
-          const content = document.createElement('div');
-          content.className = 'section-content';
-          content.innerHTML = `<p>${card.content}</p>`;
-          app.appendChild(content);
-        }
       });
+
+      const allCards = document.querySelectorAll('.card');
+
+      if (!selected) {
+        // Animación de entrada
+        animate(allCards, { opacity: [0, 1], y: [50, 0] }, { duration: 0.5, delay: stagger(0.1) });
+      } else {
+        // Animar la tarjeta seleccionada hacia arriba
+        allCards.forEach(card => {
+          if (card.textContent.toLowerCase() === selected) {
+            animate(card, { y: ['0', '-200'], scale: [1, 1.05] }, { duration: 0.6, easing: 'ease-in-out' });
+          } else {
+            animate(card, { opacity: [1, 0] }, { duration: 0.4 });
+          }
+        });
+
+        // Mostrar contenido
+        const content = document.createElement('div');
+        content.className = 'section-content';
+        content.innerHTML = `<p>${
+          cards.find(c => c.id === selected).content
+        }</p>`;
+        app.appendChild(content);
+      }
     }
 
     render();
