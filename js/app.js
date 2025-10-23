@@ -379,13 +379,22 @@ function updateView(sectionId) {
           display:flex;
           flex-direction:column;
         ">
-          <div style="
-            width:100%;
-            aspect-ratio:1/1;
-            overflow:hidden;
-          ">
-            <img src="${r.img}" alt="${r.name}" style="width:100%; height:100%; object-fit:cover;">
-          </div>
+<div style="
+  width:100%;
+  height:180px;               /* 👈 altura fija */
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background-color:#f9f9f9;   /* 👈 por si la imagen tarda en cargar */
+">
+  <img src="${r.img}" alt="${r.name}" style="
+    width:100%;
+    height:100%;
+    object-fit:cover;          /* 👈 recorta y rellena perfectamente */
+    display:block;
+  ">
+</div>
           <div style="padding:0.75rem 0.75rem 1rem 0.75rem;">
             <h3 style="font-size:1rem; font-weight:700; color:#222; margin-bottom:0.5rem;">${r.name}</h3>
             <div style="display:flex; justify-content:space-between; align-items:center;">
