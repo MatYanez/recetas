@@ -52,16 +52,16 @@ function expandCard(card, element) {
   const cardsContainer = document.querySelector(".cards-container");
 
   if (selected === card.id) {
-    // Desaparece saludo y resto
-    saludo.style.opacity = 0;
+    // 1️⃣ Desvanecer saludo y tarjetas
+    animate(saludo, { opacity: [1, 0] }, { duration: 0.4 });
     animate(cardsContainer, { opacity: [1, 0] }, { duration: 0.4 });
     body.style.backgroundColor = card.color;
 
-    // Espera que termine la animación de fade out
+    // Espera el fade-out
     setTimeout(() => {
       app.innerHTML = "";
 
-      // Bloque superior (barra de color)
+      // 2️⃣ Crear bloque superior
       const topBar = document.createElement("div");
       topBar.style.backgroundColor = card.color;
       topBar.style.height = "5rem";
@@ -77,7 +77,7 @@ function expandCard(card, element) {
         <h2 style="font-size:1.5rem; font-weight:700;">${card.title}</h2>
       `;
 
-      // Contenido blanco con texto y botón
+      // 3️⃣ Contenido blanco con texto
       const content = document.createElement("div");
       content.style.backgroundColor = "#fff";
       content.style.flex = "1";
@@ -101,24 +101,29 @@ function expandCard(card, element) {
         ">Volver</button>
       `;
 
-      // Agregamos ambos al body para que queden fijos visualmente
+      // 4️⃣ Insertar elementos
       body.style.backgroundColor = "#fff";
-      app.innerHTML = "";
       app.appendChild(topBar);
       app.appendChild(content);
 
+      // 5️⃣ Animaciones de entrada
       animate(topBar, { y: ["-100%", "0%"], opacity: [0, 1] }, { duration: 0.6, easing: "ease-out" });
       animate(content, { opacity: [0, 1], y: [30, 0] }, { duration: 0.8, delay: 0.2 });
 
-      // Botón volver
+      // 6️⃣ Botón volver
       document.getElementById("backBtn").addEventListener("click", () => {
         selected = null;
-        saludo.style.opacity = 1;
         body.style.backgroundColor = "#fff";
+
+        // limpiar estilos inline de #saludo y hacerlo reaparecer
+        saludo.removeAttribute("style");
+        animate(saludo, { opacity: [0, 1] }, { duration: 0.5, easing: "ease-out" });
+
         render();
       });
     }, 400);
   }
 }
+
 
 render();
