@@ -697,7 +697,7 @@ backBtn.addEventListener("click", () => {
         width: "100%",
         borderRadius: "14px",
         background: "#f8f8f8",
-        padding: "1rem 0rem",
+        padding: "0.5rem 0rem",
         boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
         marginBottom: "0.5rem",
         cursor: "pointer",
