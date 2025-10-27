@@ -691,26 +691,47 @@ backBtn.addEventListener("click", () => {
       { title: "Preparación", content: "<ol><li>Calentar la sartén.</li><li>Agregar la carne y cocinar 10 min.</li><li>Añadir salsa y servir con arroz.</li></ol>" }
     ];
 
-    sections.forEach(sec => {
-      const container = document.createElement("div");
-      Object.assign(container.style, {
-        width: "100%",
-        borderRadius: "14px",
-        background: "#f8f8f8",
-        padding: "0.5rem 0rem",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-        marginBottom: "0.5rem",
-        cursor: "pointer",
-        transition: "all 0.3s ease"
-      });
+sections.forEach(sec => {
+  const container = document.createElement("div");
+  Object.assign(container.style, {
+    width: "100%",
+    borderRadius: "14px",
+    background: "#f8f8f8",
+    padding: "0.5rem 0rem",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    marginBottom: "0.75rem",
+    overflow: "hidden"
+  });
 
-      const header = document.createElement("div");
-      header.textContent = sec.title;
-      Object.assign(header.style, {
-        fontWeight: "600",
-        color: "#111",
-        fontSize: "1.1rem"
-      });
+  // 👉 Reemplazá todo tu bloque del "header" actual por esto:
+  const header = document.createElement("div");
+  Object.assign(header.style, {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "0.75rem 1rem",
+    fontWeight: "600",
+    color: "#111",
+    fontSize: "1.1rem",
+    userSelect: "none"
+  });
+
+  // Texto del título
+  const titleText = document.createElement("span");
+  titleText.textContent = sec.title;
+
+  // Icono de flecha ▼
+  const arrow = document.createElement("span");
+  arrow.innerHTML = "&#9662;"; // ▼
+  Object.assign(arrow.style, {
+    fontSize: "1rem",
+    transition: "transform 0.25s ease"
+  });
+
+  header.appendChild(titleText);
+  header.appendChild(arrow);
 
       const body = document.createElement("div");
       body.innerHTML = sec.content;
@@ -723,13 +744,18 @@ backBtn.addEventListener("click", () => {
         lineHeight: "1.5"
       });
 
-      header.addEventListener("click", () => {
-        if (body.style.maxHeight === "0px") {
-          body.style.maxHeight = body.scrollHeight + "px";
-        } else {
-          body.style.maxHeight = "0px";
-        }
-      });
+header.addEventListener("click", () => {
+  const isClosed = body.style.maxHeight === "0px" || !body.style.maxHeight;
+
+  if (isClosed) {
+    body.style.maxHeight = body.scrollHeight + "px";
+    arrow.style.transform = "rotate(180deg)"; // 🔼
+  } else {
+    body.style.maxHeight = "0px";
+    arrow.style.transform = "rotate(0deg)"; // 🔽
+  }
+});
+
 
       container.appendChild(header);
       container.appendChild(body);
