@@ -127,18 +127,19 @@ animate(view, { opacity: [0, 1], y: [40, 0] }, { duration: 0.45, easing: "ease-o
     view.appendChild(topBar);
 
     // --- Contenido central scrollable ---
-    const content = document.createElement("div");
-    Object.assign(content.style, {
-      backgroundColor: "#fff",
-      flex: "1",
-      padding: "1.5rem 1.5rem 5rem 1.5rem", // espacio para bottom bar
-      color: "#333",
-      position: "relative",
-      overflowY: "auto",
-      WebkitOverflowScrolling: "touch",
-      transition: "opacity 0.3s ease",
-    });
-    view.appendChild(content);
+const content = document.createElement("div");
+Object.assign(content.style, {
+  backgroundColor: "#fff",
+  flex: "1 1 0%",
+  width: "100%",                    // ✅ fuerza ancho total
+  padding: "1.5rem 1.5rem 5rem 1.5rem",
+  color: "#333",
+  position: "relative",
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+  transition: "opacity 0.3s ease",
+});
+view.appendChild(content);
 
     // --- Barra inferior fija (tabs tipo iOS) ---
     const bottomBar = document.createElement("div");
