@@ -706,32 +706,37 @@ sections.forEach(sec => {
   });
 
   // 👉 Reemplazá todo tu bloque del "header" actual por esto:
-  const header = document.createElement("div");
-  Object.assign(header.style, {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "0.75rem 1rem",
-    fontWeight: "600",
-    color: "#111",
-    fontSize: "1.1rem",
-    userSelect: "none"
-  });
+  // --- Header del colapsable (título + flecha SVG moderna) ---
+const header = document.createElement("div");
+Object.assign(header.style, {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "0.75rem 1rem",
+  fontWeight: "600",
+  color: "#111",
+  fontSize: "1.1rem",
+  userSelect: "none",
+});
 
-  // Texto del título
-  const titleText = document.createElement("span");
-  titleText.textContent = sec.title;
+// Texto del título
+const titleText = document.createElement("span");
+titleText.textContent = sec.title;
 
-  // Icono de flecha ▼
-  const arrow = document.createElement("span");
-  arrow.innerHTML = "&#9662;"; // ▼
-  Object.assign(arrow.style, {
-    fontSize: "1rem",
-    transition: "transform 0.25s ease"
-  });
+// Flecha SVG moderna (caret hacia abajo estilo iOS)
+const arrow = document.createElement("span");
+arrow.innerHTML = `
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#555" width="20" height="20">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" />
+  </svg>
+`;
+Object.assign(arrow.style, {
+  display: "inline-flex",
+  transition: "transform 0.25s ease",
+});
 
-  header.appendChild(titleText);
-  header.appendChild(arrow);
+header.appendChild(titleText);
+header.appendChild(arrow);
 
       const body = document.createElement("div");
       body.innerHTML = sec.content;
@@ -749,10 +754,10 @@ header.addEventListener("click", () => {
 
   if (isClosed) {
     body.style.maxHeight = body.scrollHeight + "px";
-    arrow.style.transform = "rotate(180deg)"; // 🔼
+    arrow.style.transform = "rotate(180deg)"; // Flecha apunta hacia arriba
   } else {
     body.style.maxHeight = "0px";
-    arrow.style.transform = "rotate(0deg)"; // 🔽
+    arrow.style.transform = "rotate(0deg)"; // Flecha vuelve hacia abajo
   }
 });
 
