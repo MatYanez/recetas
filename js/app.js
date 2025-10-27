@@ -606,7 +606,138 @@ if (overlay) {
               </div>
             `).join("");
           });
+            // --- Abrir detalle de receta ---
+  recipesGrid.querySelectorAll("div").forEach((cardEl, i) => {
+    cardEl.addEventListener("click", () => {
+      const recipe = recipes[i];
+      showRecipeDetail(recipe);
+    });
+  });
+        // --- Función para mostrar el detalle de la receta ---
+  function showRecipeDetail(recipe) {
+    // Limpia el contenido actual
+    content.innerHTML = "";
+
+    // --- Contenedor principal del detalle ---
+    const detail = document.createElement("div");
+    Object.assign(detail.style, {
+      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start",
+      gap: "1rem",
+      animation: "fadeIn 0.4s ease"
+    });
+
+    // --- Botón volver ---
+    const backBtn = document.createElement("button");
+    backBtn.textContent = "← Volver";
+    Object.assign(backBtn.style, {
+      background: "none",
+      border: "none",
+      color: "#007AFF",
+      fontWeight: "600",
+      fontSize: "1rem",
+      cursor: "pointer",
+      marginBottom: "0.5rem"
+    });
+    backBtn.addEventListener("click", () => updateView("almuerzos"));
+    detail.appendChild(backBtn);
+
+    // --- Imagen principal ---
+    const img = document.createElement("img");
+    img.src = recipe.img;
+    img.alt = recipe.name;
+    Object.assign(img.style, {
+      width: "100%",
+      borderRadius: "18px",
+      objectFit: "cover",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.1)"
+    });
+    detail.appendChild(img);
+
+    // --- Nombre del plato ---
+    const title = document.createElement("h2");
+    title.textContent = recipe.name;
+    Object.assign(title.style, {
+      fontSize: "1.8rem",
+      fontWeight: "700",
+      color: "#111",
+      marginTop: "1rem"
+    });
+    detail.appendChild(title);
+
+    // --- Datos principales ---
+    const info = document.createElement("div");
+    info.innerHTML = `
+      <p><strong>Tiempo total:</strong> 35 minutos</p>
+      <p><strong>Tiempo de elaboración:</strong> 15 minutos</p>
+      <p><strong>Dificultad:</strong> ${recipe.difficulty}</p>
+    `;
+    Object.assign(info.style, {
+      fontSize: "1rem",
+      color: "#444",
+      lineHeight: "1.5"
+    });
+    detail.appendChild(info);
+
+    // --- Secciones colapsables ---
+    const sections = [
+      { title: "Ingredientes", content: "<ul><li>250g carne</li><li>1 taza de arroz</li><li>Salsa de soja</li></ul>" },
+      { title: "Valores nutricionales", content: "<p>Calorías: 520 kcal<br>Proteínas: 35g<br>Grasas: 12g<br>Carbohidratos: 55g</p>" },
+      { title: "Preparación", content: "<ol><li>Calentar la sartén.</li><li>Agregar la carne y cocinar 10 min.</li><li>Añadir salsa y servir con arroz.</li></ol>" }
+    ];
+
+    sections.forEach(sec => {
+      const container = document.createElement("div");
+      Object.assign(container.style, {
+        width: "100%",
+        borderRadius: "14px",
+        background: "#f8f8f8",
+        padding: "1rem 1.2rem",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+        marginBottom: "0.5rem",
+        cursor: "pointer",
+        transition: "all 0.3s ease"
+      });
+
+      const header = document.createElement("div");
+      header.textContent = sec.title;
+      Object.assign(header.style, {
+        fontWeight: "600",
+        color: "#111",
+        fontSize: "1.1rem"
+      });
+
+      const body = document.createElement("div");
+      body.innerHTML = sec.content;
+      Object.assign(body.style, {
+        maxHeight: "0px",
+        overflow: "hidden",
+        transition: "max-height 0.3s ease",
+        marginTop: "0.5rem",
+        color: "#333",
+        lineHeight: "1.5"
+      });
+
+      header.addEventListener("click", () => {
+        if (body.style.maxHeight === "0px") {
+          body.style.maxHeight = body.scrollHeight + "px";
+        } else {
+          body.style.maxHeight = "0px";
         }
+      });
+
+      container.appendChild(header);
+      container.appendChild(body);
+      detail.appendChild(container);
+    });
+
+    // Añade el bloque completo
+    content.appendChild(detail);
+  }
+  
+}
 
         // =========================
         // ====== DEFAULT / OTRAS ==
