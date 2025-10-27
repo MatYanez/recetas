@@ -639,39 +639,52 @@ if (overlay) {
         );
 
         // --- SWIPE LATERAL ENTRE TABS ---
-        let startX = 0;
-        let endX = 0;
-        let touchStartTime = 0;
+// --- SWIPE LATERAL ENTRE TABS (con protección anti clics) ---
+let startX = 0;
+let endX = 0;
+let touchStartTime = 0;
+let startTarget = null;
 
-        content.ontouchstart = (e) => {
-          startX = e.touches[0].clientX;
-          touchStartTime = Date.now();
-        };
-        content.ontouchmove = (e) => {
-          endX = e.touches[0].clientX;
-        };
-        content.ontouchend = () => {
-          if (!swipeEnabled) return;
-          const delta = endX - startX;
-          const tabs = ["calendario", "almuerzos", "compras"];
-          const current = tabs.indexOf(sectionId);
-          const moved = Math.abs(delta) > 60;
-          const holdTime = Date.now() - touchStartTime;
+content.ontouchstart = (e) => {
+  startX = e.touches[0].clientX;
+  touchStartTime = Date.now();
+  startTarget = e.target; // guarda el elemento tocado
+};
 
-          if (moved && holdTime < 500) {
-            if (delta < 0 && current < tabs.length - 1) {
-              const next = tabs[current + 1];
-              const nextBtn = [...items].find(b => b.dataset.id === next);
-              moveIndicatorTo(nextBtn);
-              updateView(next);
-            } else if (delta > 0 && current > 0) {
-              const prev = tabs[current - 1];
-              const prevBtn = [...items].find(b => b.dataset.id === prev);
-              moveIndicatorTo(prevBtn);
-              updateView(prev);
-            }
-          }
-        };
+content.ontouchmove = (e) => {
+  endX = e.touches[0].clientX;
+};
+
+content.ontouchend = () => {
+  if (!swipeEnabled) return;
+
+  // Ignorar si el usuario tocó elementos interactivos
+  const interactiveTags = ["INPUT", "BUTTON", "IMG", "A", "TEXTAREA"];
+  if (interactiveTags.includes(startTarget.tagName)) return;
+
+  const deltaX = endX - startX;
+  const distance = Math.abs(deltaX);
+  const holdTime = Date.now() - touchStartTime;
+
+  // Si apenas tocó o fue un clic normal, no hacer nada
+  if (distance < 60 || holdTime > 400) return;
+
+  const tabs = ["calendario", "almuerzos", "compras"];
+  const current = tabs.indexOf(sectionId);
+
+  if (deltaX < 0 && current < tabs.length - 1) {
+    const next = tabs[current + 1];
+    const nextBtn = [...items].find(b => b.dataset.id === next);
+    moveIndicatorTo(nextBtn);
+    updateView(next);
+  } else if (deltaX > 0 && current > 0) {
+    const prev = tabs[current - 1];
+    const prevBtn = [...items].find(b => b.dataset.id === prev);
+    moveIndicatorTo(prevBtn);
+    updateView(prev);
+  }
+};
+
       }); // fin .finished.then() del animate(content)
       
       // mover el indicador al botón activo actual
