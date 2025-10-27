@@ -337,44 +337,48 @@ if (overlay) {
               </div>
             </div>
 
-            <!-- Contenido dinámico (la comida del día) -->
-            <div style="
-              width:100%;
-              margin-top:1rem;
-              text-align:left;
-            ">
-              <h3 style="
-                font-size:2rem;
-                font-weight:700;
-                margin-bottom:0.75rem;
-                color:#222;
-                line-height:1;
-              ">
-                Carne mongoliana con arroz
-              </h3>
+           <!-- Contenido dinámico: título + imagen -->
+<div style="
+  width:100%;
+  max-width:500px;              /* 👈 limita el ancho total */
+  margin:1.5rem auto;           /* 👈 centra horizontalmente */
+  text-align:left;
+  padding:0 1rem;               /* 👈 margen lateral interno */
+">
+  <h3 style="
+    font-size:1.6rem;
+    font-weight:700;
+    margin-bottom:0.75rem;
+    color:#111;
+    line-height:1.2;
+    word-wrap:break-word;
+  ">
+    Carne mongoliana con arroz
+  </h3>
 
-              <div style="
-                width:100%;
-                height:220px;
-                border-radius:20px;
-                overflow:hidden;
-                box-shadow:0 4px 15px rgba(0,0,0,0.1);
-                margin-bottom:1rem;
-                background-color:#f9f9f9;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-              ">
-                <img src="https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg"
-                  alt="Carne mongoliana con arroz"
-                  style="
-                    width:100%;
-                    height:100%;
-                    object-fit:cover;
-                    display:block;
-                  ">
-              </div>
-            </div>
+  <div style="
+    width:100%;
+    aspect-ratio:16/9;          /* 👈 mantiene proporción moderna */
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom:1rem;
+    background-color:#f9f9f9;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  ">
+    <img src="https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg"
+      alt="Carne mongoliana con arroz"
+      style="
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        display:block;
+      ">
+  </div>
+</div>
+
           `;
 
           // centrar la semana actual
