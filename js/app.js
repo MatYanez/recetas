@@ -56,11 +56,18 @@ function expandCard(initialCard) {
   body.style.overflow = "hidden"; // bloquea scroll global
   header.style.display = "none";
 
-  animate(saludo, { opacity: [1, 0] }, { duration: 0.3 });
-  animate(app, { opacity: [1, 0] }, { duration: 0.3 });
 
-  setTimeout(() => {
-    app.innerHTML = "";
+
+
+
+Promise.all([
+  animate(saludo, { opacity: [1, 0], y: [0, -20] }, { duration: 0.3 }).finished,
+  animate(app, { opacity: [1, 0], y: [0, 30] }, { duration: 0.3 }).finished
+]).then(() => {
+  // 👇 esto corre recién cuando las animaciones terminaron
+  app.innerHTML = "";
+  app.style.opacity = "0";
+  header.style.display = "none";
 
     // --- Contenedor principal de vista ---
     const view = document.createElement("div");
