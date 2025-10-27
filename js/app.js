@@ -617,7 +617,7 @@ if (overlay) {
   function showRecipeDetail(recipe) {
     // Limpia el contenido actual
     content.innerHTML = "";
-
+swipeEnabled = false; // 👈 bloquea el swipe lateral mientras estás en el detalle
     // --- Contenedor principal del detalle ---
     const detail = document.createElement("div");
     Object.assign(detail.style, {
@@ -641,7 +641,10 @@ if (overlay) {
       cursor: "pointer",
       marginBottom: "0.5rem"
     });
-    backBtn.addEventListener("click", () => updateView("almuerzos"));
+backBtn.addEventListener("click", () => {
+  swipeEnabled = true; // 👈 reactiva el swipe cuando volvés al listado
+  updateView("almuerzos");
+});
     detail.appendChild(backBtn);
 
     // --- Imagen principal ---
