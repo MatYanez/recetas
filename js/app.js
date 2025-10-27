@@ -69,6 +69,27 @@ function expandCard(initialCard) {
        CREAMOS LA VISTA EXPANDIDA COMPLETA
     ----------------------------------*/
 
+
+// --- Overlay tipo blur iOS ---
+const overlay = document.createElement("div");
+Object.assign(overlay.style, {
+  position: "fixed",
+  inset: "0",
+  background: "rgba(255,255,255,0.6)",
+  backdropFilter: "blur(18px)",
+  WebkitBackdropFilter: "blur(18px)",
+  opacity: "0",
+  zIndex: "5",
+  transition: "opacity 0.4s ease"
+});
+document.body.appendChild(overlay);
+
+// animar la aparición del overlay
+requestAnimationFrame(() => {
+  overlay.style.opacity = "1";
+});
+
+
     // --- Contenedor principal de vista ---
     const view = document.createElement("div");
     Object.assign(view.style, {
@@ -81,6 +102,11 @@ function expandCard(initialCard) {
       justifyContent: "space-between",
       zIndex: "10",
     });
+    // --- Animación de entrada tipo iOS (slide-up suave) ---
+view.style.opacity = "0";
+view.style.transform = "translateY(40px)";
+animate(view, { opacity: [0, 1], y: [40, 0] }, { duration: 0.45, easing: "ease-out" });
+
     document.body.appendChild(view);
 
     // --- Barra superior ---
@@ -186,6 +212,13 @@ function expandCard(initialCard) {
         // sacar la vista expandida fija que creamos arriba
         // (el primer div fijo grande: "view")
         view.remove();
+
+        // --- Desaparecer el overlay iOS ---
+if (overlay) {
+  overlay.style.opacity = "0";
+  setTimeout(() => overlay.remove(), 300);
+}
+
 
         // restaurar header y saludo
         header.style.display = "block";
