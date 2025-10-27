@@ -338,15 +338,14 @@ if (overlay) {
             </div>
 
            <!-- Contenido dinámico: título + imagen -->
+<!-- Contenido dinámico: título + imagen -->
 <div style="
-  width:100%;
-  max-width:500px;              /* 👈 limita el ancho total */
-  margin:1.5rem auto;           /* 👈 centra horizontalmente */
+  width:100%;                  /* ✅ usa todo el ancho del content */
+  margin-top:1.5rem;
   text-align:left;
-  padding:0 1rem;               /* 👈 margen lateral interno */
 ">
   <h3 style="
-    font-size:1.6rem;
+    font-size:1.8rem;
     font-weight:700;
     margin-bottom:0.75rem;
     color:#111;
@@ -358,21 +357,19 @@ if (overlay) {
 
   <div style="
     width:100%;
-    aspect-ratio:16/9;          /* 👈 mantiene proporción moderna */
     border-radius:18px;
     overflow:hidden;
     box-shadow:0 4px 15px rgba(0,0,0,0.1);
-    margin-bottom:1rem;
+    margin-bottom:1.5rem;
     background-color:#f9f9f9;
-    display:flex;
-    align-items:center;
-    justify-content:center;
   ">
-    <img src="https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg"
+    <img
+      src="https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg"
       alt="Carne mongoliana con arroz"
       style="
         width:100%;
-        height:100%;
+        height:auto;             /* ✅ deja que ajuste proporcionalmente */
+        aspect-ratio:16/9;       /* ✅ mantiene proporción sin distorsión */
         object-fit:cover;
         display:block;
       ">
