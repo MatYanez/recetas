@@ -54,20 +54,20 @@ function expandCard(initialCard) {
   let swipeEnabled = true;
   const body = document.body;
   body.style.overflow = "hidden"; // bloquea scroll global
-  header.style.display = "none";
 
+  // fade out del saludo y de las cards iniciales antes de crear la vista nueva
+  Promise.all([
+    animate(saludo, { opacity: [1, 0], y: [0, -20] }, { duration: 0.3 }).finished,
+    animate(app,    { opacity: [1, 0], y: [0,  30] }, { duration: 0.3 }).finished
+  ]).then(() => {
+    // ya terminó la animación → limpiamos el home
+    header.style.display = "none";
+    app.innerHTML = "";
+    app.style.opacity = "0";
 
-
-
-
-Promise.all([
-  animate(saludo, { opacity: [1, 0], y: [0, -20] }, { duration: 0.3 }).finished,
-  animate(app, { opacity: [1, 0], y: [0, 30] }, { duration: 0.3 }).finished
-]).then(() => {
-  // 👇 esto corre recién cuando las animaciones terminaron
-  app.innerHTML = "";
-  app.style.opacity = "0";
-  header.style.display = "none";
+    /* ---------------------------------
+       CREAMOS LA VISTA EXPANDIDA COMPLETA
+    ----------------------------------*/
 
     // --- Contenedor principal de vista ---
     const view = document.createElement("div");
@@ -100,23 +100,21 @@ Promise.all([
     });
     view.appendChild(topBar);
 
-    // --- Contenido central ---
+    // --- Contenido central scrollable ---
     const content = document.createElement("div");
-Object.assign(content.style, {
-  backgroundColor: "#fff",
-  flex: "1",
-  padding: "1.5rem 1.5rem 5rem 1.5rem", // 👈 deja espacio para la barra inferior
-  color: "#333",
-  position: "relative",
-  overflowY: "auto",                    // 👈 scroll vertical real
-  WebkitOverflowScrolling: "touch",     // 👈 scroll suave en iOS
-  transition: "opacity 0.3s ease",
-});
-
-
+    Object.assign(content.style, {
+      backgroundColor: "#fff",
+      flex: "1",
+      padding: "1.5rem 1.5rem 5rem 1.5rem", // espacio para bottom bar
+      color: "#333",
+      position: "relative",
+      overflowY: "auto",
+      WebkitOverflowScrolling: "touch",
+      transition: "opacity 0.3s ease",
+    });
     view.appendChild(content);
 
-    // --- Barra inferior fija ---
+    // --- Barra inferior fija (tabs tipo iOS) ---
     const bottomBar = document.createElement("div");
     Object.assign(bottomBar.style, {
       position: "fixed",
@@ -146,508 +144,522 @@ Object.assign(content.style, {
     `;
     document.body.appendChild(bottomBar);
 
-    // --- Indicador ---
+    // --- Indicador pill detrás del tab activo ---
     const indicator = bottomBar.querySelector("#indicator");
-Object.assign(indicator.style, {
-  position: "absolute",
-  top: "50%",
-  transform: "translateY(-50%)",
-  width: "46px",
-  height: "46px",
-  backgroundColor: "rgb(237 237 237)",
-  borderRadius: "12px",
-  transition: "left 0.25s ease, transform 0.3s ease",
-  zIndex: "-1",
-});
-
+    Object.assign(indicator.style, {
+      position: "absolute",
+      top: "50%",
+      transform: "translateY(-50%)",
+      width: "46px",
+      height: "46px",
+      backgroundColor: "rgb(237 237 237)",
+      borderRadius: "12px",
+      transition: "left 0.25s ease, transform 0.3s ease",
+      zIndex: "-1",
+    });
 
     const items = bottomBar.querySelectorAll(".tab-item");
 
     function moveIndicatorTo(el) {
-  const barRect = bottomBar.getBoundingClientRect();
-  const btnRect = el.getBoundingClientRect();
+      const barRect = bottomBar.getBoundingClientRect();
+      const btnRect = el.getBoundingClientRect();
+      const center = btnRect.left - barRect.left + btnRect.width / 2;
+      indicator.style.left = `${center - 23}px`; // 23 = mitad de 46px
+    }
 
-  // centro del botón dentro del bottomBar
-  const center = btnRect.left - barRect.left + btnRect.width / 2;
+    /* ---------------------------------
+       CAMBIAR DE SECCIÓN / TABS / HOME
+    ----------------------------------*/
+    function updateView(sectionId) {
+      // ========== HOME ==========
+      if (sectionId === "home") {
+        selected = null;
+        body.style.overflow = "auto";
 
-  // resta la mitad del tamaño del cuadrado (46 / 2)
-  indicator.style.left = `${center - 23}px`;
-}
+        // animar salida de la bottom bar y luego eliminarla
+        animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 })
+          .finished
+          .then(() => {
+            bottomBar.remove();
+          });
 
-    
-    // --- función de actualización de vista ---
-function updateView(sectionId) {
-  // 👇 Si el usuario toca el botón "Home"
-if (sectionId === "home") {
-  selected = null;
-  const body = document.body;
+        // sacar la vista expandida fija que creamos arriba
+        // (el primer div fijo grande: "view")
+        view.remove();
 
-  // Oculta scroll global y limpia fondo
-  body.style.overflow = "auto";
-  body.style.backgroundColor = "#fff";
+        // restaurar header y saludo
+        header.style.display = "block";
+        saludo.removeAttribute("style");
+        animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
 
-  // Anima salida del bottom bar y luego lo elimina
-  animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 })
-    .finished.then(() => {
-      bottomBar.remove();
-    });
-
-  // 🔥 Elimina cualquier vista expandida que esté fija en pantalla
-  const expandedView = document.querySelector("body > div[style*='position: fixed']");
-  if (expandedView) expandedView.remove();
-
-  // Restaura el header y saludo
-  header.style.display = "block";
-  saludo.removeAttribute("style");
-  animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
-
-  // Vuelve a renderizar las tarjetas iniciales
-  render();
-
-  return;
-}
-
-
-  const section = cards.find((c) => c.id === sectionId);
-
-  if (!section) {
-    // Volver al home
-    selected = null;
-    body.style.overflow = "auto";
-    animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 }).finished.then(() => bottomBar.remove());
-    header.style.display = "block";
-    saludo.removeAttribute("style");
-    animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
-    body.style.backgroundColor = "#fff";
-    render();
-    return;
-  }
-
-  topBar.style.backgroundColor = section.color;
-  topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${section.title}</h2>`;
-  body.style.backgroundColor = "#fff"; // fondo siempre blanco
-
-  // Detectar dirección del swipe lateral
-  const order = ["home", "calendario", "almuerzos", "compras"];
-  const currentIndex = order.indexOf(sectionId);
-  const previousIndex = order.indexOf(selected);
-  const direction = currentIndex > previousIndex ? 1 : -1;
-  selected = sectionId;
-
-  // --- Animación de salida ---
-  animate(content, { opacity: [1, 0], x: [0, -40 * direction] }, { duration: 0.25 }).finished.then(() => {
-
-   // --- ALMUERZOS ---
-
-
-
-
-    // --- CALENDARIO ---
-    if (sectionId === "calendario") {
-      const today = new Date();
-      const monthName = today.toLocaleString("es-ES", { month: "long", year: "numeric" });
-      const year = today.getFullYear();
-      const month = today.getMonth();
-
-      // generar los días del mes (solo L–V)
-      const days = [];
-      const date = new Date(year, month, 1);
-      while (date.getMonth() === month) {
-        const day = date.getDay(); // 0=domingo, 1=lunes...
-        if (day >= 1 && day <= 5) days.push(new Date(date));
-        date.setDate(date.getDate() + 1);
+        // volver a dibujar las cards iniciales
+        render();
+        return;
       }
 
-      content.innerHTML = `
-        <div style="display:flex; flex-direction:column; width:100%;">
-          <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:1rem; text-transform:capitalize;">
-            ${monthName}
-          </h2>
+      // buscamos la card que corresponde
+      const section = cards.find((c) => c.id === sectionId);
 
-          <div class="scroll-cal" style="
-            overflow-x:auto;
-            white-space:nowrap;
-            scroll-behavior:smooth;
-            padding-bottom:1rem;
-          ">
-            <div style="display:inline-flex; flex-direction:column;">
-              <!-- Encabezado de días -->
-              <div style="display:flex; gap:1rem; justify-content:flex-start; margin-bottom:0.5rem;">
-                ${days.map(d => {
-                  const initials = ["D","L","M","X","J","V","S"];
-                  return `<div style="min-width:50px; text-align:center; font-weight:600;">
-                    ${initials[d.getDay()]}
-                  </div>`;
-                }).join("")}
+      // fallback raro, por si sectionId no existe
+      if (!section) {
+        selected = null;
+        body.style.overflow = "auto";
+
+        animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 })
+          .finished.then(() => bottomBar.remove());
+
+        view.remove();
+
+        header.style.display = "block";
+        saludo.removeAttribute("style");
+        animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
+
+        render();
+        return;
+      }
+
+      // setup visual para esta sección
+      topBar.style.backgroundColor = section.color;
+      topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${section.title}</h2>`;
+      body.style.backgroundColor = "#fff"; // fondo siempre blanco
+
+      // detectar dirección swipe (para la animación horizontal)
+      const order = ["home", "calendario", "almuerzos", "compras"];
+      const currentIndex = order.indexOf(sectionId);
+      const previousIndex = order.indexOf(selected);
+      const direction = currentIndex > previousIndex ? 1 : -1;
+      selected = sectionId;
+
+      // animación de salida del contenido anterior
+      animate(
+        content,
+        { opacity: [1, 0], x: [0, -40 * direction] },
+        { duration: 0.25 }
+      ).finished.then(() => {
+
+        // =========================
+        // ====== CALENDARIO =======
+        // =========================
+        if (sectionId === "calendario") {
+          const today = new Date();
+          const monthName = today.toLocaleString("es-ES", {
+            month: "long",
+            year: "numeric",
+          });
+          const year = today.getFullYear();
+          const month = today.getMonth();
+
+          // generar días laborales del mes
+          const days = [];
+          const date = new Date(year, month, 1);
+          while (date.getMonth() === month) {
+            const day = date.getDay(); // 0=domingo
+            if (day >= 1 && day <= 5) days.push(new Date(date));
+            date.setDate(date.getDate() + 1);
+          }
+
+          content.innerHTML = `
+            <div style="display:flex; flex-direction:column; width:100%;">
+              <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:1rem; text-transform:capitalize;">
+                ${monthName}
+              </h2>
+
+              <div class="scroll-cal" style="
+                overflow-x:auto;
+                white-space:nowrap;
+                scroll-behavior:smooth;
+                padding-bottom:1rem;
+              ">
+                <div style="display:inline-flex; flex-direction:column;">
+                  <!-- Encabezado de días -->
+                  <div style="display:flex; gap:1rem; justify-content:flex-start; margin-bottom:0.5rem;">
+                    ${days.map(d => {
+                      const initials = ["D","L","M","X","J","V","S"];
+                      return `<div style="min-width:50px; text-align:center; font-weight:600;">
+                        ${initials[d.getDay()]}
+                      </div>`;
+                    }).join("")}
+                  </div>
+
+                  <!-- Números -->
+                  <div style="display:flex; gap:1rem; justify-content:flex-start;">
+                    ${days.map(d => {
+                      const isToday = (d.toDateString() === new Date().toDateString());
+                      const todayClass = isToday
+                        ? "background-color:#000; color:#fff; border-radius:12px;"
+                        : "";
+                      return `<div style="
+                        min-width:50px;
+                        height:50px;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        font-weight:600;
+                        ${todayClass}">
+                        ${d.getDate()}
+                      </div>`;
+                    }).join("")}
+                  </div>
+                </div>
               </div>
-              <!-- Números -->
-              <div style="display:flex; gap:1rem; justify-content:flex-start;">
-                ${days.map(d => {
-                  const todayClass = (d.toDateString() === new Date().toDateString())
-                    ? "background-color:#000; color:#fff; border-radius:12px;"
-                    : "";
-                  return `<div style="
-                    min-width:50px;
-                    height:50px;
+            </div>
+
+            <!-- Contenido dinámico (la comida del día) -->
+            <div style="
+              width:100%;
+              margin-top:1rem;
+              text-align:left;
+            ">
+              <h3 style="
+                font-size:2rem;
+                font-weight:700;
+                margin-bottom:0.75rem;
+                color:#222;
+                line-height:1;
+              ">
+                Carne mongoliana con arroz
+              </h3>
+
+              <div style="
+                width:100%;
+                height:220px;
+                border-radius:20px;
+                overflow:hidden;
+                box-shadow:0 4px 15px rgba(0,0,0,0.1);
+                margin-bottom:1rem;
+                background-color:#f9f9f9;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+              ">
+                <img src="https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg"
+                  alt="Carne mongoliana con arroz"
+                  style="
+                    width:100%;
+                    height:100%;
+                    object-fit:cover;
+                    display:block;
+                  ">
+              </div>
+            </div>
+          `;
+
+          // centrar la semana actual
+          const scrollContainer = content.querySelector(".scroll-cal");
+          const todayIndex = days.findIndex(
+            d => d.toDateString() === new Date().toDateString()
+          );
+          if (todayIndex !== -1) {
+            const scrollPos = todayIndex * 60 - 150;
+            scrollContainer.scrollTo({ left: scrollPos, behavior: "instant" });
+          }
+
+          // bloquear swipe lateral mientras scrollea el calendario horizontal
+          scrollContainer.addEventListener("touchstart", () => (swipeEnabled = false));
+          scrollContainer.addEventListener("touchend", () => {
+            setTimeout(() => (swipeEnabled = true), 150);
+          });
+        }
+
+        // =========================
+        // ====== ALMUERZOS ========
+        // =========================
+        else if (sectionId === "almuerzos") {
+          const recipes = [
+            {
+              name: "Carne mongoliana con arroz",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg",
+              difficulty: "Fácil",
+              time: "30 min"
+            },
+            {
+              name: "Pollo teriyaki",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000546%2Fv3%2Frect.jpeg",
+              difficulty: "Medio",
+              time: "40 min"
+            },
+            {
+              name: "Pasta carbonara",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000215%2Fv3%2Frect.jpeg",
+              difficulty: "Fácil",
+              time: "25 min"
+            },
+            {
+              name: "Salmón con verduras",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000123%2Fv3%2Frect.jpeg",
+              difficulty: "Difícil",
+              time: "50 min"
+            },
+            {
+              name: "Ensalada César",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000522%2Fv3%2Frect.jpeg",
+              difficulty: "Fácil",
+              time: "15 min"
+            },
+            {
+              name: "Bowl de quinoa",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000333%2Fv3%2Frect.jpeg",
+              difficulty: "Medio",
+              time: "35 min"
+            },
+            {
+              name: "Tacos de carne",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000190%2Fv3%2Frect.jpeg",
+              difficulty: "Medio",
+              time: "30 min"
+            },
+            {
+              name: "Paella tradicional",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000101%2Fv3%2Frect.jpeg",
+              difficulty: "Difícil",
+              time: "120 min"
+            }
+          ];
+
+          content.innerHTML = `
+            <!-- Buscador -->
+            <div style="
+              width:100%;
+              display:flex;
+              align-items:center;
+              gap:0.5rem;
+              background:#f3f4f6;
+              border-radius:14px;
+              padding:0.6rem 1rem;
+              margin-bottom:1rem;
+              box-shadow:0 2px 6px rgba(0,0,0,0.05);
+            ">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                style="width:20px;height:20px;color:#888;">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M21 21l-4.35-4.35m1.6-5.4a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input id="searchInput" type="text" placeholder="Buscar almuerzo..."
+                style="
+                  width:100%;
+                  border:none;
+                  background:transparent;
+                  outline:none;
+                  font-size:1rem;
+                  color:#333;
+                ">
+            </div>
+
+            <!-- Grilla de recetas -->
+            <div id="recipesGrid" style="
+              display:grid;
+              grid-template-columns:repeat(2, 1fr);
+              gap:1rem;
+              padding-bottom:2rem;
+              height:auto;
+            ">
+              ${recipes.map(r => `
+                <div style="
+                  background:#fff;
+                  border-radius:18px;
+                  box-shadow:0 4px 15px rgba(0,0,0,0.08);
+                  overflow:hidden;
+                  display:flex;
+                  flex-direction:column;
+                ">
+                  <div style="
+                    width:100%;
+                    height:180px;
+                    overflow:hidden;
                     display:flex;
                     align-items:center;
                     justify-content:center;
-                    font-weight:600;
-                    ${todayClass}">
-                    ${d.getDate()}
-                  </div>`;
-                }).join("")}
+                    background-color:#f9f9f9;
+                  ">
+                    <img src="${r.img}" alt="${r.name}" style="
+                      width:100%;
+                      height:100%;
+                      object-fit:cover;
+                      display:block;
+                    ">
+                  </div>
+                  <div style="padding:0.75rem 0.75rem 1rem 0.75rem;">
+                    <h3 style="
+                      font-size:1rem;
+                      font-weight:700;
+                      color:#222;
+                      margin-bottom:0.5rem;
+                      height:2.4rem;
+                      line-height:1.2rem;
+                      overflow:hidden;
+                      text-overflow:ellipsis;
+                      display:-webkit-box;
+                      -webkit-line-clamp:2;
+                      -webkit-box-orient:vertical;
+                    ">
+                      ${r.name}
+                    </h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <span style="
+                        font-size:0.8rem;
+                        background-color:#f3f4f6;
+                        color:#555;
+                        padding:3px 8px;
+                        border-radius:8px;
+                      ">${r.difficulty}</span>
+                      <span style="font-size:0.8rem; color:#777;">${r.time}</span>
+                    </div>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          `;
+
+          // búsqueda dinámica
+          const searchInput = content.querySelector("#searchInput");
+          const recipesGrid = content.querySelector("#recipesGrid");
+
+          searchInput.addEventListener("input", (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = recipes.filter(r => r.name.toLowerCase().includes(query));
+
+            recipesGrid.innerHTML = filtered.map(r => `
+              <div style="
+                background:#fff;
+                border-radius:18px;
+                box-shadow:0 4px 15px rgba(0,0,0,0.08);
+                overflow:hidden;
+                display:flex;
+                flex-direction:column;
+              ">
+                <div style="
+                  width:100%;
+                  height:180px;
+                  overflow:hidden;
+                  display:flex;
+                  align-items:center;
+                  justify-content:center;
+                  background-color:#f9f9f9;
+                ">
+                  <img src="${r.img}" alt="${r.name}" style="
+                    width:100%;
+                    height:100%;
+                    object-fit:cover;
+                    display:block;
+                  ">
+                </div>
+                <div style="padding:0.75rem 0.75rem 1rem 0.75rem;">
+                  <h3 style="
+                    font-size:1rem;
+                    font-weight:700;
+                    color:#222;
+                    margin-bottom:0.5rem;
+                    height:2.4rem;
+                    line-height:1.2rem;
+                    overflow:hidden;
+                    text-overflow:ellipsis;
+                    display:-webkit-box;
+                    -webkit-line-clamp:2;
+                    -webkit-box-orient:vertical;
+                  ">${r.name}</h3>
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="
+                      font-size:0.8rem;
+                      background-color:#f3f4f6;
+                      color:#555;
+                      padding:3px 8px;
+                      border-radius:8px;
+                    ">${r.difficulty}</span>
+                    <span style="font-size:0.8rem; color:#777;">${r.time}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-</div>
-</div>
+            `).join("");
+          });
+        }
 
-<!-- Contenido dinámico: título + imagen -->
-<div style="
-  width:100%;
-  margin-top:1rem;
-  text-align:left;
-">
-  <h3 style="
-    font-size:2rem;
-    font-weight:700;
-    margin-bottom:0.75rem;
-    color:#222;
-        line-height: 1;
-  ">
-    Carne mongoliana con arroz
-  </h3>
+        // =========================
+        // ====== DEFAULT / OTRAS ==
+        // =========================
+        else {
+          content.innerHTML = `
+            <p style="font-size:1.1rem; line-height:1.6;">
+              ${section.content}
+            </p>
+            <button id="backBtn" style="
+              margin-top:2rem;
+              background-color:${section.color};
+              padding:0.75rem 1.5rem;
+              border-radius:12px;
+              font-weight:600;
+              box-shadow:0 2px 10px rgba(0,0,0,0.1);
+            ">Volver</button>
+          `;
 
-<div style="
-  width:100%;
-  height:220px;                /* 👈 altura controlada */
-  border-radius:20px;
-  overflow:hidden;
-  box-shadow:0 4px 15px rgba(0,0,0,0.1);
-  margin-bottom:1rem;
-  background-color:#f9f9f9;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-">
-  <img src="https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg"
-    alt="Carne mongoliana con arroz"
-    style="
-      width:100%;
-      height:100%;
-      object-fit:cover;         /* 👈 recorta sin deformar */
-      display:block;
-    ">
-</div>
+          // botón volver -> home
+          const backBtn = content.querySelector("#backBtn");
+          if (backBtn) {
+            backBtn.addEventListener("click", () => updateView("home"));
+          }
+        }
 
-</div>
-      `;
+        // animación de entrada para el nuevo contenido
+        animate(
+          content,
+          { opacity: [0, 1], x: [40 * direction, 0] },
+          { duration: 0.35, easing: "ease-out" }
+        );
 
+        // --- SWIPE LATERAL ENTRE TABS ---
+        let startX = 0;
+        let endX = 0;
+        let touchStartTime = 0;
 
+        content.ontouchstart = (e) => {
+          startX = e.touches[0].clientX;
+          touchStartTime = Date.now();
+        };
+        content.ontouchmove = (e) => {
+          endX = e.touches[0].clientX;
+        };
+        content.ontouchend = () => {
+          if (!swipeEnabled) return;
+          const delta = endX - startX;
+          const tabs = ["calendario", "almuerzos", "compras"];
+          const current = tabs.indexOf(sectionId);
+          const moved = Math.abs(delta) > 60;
+          const holdTime = Date.now() - touchStartTime;
+
+          if (moved && holdTime < 500) {
+            if (delta < 0 && current < tabs.length - 1) {
+              const next = tabs[current + 1];
+              const nextBtn = [...items].find(b => b.dataset.id === next);
+              moveIndicatorTo(nextBtn);
+              updateView(next);
+            } else if (delta > 0 && current > 0) {
+              const prev = tabs[current - 1];
+              const prevBtn = [...items].find(b => b.dataset.id === prev);
+              moveIndicatorTo(prevBtn);
+              updateView(prev);
+            }
+          }
+        };
+      }); // fin .finished.then() del animate(content)
       
-
-      // Centrar semana actual al cargar
-      const scrollContainer = content.querySelector(".scroll-cal");
-      const todayIndex = days.findIndex(d => d.toDateString() === new Date().toDateString());
-      if (todayIndex !== -1) {
-        const scrollPos = todayIndex * 60 - 150;
-        scrollContainer.scrollTo({ left: scrollPos, behavior: "instant" });
-      }
-
-      // Bloquear swipe lateral mientras se hace scroll horizontal
-      scrollContainer.addEventListener("touchstart", () => (swipeEnabled = false));
-      scrollContainer.addEventListener("touchend", () => setTimeout(() => (swipeEnabled = true), 150));
-
-    } 
-    
-else if (sectionId === "almuerzos") {
-  const recipes = [
-    {
-      name: "Carne mongoliana con arroz",
-      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg",
-      difficulty: "Fácil",
-      time: "30 min"
-    },
-    {
-      name: "Pollo teriyaki",
-      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000546%2Fv3%2Frect.jpeg",
-      difficulty: "Medio",
-      time: "40 min"
-    },
-    {
-      name: "Pasta carbonara",
-      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000215%2Fv3%2Frect.jpeg",
-      difficulty: "Fácil",
-      time: "25 min"
-    },
-    {
-      name: "Salmón con verduras",
-      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000123%2Fv3%2Frect.jpeg",
-      difficulty: "Difícil",
-      time: "50 min"
-    },
-    {
-      name: "Ensalada César",
-      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000522%2Fv3%2Frect.jpeg",
-      difficulty: "Fácil",
-      time: "15 min"
-    },
-    {
-      name: "Bowl de quinoa",
-      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000333%2Fv3%2Frect.jpeg",
-      difficulty: "Medio",
-      time: "35 min"
-    },
-    {
-      name: "Tacos de carne",
-      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000190%2Fv3%2Frect.jpeg",
-      difficulty: "Medio",
-      time: "30 min"
-    },
-    {
-      name: "Paella tradicional",
-      img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000101%2Fv3%2Frect.jpeg",
-      difficulty: "Difícil",
-      time: "120 min"
-    }
-  ];
-
-  // --- HTML del buscador + grilla ---
-  content.innerHTML = `
-    <!-- Buscador -->
-    <div style="
-      width:100%;
-      display:flex;
-      align-items:center;
-      gap:0.5rem;
-      background:#f3f4f6;
-      border-radius:14px;
-      padding:0.6rem 1rem;
-      margin-bottom:1rem;
-      box-shadow:0 2px 6px rgba(0,0,0,0.05);
-    ">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-        style="width:20px;height:20px;color:#888;">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M21 21l-4.35-4.35m1.6-5.4a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-      <input id="searchInput" type="text" placeholder="Buscar almuerzo..."
-        style="
-          width:100%;
-          border:none;
-          background:transparent;
-          outline:none;
-          font-size:1rem;
-          color:#333;
-        ">
-    </div>
-
-    <!-- Grilla de recetas -->
-<div id="recipesGrid" style="
-  display:grid;
-  grid-template-columns:repeat(2, 1fr);
-  gap:1rem;
-  padding-bottom:2rem;
-  height:auto;               /* 👈 altura automática */
-">
-
-      ${recipes.map(r => `
-        <div style="
-          background:#fff;
-          border-radius:18px;
-          box-shadow:0 4px 15px rgba(0,0,0,0.08);
-          overflow:hidden;
-          display:flex;
-          flex-direction:column;
-        ">
-          <div style="
-            width:100%;
-            height:180px;
-            overflow:hidden;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            background-color:#f9f9f9;
-          ">
-            <img src="${r.img}" alt="${r.name}" style="
-              width:100%;
-              height:100%;
-              object-fit:cover;
-              display:block;
-            ">
-          </div>
-          <div style="padding:0.75rem 0.75rem 1rem 0.75rem;">
-            <h3 style="
-              font-size:1rem;
-              font-weight:700;
-              color:#222;
-              margin-bottom:0.5rem;
-              height:2.4rem;
-              line-height:1.2rem;
-              overflow:hidden;
-              text-overflow:ellipsis;
-              display:-webkit-box;
-              -webkit-line-clamp:2;
-              -webkit-box-orient:vertical;
-            ">
-              ${r.name}
-            </h3>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="
-                font-size:0.8rem;
-                background-color:#f3f4f6;
-                color:#555;
-                padding:3px 8px;
-                border-radius:8px;
-              ">${r.difficulty}</span>
-              <span style="font-size:0.8rem; color:#777;">${r.time}</span>
-            </div>
-          </div>
-        </div>
-      `).join("")}
-    </div>
-  `;
-
-  // --- Búsqueda dinámica ---
-  const searchInput = content.querySelector("#searchInput");
-  const recipesGrid = content.querySelector("#recipesGrid");
-
-  searchInput.addEventListener("input", (e) => {
-    const query = e.target.value.toLowerCase();
-    const filtered = recipes.filter(r => r.name.toLowerCase().includes(query));
-
-    recipesGrid.innerHTML = filtered.map(r => `
-      <div style="
-        background:#fff;
-        border-radius:18px;
-        box-shadow:0 4px 15px rgba(0,0,0,0.08);
-        overflow:hidden;
-        display:flex;
-        flex-direction:column;
-      ">
-        <div style="
-          width:100%;
-          height:180px;
-          overflow:hidden;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          background-color:#f9f9f9;
-        ">
-          <img src="${r.img}" alt="${r.name}" style="
-            width:100%;
-            height:100%;
-            object-fit:cover;
-            display:block;
-          ">
-        </div>
-        <div style="padding:0.75rem 0.75rem 1rem 0.75rem;">
-          <h3 style="
-            font-size:1rem;
-            font-weight:700;
-            color:#222;
-            margin-bottom:0.5rem;
-            height:2.4rem;
-            line-height:1.2rem;
-            overflow:hidden;
-            text-overflow:ellipsis;
-            display:-webkit-box;
-            -webkit-line-clamp:2;
-            -webkit-box-orient:vertical;
-          ">${r.name}</h3>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="
-              font-size:0.8rem;
-              background-color:#f3f4f6;
-              color:#555;
-              padding:3px 8px;
-              border-radius:8px;
-            ">${r.difficulty}</span>
-            <span style="font-size:0.8rem; color:#777;">${r.time}</span>
-          </div>
-        </div>
-      </div>
-    `).join("");
-  });
-}
+      // mover el indicador al botón activo actual
+      moveIndicatorTo([...items].find((b) => b.dataset.id === sectionId));
+      content.scrollTo({ top: 0, behavior: "instant" });
+    } // fin updateView
 
 
-
-
-    else {
-      // --- CONTENIDO GENERAL ---
-      content.innerHTML = `
-        <p style="font-size:1.1rem; line-height:1.6;">
-          ${section.content}
-        </p>
-        <button id="backBtn" style="
-          margin-top:2rem;
-          background-color:${section.color};
-          padding:0.75rem 1.5rem;
-          border-radius:12px;
-          font-weight:600;
-          box-shadow:0 2px 10px rgba(0,0,0,0.1);
-        ">Volver</button>
-      `;
-    }
-
-    // --- Animación de entrada ---
-    animate(content, { opacity: [0, 1], x: [40 * direction, 0] }, { duration: 0.35, easing: "ease-out" });
-
-    // botón volver
-    const backBtn = content.querySelector("#backBtn");
-    if (backBtn) backBtn.addEventListener("click", () => updateView("home"));
-
-  });
-
-  // mover el indicador del tab activo
-  moveIndicatorTo([...items].find((b) => b.dataset.id === sectionId));
-  content.scrollTo({ top: 0, behavior: "instant" });
-
-  // --- SWIPE LATERAL ENTRE TABS ---
-let startX = 0;
-let endX = 0;
-let touchStartTime = 0;
-
-content.ontouchstart = (e) => {
-  startX = e.touches[0].clientX;
-  touchStartTime = Date.now();
-};
-  content.ontouchstart = (e) => { startX = e.touches[0].clientX; };
-  content.ontouchmove = (e) => { endX = e.touches[0].clientX; };
-  content.ontouchend = () => {
-    if (!swipeEnabled) return; // 👈 bloquea si el calendario está siendo tocado
-    const delta = endX - startX;
-    const tabs = ["calendario", "almuerzos", "compras"];
-    const current = tabs.indexOf(sectionId);
-   const moved = Math.abs(delta) > 60; // más de 60px reales
-const holdTime = Date.now() - touchStartTime;
-if (moved && holdTime < 500) {
-      if (delta < 0 && current < tabs.length - 1) {
-        const next = tabs[current + 1];
-        const nextBtn = [...items].find(b => b.dataset.id === next);
-        moveIndicatorTo(nextBtn);
-        updateView(next);
-      } else if (delta > 0 && current > 0) {
-        const prev = tabs[current - 1];
-        const prevBtn = [...items].find(b => b.dataset.id === prev);
-        moveIndicatorTo(prevBtn);
-        updateView(prev);
-      }
-    }
-  };
-}
-
-
-    // --- inicializar vista ---
+    /* ---------------------------------
+       INICIALIZAMOS LA VISTA
+    ----------------------------------*/
     updateView(initialCard.id);
-// encuentra el botón correspondiente al card inicial
-const activeBtn = [...items].find((b) => b.dataset.id === initialCard.id);
-setTimeout(() => {
-  moveIndicatorTo(activeBtn);
-  activeBtn.classList.add("active");
-}, 50);
 
+    // marcar botón activo e indicator
+    const activeBtn = [...items].find((b) => b.dataset.id === initialCard.id);
+    setTimeout(() => {
+      moveIndicatorTo(activeBtn);
+      activeBtn.classList.add("active");
+    }, 50);
+
+    // listeners de cada tab en la bottom bar
     items.forEach((btn) => {
       btn.addEventListener("click", () => {
         items.forEach((b) => b.classList.remove("active"));
@@ -656,8 +668,9 @@ setTimeout(() => {
         updateView(btn.dataset.id);
       });
     });
-  }, 300);
+  }); // fin Promise.all
 }
+
 
 
 
