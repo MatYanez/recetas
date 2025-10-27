@@ -170,6 +170,20 @@ Object.assign(indicator.style, {
     
     // --- función de actualización de vista ---
 function updateView(sectionId) {
+  // 👇 Si el usuario toca el botón "Home"
+  if (sectionId === "home") {
+    selected = null;
+    document.body.style.overflow = "auto";
+    animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 })
+      .finished.then(() => bottomBar.remove());
+    header.style.display = "block";
+    saludo.removeAttribute("style");
+    animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
+    document.body.style.backgroundColor = "#fff";
+    render(); // 👈 vuelve al home
+    return;
+  }
+
   const section = cards.find((c) => c.id === sectionId);
 
   if (!section) {
