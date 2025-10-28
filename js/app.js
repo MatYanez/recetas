@@ -177,8 +177,8 @@ bottomBar.innerHTML = `
     position:absolute;
     top:50%;
     transform:translateY(-50%);
-    width:46px;
-    height:46px;
+    width:25px;
+    height:25px;
     border-radius:12px;
     background-color:rgb(237 237 237);
     left:50%;
