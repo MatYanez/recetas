@@ -994,20 +994,34 @@ if (typeof ingredientesSection.postRender === "function") {
       collapsible: true,
     });
 
-    // ---------- Sección: Preparación ----------
-    createSection({
-      title: "Preparación",
-      bodyBuilder: (wrapEl) => {
-        wrapEl.innerHTML = `
-          <ol style="font-size:1rem; color:#444; line-height:1.5; padding-left:1.2rem;">
-            <li style="margin-bottom:0.5rem;">Calentar la sartén.</li>
-            <li style="margin-bottom:0.5rem;">Agregar la carne y cocinar 10 min.</li>
-            <li style="margin-bottom:0.5rem;">Añadir salsa y servir con arroz.</li>
-          </ol>
-        `;
-      },
-      collapsible: true,
-    });
+// ---------- Sección: Preparación ----------
+const preparacionBtn = document.createElement("button");
+preparacionBtn.textContent = "👨‍🍳 Ver preparación paso a paso";
+Object.assign(preparacionBtn.style, {
+  width: "100%",
+  backgroundColor: "#111",
+  color: "#fff",
+  border: "none",
+  borderRadius: "14px",
+  padding: "1rem",
+  fontSize: "1.1rem",
+  fontWeight: "600",
+  marginTop: "0.5rem",
+  boxShadow: "0 3px 10px rgba(0,0,0,0.15)",
+  cursor: "pointer",
+  transition: "transform 0.2s ease, background-color 0.3s ease",
+});
+preparacionBtn.addEventListener("mousedown", () => {
+  preparacionBtn.style.transform = "scale(0.97)";
+});
+preparacionBtn.addEventListener("mouseup", () => {
+  preparacionBtn.style.transform = "scale(1)";
+});
+preparacionBtn.addEventListener("click", () => {
+  showStepByStep(recipe);
+});
+
+detail.appendChild(preparacionBtn);
 
 
 
@@ -1015,6 +1029,221 @@ if (typeof ingredientesSection.postRender === "function") {
     content.appendChild(detail);
   }
   
+function showStepByStep(recipe) {
+  // limpiamos el content actual
+  const content = document.querySelector(".view-content") || document.querySelector("div[style*='overflow-y']");
+  if (!content) return;
+
+  // guardamos scroll previo (opcional)
+  const previousScroll = content.scrollTop;
+
+  // limpiamos y preparamos pantalla de pasos
+  content.innerHTML = "";
+  content.scrollTo({ top: 0 });
+
+  // --- Contenedor principal ---
+  const stepsView = document.createElement("div");
+  Object.assign(stepsView.style, {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2rem",
+    width: "100%",
+    padding: "1rem 0.5rem 4rem 0.5rem",
+    position: "relative",
+    animation: "fadeIn 0.4s ease",
+  });
+
+  // --- Botón volver ---
+  const backBtn = document.createElement("button");
+  backBtn.textContent = "← Atrás";
+  Object.assign(backBtn.style, {
+    position: "sticky",
+    top: "0",
+    alignSelf: "flex-start",
+    zIndex: "10",
+    background: "rgba(255,255,255,0.85)",
+    backdropFilter: "blur(6px)",
+    border: "none",
+    color: "#007AFF",
+    fontWeight: "600",
+    fontSize: "1rem",
+    cursor: "pointer",
+    padding: "0.6rem 1rem",
+    borderRadius: "10px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+  });
+  backBtn.addEventListener("click", () => {
+    // volver al detalle
+    content.innerHTML = "";
+    showRecipeDetail(recipe);
+    content.scrollTo({ top: previousScroll });
+  });
+  stepsView.appendChild(backBtn);
+
+  // --- Botón flotante de ingredientes ---
+  const ingredientsBtn = document.createElement("button");
+  ingredientsBtn.textContent = "🧂 Ingredientes";
+  Object.assign(ingredientsBtn.style, {
+    position: "fixed",
+    top: "1.2rem",
+    right: "1.2rem",
+    background: "rgba(255,255,255,0.9)",
+    backdropFilter: "blur(8px)",
+    border: "1px solid rgba(0,0,0,0.08)",
+    borderRadius: "12px",
+    padding: "0.5rem 1rem",
+    fontWeight: "600",
+    fontSize: "0.9rem",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+    cursor: "pointer",
+    zIndex: "20",
+  });
+  ingredientsBtn.addEventListener("click", () => {
+    showIngredientsOverlay(recipe);
+  });
+  stepsView.appendChild(ingredientsBtn);
+
+  // --- Lista de pasos ---
+  const steps = [
+    "Calentar la sartén a fuego medio con una cucharadita de aceite.",
+    "Agregar la carne y cocinar por 10 minutos hasta que esté dorada.",
+    "Añadir la salsa de soja y cebollín picado, mezclar bien.",
+    "Servir con arroz blanco recién hecho.",
+  ];
+
+  steps.forEach((text, i) => {
+    const stepDiv = document.createElement("div");
+    Object.assign(stepDiv.style, {
+      padding: "1rem 0.5rem",
+      borderBottom: "1px solid #eee",
+    });
+
+    const title = document.createElement("h3");
+    title.textContent = `Paso ${i + 1}`;
+    Object.assign(title.style, {
+      fontSize: "1.5rem",
+      fontWeight: "700",
+      marginBottom: "0.5rem",
+      color: "#111",
+    });
+
+    const desc = document.createElement("p");
+    desc.textContent = text;
+    Object.assign(desc.style, {
+      fontSize: "1.1rem",
+      lineHeight: "1.6",
+      color: "#444",
+    });
+
+    stepDiv.appendChild(title);
+    stepDiv.appendChild(desc);
+    stepsView.appendChild(stepDiv);
+  });
+
+  content.appendChild(stepsView);
+}
+
+function showIngredientsOverlay(recipe) {
+  const overlay = document.createElement("div");
+  Object.assign(overlay.style, {
+    position: "fixed",
+    inset: "0",
+    background: "rgba(0,0,0,0.45)",
+    backdropFilter: "blur(6px)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: "100",
+  });
+
+  const modal = document.createElement("div");
+  Object.assign(modal.style, {
+    background: "#fff",
+    borderRadius: "16px",
+    width: "85%",
+    maxHeight: "80%",
+    overflowY: "auto",
+    padding: "1.5rem",
+    boxShadow: "0 5px 25px rgba(0,0,0,0.3)",
+    animation: "fadeInUp 0.3s ease",
+  });
+
+  const title = document.createElement("h2");
+  title.textContent = "Ingredientes";
+  Object.assign(title.style, {
+    fontSize: "1.4rem",
+    fontWeight: "700",
+    marginBottom: "1rem",
+    textAlign: "center",
+  });
+
+  const list = document.createElement("ul");
+  Object.assign(list.style, {
+    listStyle: "none",
+    padding: "0",
+    margin: "0",
+    display: "flex",
+    flexDirection: "column",
+    gap: "0.75rem",
+  });
+
+  (recipe.ingredients || []).forEach((ing) => {
+    const li = document.createElement("li");
+    Object.assign(li.style, {
+      display: "flex",
+      alignItems: "center",
+      gap: "0.75rem",
+      background: "#f8f8f8",
+      borderRadius: "12px",
+      padding: "0.6rem 0.8rem",
+    });
+
+    const img = document.createElement("img");
+    img.src = ing.img;
+    Object.assign(img.style, {
+      width: "32px",
+      height: "32px",
+      borderRadius: "8px",
+      objectFit: "cover",
+    });
+
+    const text = document.createElement("span");
+    text.textContent = `${ing.qty} ${ing.unit} ${ing.name}`;
+    Object.assign(text.style, {
+      fontSize: "1rem",
+      color: "#333",
+    });
+
+    li.appendChild(img);
+    li.appendChild(text);
+    list.appendChild(li);
+  });
+
+  const closeBtn = document.createElement("button");
+  closeBtn.textContent = "Cerrar";
+  Object.assign(closeBtn.style, {
+    marginTop: "1.2rem",
+    width: "100%",
+    padding: "0.7rem",
+    background: "#111",
+    color: "#fff",
+    border: "none",
+    borderRadius: "10px",
+    fontSize: "1rem",
+    fontWeight: "600",
+    cursor: "pointer",
+  });
+  closeBtn.addEventListener("click", () => overlay.remove());
+
+  modal.appendChild(title);
+  modal.appendChild(list);
+  modal.appendChild(closeBtn);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+}
+
+
+
 }
 
         // =========================
