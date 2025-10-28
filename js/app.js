@@ -138,7 +138,7 @@ Object.assign(content.style, {
   backgroundColor: "#fff",
   flex: "1 1 0%",
   width: "100%",                    // ✅ fuerza ancho total
-  padding: "1.5rem 1.5rem 8rem 1.5rem",
+  padding: "0rem 1.5rem 8rem 1.5rem",
   color: "#333",
   position: "relative",
   overflowY: "auto",
