@@ -409,10 +409,21 @@ else if (sectionId === "almuerzos") {
 
   let recipes = [];
 
-  // --- Función para renderizar la grilla ---
+  // --- Cargar recetas desde JSON ---
+  fetch("./data/recetas.json")
+    .then(res => res.json())
+    .then(data => {
+      recipes = data;
+      renderRecipes();
+    })
+    .catch(err => {
+      console.error("Error al cargar recetas:", err);
+      content.innerHTML = "<p>Error al cargar recetas.</p>";
+    });
+
+  // --- Render listado ---
   function renderRecipes() {
     content.innerHTML = `
-      <!-- Buscador -->
       <div style="
         width:100%;
         display:flex;
@@ -440,7 +451,6 @@ else if (sectionId === "almuerzos") {
           ">
       </div>
 
-      <!-- Grilla de recetas -->
       <div id="recipesGrid" style="
         display:grid;
         grid-template-columns:repeat(2, 1fr);
@@ -453,9 +463,9 @@ else if (sectionId === "almuerzos") {
             border-radius:18px;
             box-shadow:0 4px 15px rgba(0,0,0,0.08);
             overflow:hidden;
+            cursor:pointer;
             display:flex;
             flex-direction:column;
-            cursor:pointer;
           ">
             <div style="
               width:100%;
@@ -464,36 +474,29 @@ else if (sectionId === "almuerzos") {
               display:flex;
               align-items:center;
               justify-content:center;
-              background-color:#f9f9f9;
             ">
               <img src="${r.img}" alt="${r.name}" style="
                 width:100%;
                 height:100%;
                 object-fit:cover;
-                display:block;
               ">
             </div>
-            <div style="padding:0.75rem 0.75rem 1rem 0.75rem;">
+            <div style="padding:0.75rem;">
               <h3 style="
                 font-size:1rem;
                 font-weight:700;
                 color:#222;
                 margin-bottom:0.5rem;
-                height:2.4rem;
-                line-height:1.2rem;
                 overflow:hidden;
                 text-overflow:ellipsis;
                 display:-webkit-box;
                 -webkit-line-clamp:2;
                 -webkit-box-orient:vertical;
-              ">
-                ${r.name}
-              </h3>
-              <div style="display:flex; justify-content:space-between; align-items:center;">
+              ">${r.name}</h3>
+              <div style="display:flex; justify-content:space-between;">
                 <span style="
                   font-size:0.8rem;
                   background-color:#f3f4f6;
-                  color:#555;
                   padding:3px 8px;
                   border-radius:8px;
                 ">${r.difficulty}</span>
@@ -505,112 +508,45 @@ else if (sectionId === "almuerzos") {
       </div>
     `;
 
-    // --- Búsqueda dinámica ---
+    attachCardEvents(recipes);
+
     const searchInput = content.querySelector("#searchInput");
     const recipesGrid = content.querySelector("#recipesGrid");
-
-    searchInput.addEventListener("input", (e) => {
-      const query = e.target.value.toLowerCase();
-      const filtered = recipes.filter(r => r.name.toLowerCase().includes(query));
-
+    searchInput.addEventListener("input", e => {
+      const q = e.target.value.toLowerCase();
+      const filtered = recipes.filter(r => r.name.toLowerCase().includes(q));
       recipesGrid.innerHTML = filtered.map(r => `
-        <div class="recipe-card" style="
-          background:#fff;
-          border-radius:18px;
-          box-shadow:0 4px 15px rgba(0,0,0,0.08);
-          overflow:hidden;
-          display:flex;
-          flex-direction:column;
-          cursor:pointer;
-        ">
-          <div style="
-            width:100%;
-            height:180px;
-            overflow:hidden;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            background-color:#f9f9f9;
-          ">
-            <img src="${r.img}" alt="${r.name}" style="
-              width:100%;
-              height:100%;
-              object-fit:cover;
-              display:block;
-            ">
+        <div class="recipe-card" style="background:#fff;border-radius:18px;box-shadow:0 4px 15px rgba(0,0,0,0.08);overflow:hidden;cursor:pointer;display:flex;flex-direction:column;">
+          <div style="width:100%;height:180px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+            <img src="${r.img}" alt="${r.name}" style="width:100%;height:100%;object-fit:cover;">
           </div>
-          <div style="padding:0.75rem 0.75rem 1rem 0.75rem;">
-            <h3 style="
-              font-size:1rem;
-              font-weight:700;
-              color:#222;
-              margin-bottom:0.5rem;
-              height:2.4rem;
-              line-height:1.2rem;
-              overflow:hidden;
-              text-overflow:ellipsis;
-              display:-webkit-box;
-              -webkit-line-clamp:2;
-              -webkit-box-orient:vertical;
-            ">${r.name}</h3>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="
-                font-size:0.8rem;
-                background-color:#f3f4f6;
-                color:#555;
-                padding:3px 8px;
-                border-radius:8px;
-              ">${r.difficulty}</span>
-              <span style="font-size:0.8rem; color:#777;">${r.time}</span>
+          <div style="padding:0.75rem;">
+            <h3 style="font-size:1rem;font-weight:700;color:#222;margin-bottom:0.5rem;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${r.name}</h3>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="font-size:0.8rem;background-color:#f3f4f6;padding:3px 8px;border-radius:8px;">${r.difficulty}</span>
+              <span style="font-size:0.8rem;color:#777;">${r.time}</span>
             </div>
           </div>
         </div>
       `).join("");
-
       attachCardEvents(filtered);
     });
-
-    // --- Click para abrir detalle ---
-    attachCardEvents(recipes);
   }
 
-  // --- Función para asignar eventos a las tarjetas ---
+  // --- Click en tarjeta ---
   function attachCardEvents(list) {
     const cards = content.querySelectorAll(".recipe-card");
-    cards.forEach((cardEl, i) => {
-      cardEl.addEventListener("click", () => {
-        const recipe = list[i];
-        showRecipeDetail(recipe);
+    cards.forEach((card, i) => {
+      card.addEventListener("click", () => {
+        showRecipeDetail(list[i]);
       });
     });
   }
 
-  // --- Cargar recetas desde JSON ---
-  fetch("./data/recetas.json")
-    .then(res => res.json())
-    .then(data => {
-      recipes = data;
-      renderRecipes();
-    })
-    .catch(err => {
-      console.error("Error al cargar recetas:", err);
-      content.innerHTML = "<p>Error al cargar recetas.</p>";
-    });
-
-  // --- Función para mostrar detalle ---
-  // --- Función para mostrar detalle ---
+  // --- Detalle de receta ---
   function showRecipeDetail(recipe) {
     content.innerHTML = "";
-    const detail = document.createElement("div");
-    Object.assign(detail.style, {
-      width: "100%",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "flex-start",
-      gap: "1rem",
-    });
 
-    // --- Botón volver ---
     const backBtn = document.createElement("button");
     backBtn.textContent = "← Volver";
     Object.assign(backBtn.style, {
@@ -620,237 +556,102 @@ else if (sectionId === "almuerzos") {
       fontWeight: "600",
       fontSize: "1rem",
       cursor: "pointer",
-      marginBottom: "0.5rem",
+      marginBottom: "0.5rem"
     });
-    backBtn.addEventListener("click", () => {
-      renderRecipes();
-    });
-    detail.appendChild(backBtn);
+    backBtn.addEventListener("click", renderRecipes);
+    content.appendChild(backBtn);
 
-    // --- Imagen principal ---
     const img = document.createElement("img");
     img.src = recipe.img;
-    img.alt = recipe.name;
-    Object.assign(img.style, {
-      width: "100%",
-      borderRadius: "18px",
-      objectFit: "cover",
-      boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-    });
-    detail.appendChild(img);
+    Object.assign(img.style, { width: "100%", borderRadius: "18px", marginBottom: "1rem" });
+    content.appendChild(img);
 
-    // --- Nombre del plato ---
     const title = document.createElement("h2");
     title.textContent = recipe.name;
-    Object.assign(title.style, {
-      fontSize: "1.8rem",
-      fontWeight: "700",
-      color: "#111",
-      marginTop: "1rem",
+    Object.assign(title.style, { fontSize: "1.8rem", fontWeight: "700" });
+    content.appendChild(title);
+
+    const info = document.createElement("p");
+    info.textContent = `${recipe.difficulty} • ${recipe.time}`;
+    Object.assign(info.style, { color: "#555", marginBottom: "1rem" });
+    content.appendChild(info);
+
+    // --- Ingredientes (colapsable) ---
+    const ing = document.createElement("details");
+    const sum = document.createElement("summary");
+    sum.textContent = "🧂 Ingredientes";
+    sum.style.fontWeight = "600";
+    ing.appendChild(sum);
+    recipe.ingredients.forEach(el => {
+      const row = document.createElement("div");
+      row.textContent = `${el.qty} ${el.unit} ${el.name}`;
+      row.style.padding = "0.3rem 1rem";
+      ing.appendChild(row);
     });
-    detail.appendChild(title);
+    content.appendChild(ing);
 
-    // --- Datos principales ---
-    const info = document.createElement("div");
-    info.innerHTML = `
-      <p><strong>Dificultad:</strong> ${recipe.difficulty}</p>
-      <p><strong>Tiempo:</strong> ${recipe.time}</p>
-    `;
-    Object.assign(info.style, {
-      fontSize: "1rem",
-      color: "#444",
-      lineHeight: "1.5",
-    });
-    detail.appendChild(info);
-
-    // ---------- Función genérica para crear secciones colapsables ----------
-    function createSection(titleText, innerHTML) {
-      const container = document.createElement("div");
-      Object.assign(container.style, {
-        width: "100%",
-        borderRadius: "14px",
-        background: "#f8f8f8",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-        overflow: "hidden",
-        transition: "all 0.3s ease",
-      });
-
-      const header = document.createElement("div");
-      Object.assign(header.style, {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "0.75rem 1rem",
-        cursor: "pointer",
-        fontWeight: "600",
-        backgroundColor: "#ededed",
-      });
-      header.innerHTML = `
-        <span>${titleText}</span>
-        <span style="transition:transform 0.3s;">▼</span>
-      `;
-
-      const body = document.createElement("div");
-      Object.assign(body.style, {
-        maxHeight: "0px",
-        overflow: "hidden",
-        transition: "max-height 0.3s ease",
-        padding: "0 1rem",
-        color: "#333",
-      });
-      body.innerHTML = innerHTML;
-
-      header.addEventListener("click", () => {
-        const arrow = header.querySelector("span:last-child");
-        const isOpen = body.style.maxHeight !== "0px";
-        if (isOpen) {
-          body.style.maxHeight = "0px";
-          arrow.style.transform = "rotate(0deg)";
-        } else {
-          body.style.maxHeight = body.scrollHeight + "px";
-          arrow.style.transform = "rotate(180deg)";
-        }
-      });
-
-      container.appendChild(header);
-      container.appendChild(body);
-      detail.appendChild(container);
+    // --- Nutrición (colapsable) ---
+    const nutri = document.createElement("details");
+    const sum2 = document.createElement("summary");
+    sum2.textContent = "⚡ Valores nutricionales";
+    sum2.style.fontWeight = "600";
+    nutri.appendChild(sum2);
+    for (const [k, v] of Object.entries(recipe.nutrition || {})) {
+      const p = document.createElement("p");
+      p.textContent = `${k}: ${v}`;
+      p.style.padding = "0.3rem 1rem";
+      nutri.appendChild(p);
     }
+    content.appendChild(nutri);
 
-    // ---------- Sección: Ingredientes ----------
-    if (recipe.ingredients && recipe.ingredients.length > 0) {
-      const ingHTML = recipe.ingredients.map(
-        ing => `
-          <div style="
-            display:flex;
-            align-items:center;
-            gap:0.75rem;
-            background:#fff;
-            border-radius:10px;
-            padding:0.6rem 0.8rem;
-            margin-top:0.5rem;
-            box-shadow:0 1px 4px rgba(0,0,0,0.05);
-          ">
-            <img src="${ing.img}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;">
-            <span style="font-size:1rem;color:#333;">${ing.qty} ${ing.unit} ${ing.name}</span>
-          </div>
-        `
-      ).join("");
-      createSection("🧂 Ingredientes", ingHTML);
-    }
-
-    // ---------- Sección: Valores nutricionales ----------
-    const nutriHTML = `
-      <p style="font-size:1rem;line-height:1.6;margin-top:0.5rem;">
-        <strong>Calorías:</strong> 520 kcal<br>
-        <strong>Proteínas:</strong> 35 g<br>
-        <strong>Grasas:</strong> 12 g<br>
-        <strong>Carbohidratos:</strong> 55 g
-      </p>
-    `;
-    createSection("⚡ Valores nutricionales", nutriHTML);
-
-    // ---------- Botón: Ver preparación paso a paso ----------
-    const stepsBtn = document.createElement("button");
-    stepsBtn.textContent = "👨‍🍳 Ver preparación paso a paso";
-    Object.assign(stepsBtn.style, {
+    // --- Botón pasos ---
+    const btn = document.createElement("button");
+    btn.textContent = "👨‍🍳 Ver preparación paso a paso";
+    Object.assign(btn.style, {
       width: "100%",
       backgroundColor: "#111",
       color: "#fff",
       border: "none",
-      borderRadius: "14px",
+      borderRadius: "12px",
       padding: "1rem",
-      fontSize: "1.1rem",
-      fontWeight: "600",
-      marginTop: "0.5rem",
-      boxShadow: "0 3px 10px rgba(0,0,0,0.15)",
+      marginTop: "1rem",
       cursor: "pointer",
-      transition: "transform 0.2s ease, background-color 0.3s ease",
+      fontWeight: "600"
     });
-    stepsBtn.addEventListener("mousedown", () => {
-      stepsBtn.style.transform = "scale(0.97)";
-    });
-    stepsBtn.addEventListener("mouseup", () => {
-      stepsBtn.style.transform = "scale(1)";
-    });
-    stepsBtn.addEventListener("click", () => {
-      showStepByStep(recipe);
-    });
-
-    detail.appendChild(stepsBtn);
-
-    content.appendChild(detail);
+    btn.addEventListener("click", () => showSteps(recipe));
+    content.appendChild(btn);
   }
 
-  // ---------- Pantalla de pasos ----------
-  function showStepByStep(recipe) {
+  // --- Pasos ---
+  function showSteps(recipe) {
     content.innerHTML = "";
-    const stepsView = document.createElement("div");
-    Object.assign(stepsView.style, {
-      display: "flex",
-      flexDirection: "column",
-      gap: "2rem",
-      width: "100%",
-      padding: "1rem 0.5rem 4rem 0.5rem",
-      animation: "fadeIn 0.4s ease",
-    });
-
-    const backBtn = document.createElement("button");
-    backBtn.textContent = "← Atrás";
-    Object.assign(backBtn.style, {
+    const back = document.createElement("button");
+    back.textContent = "← Atrás";
+    Object.assign(back.style, {
       background: "none",
       border: "none",
       color: "#007AFF",
       fontWeight: "600",
       fontSize: "1rem",
       cursor: "pointer",
-      marginBottom: "0.5rem",
+      marginBottom: "0.5rem"
     });
-    backBtn.addEventListener("click", () => {
-      showRecipeDetail(recipe);
+    back.addEventListener("click", () => showRecipeDetail(recipe));
+    content.appendChild(back);
+
+    (recipe.steps || []).forEach((step, i) => {
+      const div = document.createElement("div");
+      div.innerHTML = `<h3>Paso ${i + 1}</h3><p>${step}</p>`;
+      Object.assign(div.style, {
+        marginBottom: "1rem",
+        padding: "0.5rem",
+        borderBottom: "1px solid #eee"
+      });
+      content.appendChild(div);
     });
-    stepsView.appendChild(backBtn);
-
-    const steps = recipe.steps || [
-      "Calentar la sartén con aceite.",
-      "Agregar la carne y dorar 10 minutos.",
-      "Añadir la salsa y mezclar.",
-      "Servir con arroz blanco."
-    ];
-
-    steps.forEach((text, i) => {
-      const stepDiv = document.createElement("div");
-      Object.assign(stepDiv.style, {
-        padding: "1rem",
-        borderBottom: "1px solid #eee",
-      });
-
-      const title = document.createElement("h3");
-      title.textContent = `Paso ${i + 1}`;
-      Object.assign(title.style, {
-        fontSize: "1.4rem",
-        fontWeight: "700",
-        marginBottom: "0.5rem",
-        color: "#111",
-      });
-
-      const desc = document.createElement("p");
-      desc.textContent = text;
-      Object.assign(desc.style, {
-        fontSize: "1rem",
-        lineHeight: "1.6",
-        color: "#444",
-      });
-
-      stepDiv.appendChild(title);
-      stepDiv.appendChild(desc);
-      stepsView.appendChild(stepDiv);
-    });
-
-    content.appendChild(stepsView);
   }
-
 }
+
 
         // =========================
         // ====== DEFAULT / OTRAS ==
