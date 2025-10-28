@@ -598,6 +598,7 @@ else if (sectionId === "almuerzos") {
     });
 
   // --- Función para mostrar detalle ---
+  // --- Función para mostrar detalle ---
   function showRecipeDetail(recipe) {
     content.innerHTML = "";
     const detail = document.createElement("div");
@@ -609,6 +610,7 @@ else if (sectionId === "almuerzos") {
       gap: "1rem",
     });
 
+    // --- Botón volver ---
     const backBtn = document.createElement("button");
     backBtn.textContent = "← Volver";
     Object.assign(backBtn.style, {
@@ -625,6 +627,7 @@ else if (sectionId === "almuerzos") {
     });
     detail.appendChild(backBtn);
 
+    // --- Imagen principal ---
     const img = document.createElement("img");
     img.src = recipe.img;
     img.alt = recipe.name;
@@ -636,6 +639,7 @@ else if (sectionId === "almuerzos") {
     });
     detail.appendChild(img);
 
+    // --- Nombre del plato ---
     const title = document.createElement("h2");
     title.textContent = recipe.name;
     Object.assign(title.style, {
@@ -646,6 +650,7 @@ else if (sectionId === "almuerzos") {
     });
     detail.appendChild(title);
 
+    // --- Datos principales ---
     const info = document.createElement("div");
     info.innerHTML = `
       <p><strong>Dificultad:</strong> ${recipe.difficulty}</p>
@@ -658,30 +663,193 @@ else if (sectionId === "almuerzos") {
     });
     detail.appendChild(info);
 
-    // Ingredientes
-    if (recipe.ingredients) {
-      const ingTitle = document.createElement("h3");
-      ingTitle.textContent = "Ingredientes";
-      Object.assign(ingTitle.style, {
-        fontSize: "1.2rem",
-        fontWeight: "700",
-        marginTop: "1rem",
+    // ---------- Función genérica para crear secciones colapsables ----------
+    function createSection(titleText, innerHTML) {
+      const container = document.createElement("div");
+      Object.assign(container.style, {
+        width: "100%",
+        borderRadius: "14px",
+        background: "#f8f8f8",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+        overflow: "hidden",
+        transition: "all 0.3s ease",
       });
-      detail.appendChild(ingTitle);
 
-      recipe.ingredients.forEach(ing => {
-        const row = document.createElement("div");
-        row.textContent = `${ing.qty} ${ing.unit} ${ing.name}`;
-        Object.assign(row.style, {
-          fontSize: "1rem",
-          color: "#555",
-        });
-        detail.appendChild(row);
+      const header = document.createElement("div");
+      Object.assign(header.style, {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "0.75rem 1rem",
+        cursor: "pointer",
+        fontWeight: "600",
+        backgroundColor: "#ededed",
       });
+      header.innerHTML = `
+        <span>${titleText}</span>
+        <span style="transition:transform 0.3s;">▼</span>
+      `;
+
+      const body = document.createElement("div");
+      Object.assign(body.style, {
+        maxHeight: "0px",
+        overflow: "hidden",
+        transition: "max-height 0.3s ease",
+        padding: "0 1rem",
+        color: "#333",
+      });
+      body.innerHTML = innerHTML;
+
+      header.addEventListener("click", () => {
+        const arrow = header.querySelector("span:last-child");
+        const isOpen = body.style.maxHeight !== "0px";
+        if (isOpen) {
+          body.style.maxHeight = "0px";
+          arrow.style.transform = "rotate(0deg)";
+        } else {
+          body.style.maxHeight = body.scrollHeight + "px";
+          arrow.style.transform = "rotate(180deg)";
+        }
+      });
+
+      container.appendChild(header);
+      container.appendChild(body);
+      detail.appendChild(container);
     }
+
+    // ---------- Sección: Ingredientes ----------
+    if (recipe.ingredients && recipe.ingredients.length > 0) {
+      const ingHTML = recipe.ingredients.map(
+        ing => `
+          <div style="
+            display:flex;
+            align-items:center;
+            gap:0.75rem;
+            background:#fff;
+            border-radius:10px;
+            padding:0.6rem 0.8rem;
+            margin-top:0.5rem;
+            box-shadow:0 1px 4px rgba(0,0,0,0.05);
+          ">
+            <img src="${ing.img}" style="width:30px;height:30px;border-radius:6px;object-fit:cover;">
+            <span style="font-size:1rem;color:#333;">${ing.qty} ${ing.unit} ${ing.name}</span>
+          </div>
+        `
+      ).join("");
+      createSection("🧂 Ingredientes", ingHTML);
+    }
+
+    // ---------- Sección: Valores nutricionales ----------
+    const nutriHTML = `
+      <p style="font-size:1rem;line-height:1.6;margin-top:0.5rem;">
+        <strong>Calorías:</strong> 520 kcal<br>
+        <strong>Proteínas:</strong> 35 g<br>
+        <strong>Grasas:</strong> 12 g<br>
+        <strong>Carbohidratos:</strong> 55 g
+      </p>
+    `;
+    createSection("⚡ Valores nutricionales", nutriHTML);
+
+    // ---------- Botón: Ver preparación paso a paso ----------
+    const stepsBtn = document.createElement("button");
+    stepsBtn.textContent = "👨‍🍳 Ver preparación paso a paso";
+    Object.assign(stepsBtn.style, {
+      width: "100%",
+      backgroundColor: "#111",
+      color: "#fff",
+      border: "none",
+      borderRadius: "14px",
+      padding: "1rem",
+      fontSize: "1.1rem",
+      fontWeight: "600",
+      marginTop: "0.5rem",
+      boxShadow: "0 3px 10px rgba(0,0,0,0.15)",
+      cursor: "pointer",
+      transition: "transform 0.2s ease, background-color 0.3s ease",
+    });
+    stepsBtn.addEventListener("mousedown", () => {
+      stepsBtn.style.transform = "scale(0.97)";
+    });
+    stepsBtn.addEventListener("mouseup", () => {
+      stepsBtn.style.transform = "scale(1)";
+    });
+    stepsBtn.addEventListener("click", () => {
+      showStepByStep(recipe);
+    });
+
+    detail.appendChild(stepsBtn);
 
     content.appendChild(detail);
   }
+
+  // ---------- Pantalla de pasos ----------
+  function showStepByStep(recipe) {
+    content.innerHTML = "";
+    const stepsView = document.createElement("div");
+    Object.assign(stepsView.style, {
+      display: "flex",
+      flexDirection: "column",
+      gap: "2rem",
+      width: "100%",
+      padding: "1rem 0.5rem 4rem 0.5rem",
+      animation: "fadeIn 0.4s ease",
+    });
+
+    const backBtn = document.createElement("button");
+    backBtn.textContent = "← Atrás";
+    Object.assign(backBtn.style, {
+      background: "none",
+      border: "none",
+      color: "#007AFF",
+      fontWeight: "600",
+      fontSize: "1rem",
+      cursor: "pointer",
+      marginBottom: "0.5rem",
+    });
+    backBtn.addEventListener("click", () => {
+      showRecipeDetail(recipe);
+    });
+    stepsView.appendChild(backBtn);
+
+    const steps = recipe.steps || [
+      "Calentar la sartén con aceite.",
+      "Agregar la carne y dorar 10 minutos.",
+      "Añadir la salsa y mezclar.",
+      "Servir con arroz blanco."
+    ];
+
+    steps.forEach((text, i) => {
+      const stepDiv = document.createElement("div");
+      Object.assign(stepDiv.style, {
+        padding: "1rem",
+        borderBottom: "1px solid #eee",
+      });
+
+      const title = document.createElement("h3");
+      title.textContent = `Paso ${i + 1}`;
+      Object.assign(title.style, {
+        fontSize: "1.4rem",
+        fontWeight: "700",
+        marginBottom: "0.5rem",
+        color: "#111",
+      });
+
+      const desc = document.createElement("p");
+      desc.textContent = text;
+      Object.assign(desc.style, {
+        fontSize: "1rem",
+        lineHeight: "1.6",
+        color: "#444",
+      });
+
+      stepDiv.appendChild(title);
+      stepDiv.appendChild(desc);
+      stepsView.appendChild(stepDiv);
+    });
+
+    content.appendChild(stepsView);
+  }
+
 }
 
         // =========================
