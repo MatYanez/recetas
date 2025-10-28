@@ -1138,6 +1138,8 @@ function showStepByStep(recipe) {
     stepDiv.appendChild(title);
     stepDiv.appendChild(desc);
     stepsView.appendChild(stepDiv);
+
+    animate(stepDiv, { opacity: [0, 1], y: [20, 0] }, { duration: 0.4, delay: i * 0.1 });
   });
 
   content.appendChild(stepsView);
