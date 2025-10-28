@@ -419,7 +419,7 @@ else if (sectionId === "almuerzos") {
       content.innerHTML = "<p>Error al cargar recetas.</p>";
     });
 
-  function renderRecipes() {
+window.showRecipeDetail = function(recipe) {
     content.innerHTML = `
       <!-- Buscador -->
       <div style="
