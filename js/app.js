@@ -414,7 +414,7 @@ fetch("./data/recetas.json")
     renderRecipes();
   });
 
-  function renderRecipes() {
+  
           content.innerHTML = `
             <!-- Buscador -->
             <div style="
@@ -508,7 +508,7 @@ fetch("./data/recetas.json")
               `).join("")}
             </div>
  `;
-              }
+
           
 
           // búsqueda dinámica
