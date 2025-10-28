@@ -406,15 +406,83 @@ if (overlay) {
         // ====== ALMUERZOS ========
         // =========================
         else if (sectionId === "almuerzos") {
-let recipes = [];
-fetch("./data/recetas.json")
-  .then(res => res.json())
-  .then(data => {
-    recipes = data;
-    renderRecipes();
-  });
+          const recipes = [
+            {
+  name: "Carne mongoliana con arroz",
+  img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg",
+  difficulty: "Fácil",
+  time: "30 min",
+  ingredients: [
+    {
+      name: "Carne de res",
+      qty: 250,
+      unit: "g",
+      img: "https://cdn-icons-png.flaticon.com/512/1046/1046769.png"
+    },
+    {
+      name: "Arroz blanco",
+      qty: 1,
+      unit: "taza",
+      img: "https://cdn-icons-png.flaticon.com/512/590/590836.png"
+    },
+    {
+      name: "Salsa de soja",
+      qty: 2,
+      unit: "cda",
+      img: "https://cdn-icons-png.flaticon.com/512/1047/1047711.png"
+    },
+    {
+      name: "Cebollín",
+      qty: 1,
+      unit: "unidad",
+      img: "https://cdn-icons-png.flaticon.com/512/765/765447.png"
+    }
+  ]
+},
+            {
+              name: "Pollo teriyaki",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000546%2Fv3%2Frect.jpeg",
+              difficulty: "Medio",
+              time: "40 min"
+            },
+            {
+              name: "Pasta carbonara",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000215%2Fv3%2Frect.jpeg",
+              difficulty: "Fácil",
+              time: "25 min"
+            },
+            {
+              name: "Salmón con verduras",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000123%2Fv3%2Frect.jpeg",
+              difficulty: "Difícil",
+              time: "50 min"
+            },
+            {
+              name: "Ensalada César",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000522%2Fv3%2Frect.jpeg",
+              difficulty: "Fácil",
+              time: "15 min"
+            },
+            {
+              name: "Bowl de quinoa",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000333%2Fv3%2Frect.jpeg",
+              difficulty: "Medio",
+              time: "35 min"
+            },
+            {
+              name: "Tacos de carne",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000190%2Fv3%2Frect.jpeg",
+              difficulty: "Medio",
+              time: "30 min"
+            },
+            {
+              name: "Paella tradicional",
+              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000101%2Fv3%2Frect.jpeg",
+              difficulty: "Difícil",
+              time: "120 min"
+            }
+          ];
 
-  
           content.innerHTML = `
             <!-- Buscador -->
             <div style="
