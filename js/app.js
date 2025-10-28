@@ -574,8 +574,16 @@ else if (sectionId === "almuerzos") {
           </div>
         </div>
       `).join("");
-    });
-  } // 🔥 fin de renderRecipes
+      });
+// --- Click para abrir detalle de receta ---
+const cards = recipesGrid.querySelectorAll("div");
+cards.forEach((cardEl, i) => {
+  cardEl.addEventListener("click", () => {
+    const recipe = recipes[i];
+    showRecipeDetail(recipe);
+  });
+});
+} // 🔥 cierre de renderRecipes()
 } // 🔥 fin de else if (sectionId === "almuerzos")
 
 
