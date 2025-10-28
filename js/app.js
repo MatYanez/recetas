@@ -406,20 +406,11 @@ if (overlay) {
         // ====== ALMUERZOS ========
         // =========================
 else if (sectionId === "almuerzos") {
+
   let recipes = [];
 
-  fetch("./data/recetas.json")
-    .then(res => res.json())
-    .then(data => {
-      recipes = data;
-      renderRecipes();
-    })
-    .catch(err => {
-      console.error("Error al cargar recetas:", err);
-      content.innerHTML = "<p>Error al cargar recetas.</p>";
-    });
-
-window.showRecipeDetail = function(recipe) {
+  // --- Función para renderizar la grilla ---
+  function renderRecipes() {
     content.innerHTML = `
       <!-- Buscador -->
       <div style="
@@ -455,16 +446,16 @@ window.showRecipeDetail = function(recipe) {
         grid-template-columns:repeat(2, 1fr);
         gap:1rem;
         padding-bottom:2rem;
-        height:auto;
       ">
         ${recipes.map(r => `
-          <div style="
+          <div class="recipe-card" style="
             background:#fff;
             border-radius:18px;
             box-shadow:0 4px 15px rgba(0,0,0,0.08);
             overflow:hidden;
             display:flex;
             flex-direction:column;
+            cursor:pointer;
           ">
             <div style="
               width:100%;
@@ -514,7 +505,7 @@ window.showRecipeDetail = function(recipe) {
       </div>
     `;
 
-    // Búsqueda dinámica
+    // --- Búsqueda dinámica ---
     const searchInput = content.querySelector("#searchInput");
     const recipesGrid = content.querySelector("#recipesGrid");
 
@@ -523,13 +514,14 @@ window.showRecipeDetail = function(recipe) {
       const filtered = recipes.filter(r => r.name.toLowerCase().includes(query));
 
       recipesGrid.innerHTML = filtered.map(r => `
-        <div style="
+        <div class="recipe-card" style="
           background:#fff;
           border-radius:18px;
           box-shadow:0 4px 15px rgba(0,0,0,0.08);
           overflow:hidden;
           display:flex;
           flex-direction:column;
+          cursor:pointer;
         ">
           <div style="
             width:100%;
@@ -574,18 +566,123 @@ window.showRecipeDetail = function(recipe) {
           </div>
         </div>
       `).join("");
-      });
-// --- Click para abrir detalle de receta ---
-const cards = recipesGrid.querySelectorAll("div");
-cards.forEach((cardEl, i) => {
-  cardEl.addEventListener("click", () => {
-    const recipe = recipes[i];
-    showRecipeDetail(recipe);
-  });
-});
-} // 🔥 cierre de renderRecipes()
-} // 🔥 fin de else if (sectionId === "almuerzos")
 
+      attachCardEvents(filtered);
+    });
+
+    // --- Click para abrir detalle ---
+    attachCardEvents(recipes);
+  }
+
+  // --- Función para asignar eventos a las tarjetas ---
+  function attachCardEvents(list) {
+    const cards = content.querySelectorAll(".recipe-card");
+    cards.forEach((cardEl, i) => {
+      cardEl.addEventListener("click", () => {
+        const recipe = list[i];
+        showRecipeDetail(recipe);
+      });
+    });
+  }
+
+  // --- Cargar recetas desde JSON ---
+  fetch("./data/recetas.json")
+    .then(res => res.json())
+    .then(data => {
+      recipes = data;
+      renderRecipes();
+    })
+    .catch(err => {
+      console.error("Error al cargar recetas:", err);
+      content.innerHTML = "<p>Error al cargar recetas.</p>";
+    });
+
+  // --- Función para mostrar detalle ---
+  function showRecipeDetail(recipe) {
+    content.innerHTML = "";
+    const detail = document.createElement("div");
+    Object.assign(detail.style, {
+      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-start",
+      gap: "1rem",
+    });
+
+    const backBtn = document.createElement("button");
+    backBtn.textContent = "← Volver";
+    Object.assign(backBtn.style, {
+      background: "none",
+      border: "none",
+      color: "#007AFF",
+      fontWeight: "600",
+      fontSize: "1rem",
+      cursor: "pointer",
+      marginBottom: "0.5rem",
+    });
+    backBtn.addEventListener("click", () => {
+      renderRecipes();
+    });
+    detail.appendChild(backBtn);
+
+    const img = document.createElement("img");
+    img.src = recipe.img;
+    img.alt = recipe.name;
+    Object.assign(img.style, {
+      width: "100%",
+      borderRadius: "18px",
+      objectFit: "cover",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+    });
+    detail.appendChild(img);
+
+    const title = document.createElement("h2");
+    title.textContent = recipe.name;
+    Object.assign(title.style, {
+      fontSize: "1.8rem",
+      fontWeight: "700",
+      color: "#111",
+      marginTop: "1rem",
+    });
+    detail.appendChild(title);
+
+    const info = document.createElement("div");
+    info.innerHTML = `
+      <p><strong>Dificultad:</strong> ${recipe.difficulty}</p>
+      <p><strong>Tiempo:</strong> ${recipe.time}</p>
+    `;
+    Object.assign(info.style, {
+      fontSize: "1rem",
+      color: "#444",
+      lineHeight: "1.5",
+    });
+    detail.appendChild(info);
+
+    // Ingredientes
+    if (recipe.ingredients) {
+      const ingTitle = document.createElement("h3");
+      ingTitle.textContent = "Ingredientes";
+      Object.assign(ingTitle.style, {
+        fontSize: "1.2rem",
+        fontWeight: "700",
+        marginTop: "1rem",
+      });
+      detail.appendChild(ingTitle);
+
+      recipe.ingredients.forEach(ing => {
+        const row = document.createElement("div");
+        row.textContent = `${ing.qty} ${ing.unit} ${ing.name}`;
+        Object.assign(row.style, {
+          fontSize: "1rem",
+          color: "#555",
+        });
+        detail.appendChild(row);
+      });
+    }
+
+    content.appendChild(detail);
+  }
+}
 
         // =========================
         // ====== DEFAULT / OTRAS ==
