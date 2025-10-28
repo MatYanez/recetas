@@ -697,11 +697,9 @@ sections.forEach(sec => {
     width: "100%",
     borderRadius: "14px",
     background: "#f8f8f8",
-    padding: "0.5rem 0rem",
     boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
     cursor: "pointer",
     transition: "all 0.3s ease",
-    marginBottom: "0.75rem",
     overflow: "hidden"
   });
 
