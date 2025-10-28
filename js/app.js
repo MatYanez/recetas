@@ -721,255 +721,261 @@ backBtn.addEventListener("click", () => {
     // --- Estado interno para las porciones ---
     let servings = 1; // default 1 porción
 
-    // Helper para renderizar una sección colapsable iOS
-    function createSection({ title, bodyBuilder, collapsible = true }) {
-      const container = document.createElement("div");
-      Object.assign(container.style, {
-        width: "100%",
-        borderRadius: "14px",
-        background: "#f8f8f8",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-        transition: "all 0.3s ease",
-        overflow: "hidden",
-        marginBottom: "1rem",
-      });
+function createSection({ title, bodyBuilder, collapsible = true }) {
+  const container = document.createElement("div");
+  Object.assign(container.style, {
+    width: "100%",
+    borderRadius: "14px",
+    background: "#f8f8f8",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+    transition: "all 0.3s ease",
+    overflow: "hidden",
+    marginBottom: "1rem",
+  });
 
-      // Header (título + flecha)
-      const headerRow = document.createElement("div");
-      Object.assign(headerRow.style, {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "0.75rem 0rem",
-        fontWeight: "600",
-        color: "#111",
-        fontSize: "1.1rem",
-        userSelect: "none",
-        cursor: collapsible ? "pointer" : "default",
-      });
+  // Header
+  const headerRow = document.createElement("div");
+  Object.assign(headerRow.style, {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "0.75rem 0rem",
+    fontWeight: "600",
+    color: "#111",
+    fontSize: "1.1rem",
+    userSelect: "none",
+    cursor: collapsible ? "pointer" : "default",
+  });
 
-      const titleText = document.createElement("span");
-      titleText.textContent = title;
+  const titleText = document.createElement("span");
+  titleText.textContent = title;
 
-      const arrow = document.createElement("span");
-      arrow.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-          viewBox="0 0 24 24" stroke-width="2" stroke="#555"
-          width="20" height="20">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M6 9l6 6 6-6" />
-        </svg>
-      `;
-      Object.assign(arrow.style, {
-        display: "inline-flex",
-        transition: "transform 0.25s ease",
-      });
+  const arrow = document.createElement("span");
+  arrow.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+      viewBox="0 0 24 24" stroke-width="2" stroke="#555"
+      width="20" height="20">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M6 9l6 6 6-6" />
+    </svg>
+  `;
+  Object.assign(arrow.style, {
+    display: "inline-flex",
+    transition: "transform 0.25s ease",
+  });
 
-      headerRow.appendChild(titleText);
-      headerRow.appendChild(arrow);
+  headerRow.appendChild(titleText);
+  headerRow.appendChild(arrow);
 
-      // Body dinámico
-      const bodyWrap = document.createElement("div");
-      Object.assign(bodyWrap.style, {
-        maxHeight: collapsible ? "0px" : "none",
-        overflow: "hidden",
-        transition: collapsible ? "max-height 0.3s ease" : "none",
-        marginTop: "0.5rem",
-        color: "#333",
-        lineHeight: "1.5",
-      });
+  const bodyWrap = document.createElement("div");
+  Object.assign(bodyWrap.style, {
+    maxHeight: collapsible ? "0px" : "none",
+    overflow: "hidden",
+    transition: collapsible ? "max-height 0.3s ease" : "none",
+    marginTop: "0.5rem",
+    color: "#333",
+    lineHeight: "1.5",
+  });
 
-      // Llamamos al builder para llenar el body
-      bodyBuilder(bodyWrap);
+  // bodyBuilder ahora puede devolver una función opcional postRender()
+  // que se ejecuta DESPUÉS de que tengamos la sección creada.
+  let postRender = null;
+  if (typeof bodyBuilder === "function") {
+    postRender = bodyBuilder(bodyWrap) || null;
+  }
 
-      if (collapsible) {
-        headerRow.addEventListener("click", () => {
-          const isClosed = bodyWrap.style.maxHeight === "0px" || !bodyWrap.style.maxHeight;
-          if (isClosed) {
-            bodyWrap.style.maxHeight = bodyWrap.scrollHeight + "px";
-            arrow.style.transform = "rotate(180deg)";
-          } else {
-            bodyWrap.style.maxHeight = "0px";
-            arrow.style.transform = "rotate(0deg)";
-          }
-        });
+  if (collapsible) {
+    headerRow.addEventListener("click", () => {
+      const isClosed = bodyWrap.style.maxHeight === "0px" || !bodyWrap.style.maxHeight;
+      if (isClosed) {
+        bodyWrap.style.maxHeight = bodyWrap.scrollHeight + "px";
+        arrow.style.transform = "rotate(180deg)";
       } else {
-        // si no es colapsable, escondemos la flecha
-        arrow.style.display = "none";
+        bodyWrap.style.maxHeight = "0px";
+        arrow.style.transform = "rotate(0deg)";
       }
+    });
+  } else {
+    arrow.style.display = "none";
+  }
 
-      container.appendChild(headerRow);
-      container.appendChild(bodyWrap);
-      detail.appendChild(container);
+  container.appendChild(headerRow);
+  container.appendChild(bodyWrap);
+  detail.appendChild(container);
 
-      return { container, bodyWrap, arrow, headerRow };
-    }
+  return { container, bodyWrap, arrow, headerRow, postRender };
+}
 
-    // ---------- Sección: Ingredientes ----------
-    const ingredientesSection = createSection({
-      title: "Ingredientes",
-      bodyBuilder: (wrapEl) => {
-        // 1) Selector de porciones arriba
-        const servingsRow = document.createElement("div");
-        Object.assign(servingsRow.style, {
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "1rem",
-          gap: "0.75rem",
-          flexWrap: "wrap",
-        });
+// ---------- Sección: Ingredientes ----------
+const ingredientesSection = createSection({
+  title: "Ingredientes",
+  bodyBuilder: (wrapEl) => {
+    // construimos DOM local y devolvemos una función postRender()
+    // que sabrá quién es ingredientesSection
 
-        const servingsLabel = document.createElement("span");
-        servingsLabel.textContent = "Porciones:";
-        Object.assign(servingsLabel.style, {
-          fontSize: "0.95rem",
-          fontWeight: "500",
-          color: "#444",
-        });
+    // fila selector porciones
+    const servingsRow = document.createElement("div");
+    Object.assign(servingsRow.style, {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: "1rem",
+      gap: "0.75rem",
+      flexWrap: "wrap",
+    });
 
-        const servingsSelector = document.createElement("div");
-        Object.assign(servingsSelector.style, {
-          display: "flex",
-          gap: "0.5rem",
-        });
+    const servingsLabel = document.createElement("span");
+    servingsLabel.textContent = "Porciones:";
+    Object.assign(servingsLabel.style, {
+      fontSize: "0.95rem",
+      fontWeight: "500",
+      color: "#444",
+    });
 
-        // botones 1..4 tipo pill iOS
-        for (let i = 1; i <= 4; i++) {
-          const btn = document.createElement("button");
-          btn.textContent = i;
-          Object.assign(btn.style, {
-            minWidth: "2.25rem",
-            height: "2.25rem",
-            borderRadius: "10px",
-            border: "1px solid rgba(0,0,0,0.08)",
-            boxShadow: "0 2px 5px rgba(0,0,0,0.06)",
-            backgroundColor: i === servings ? "#111" : "#fff",
-            color: i === servings ? "#fff" : "#111",
-            fontWeight: "600",
-            fontSize: "0.9rem",
+    const servingsSelector = document.createElement("div");
+    Object.assign(servingsSelector.style, {
+      display: "flex",
+      gap: "0.5rem",
+    });
+
+    // grid contenedor de ingredientes
+    const grid = document.createElement("div");
+    Object.assign(grid.style, {
+      display: "grid",
+      gridTemplateColumns: "repeat(2, minmax(0,1fr))",
+      gap: "0.75rem 0.75rem",
+      width: "100%",
+    });
+
+    // agregamos al wrap
+    servingsRow.appendChild(servingsLabel);
+    servingsRow.appendChild(servingsSelector);
+    wrapEl.appendChild(servingsRow);
+    wrapEl.appendChild(grid);
+
+    // devolvemos la función postRender que ya puede usar ingredientesSection
+    return function postRenderIngredientes() {
+      function renderIngredientsGrid() {
+        grid.innerHTML = "";
+
+        const list = recipe.ingredients || [];
+        list.forEach((ing) => {
+          const item = document.createElement("div");
+          Object.assign(item.style, {
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
+            gap: "0.5rem",
+            backgroundColor: "#fff",
+            borderRadius: "12px",
+            padding: "0.6rem 0.6rem",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+            border: "1px solid rgba(0,0,0,0.03)",
+            minHeight: "64px",
           });
 
-          btn.addEventListener("click", () => {
-            servings = i;
-            // visualmente marcar el activo
-            [...servingsSelector.children].forEach(ch => {
-              ch.style.backgroundColor = "#fff";
-              ch.style.color = "#111";
-            });
-            btn.style.backgroundColor = "#111";
-            btn.style.color = "#fff";
-
-            // recalcular cantidades
-            renderIngredientsGrid();
+          const thumb = document.createElement("img");
+          thumb.src = ing.img;
+          thumb.alt = ing.name;
+          Object.assign(thumb.style, {
+            width: "48px",
+            height: "48px",
+            borderRadius: "10px",
+            objectFit: "cover",
+            backgroundColor: "#f3f4f6",
+            flexShrink: "0",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
           });
 
-          servingsSelector.appendChild(btn);
-        }
+          const textWrap = document.createElement("div");
+          Object.assign(textWrap.style, {
+            display: "flex",
+            flexDirection: "column",
+            lineHeight: "1.2",
+            flexGrow: "1",
+          });
 
-        servingsRow.appendChild(servingsLabel);
-        servingsRow.appendChild(servingsSelector);
+          const nameEl = document.createElement("div");
+          nameEl.textContent = ing.name;
+          Object.assign(nameEl.style, {
+            fontSize: "0.9rem",
+            fontWeight: "600",
+            color: "#111",
+            marginBottom: "0.25rem",
+          });
 
-        // 2) Grid de ingredientes (2 columnas)
-        const grid = document.createElement("div");
-        Object.assign(grid.style, {
-          display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(0,1fr))",
-          gap: "0.75rem 0.75rem",
-          width: "100%",
+          const qtyEl = document.createElement("div");
+          const scaledQty = ing.qty * servings;
+          qtyEl.textContent = `${scaledQty} ${ing.unit}`;
+          Object.assign(qtyEl.style, {
+            fontSize: "0.8rem",
+            fontWeight: "500",
+            color: "#555",
+          });
+
+          textWrap.appendChild(nameEl);
+          textWrap.appendChild(qtyEl);
+
+          item.appendChild(thumb);
+          item.appendChild(textWrap);
+          grid.appendChild(item);
         });
 
-        wrapEl.appendChild(servingsRow);
-        wrapEl.appendChild(grid);
-
-        // función que vuelve a dibujar items con la cantidad ajustada
-        function renderIngredientsGrid() {
-          grid.innerHTML = "";
-
-          const list = recipe.ingredients || [];
-          list.forEach((ing) => {
-            const item = document.createElement("div");
-            Object.assign(item.style, {
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              backgroundColor: "#fff",
-              borderRadius: "12px",
-              padding: "0.6rem 0.6rem",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-              border: "1px solid rgba(0,0,0,0.03)",
-              minHeight: "64px",
-            });
-
-            // imagen ingrediente
-            const thumb = document.createElement("img");
-            thumb.src = ing.img;
-            thumb.alt = ing.name;
-            Object.assign(thumb.style, {
-              width: "48px",
-              height: "48px",
-              borderRadius: "10px",
-              objectFit: "cover",
-              backgroundColor: "#f3f4f6",
-              flexShrink: "0",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
-            });
-
-            // texto nombre + cantidad
-            const textWrap = document.createElement("div");
-            Object.assign(textWrap.style, {
-              display: "flex",
-              flexDirection: "column",
-              lineHeight: "1.2",
-              flexGrow: "1",
-            });
-
-            const nameEl = document.createElement("div");
-            nameEl.textContent = ing.name;
-            Object.assign(nameEl.style, {
-              fontSize: "0.9rem",
-              fontWeight: "600",
-              color: "#111",
-              marginBottom: "0.25rem",
-            });
-
-            const qtyEl = document.createElement("div");
-            // cantidad escalada según porciones
-            const scaledQty = ing.qty * servings;
-            qtyEl.textContent = `${scaledQty} ${ing.unit}`;
-            Object.assign(qtyEl.style, {
-              fontSize: "0.8rem",
-              fontWeight: "500",
-              color: "#555",
-            });
-
-            textWrap.appendChild(nameEl);
-            textWrap.appendChild(qtyEl);
-
-            item.appendChild(thumb);
-            item.appendChild(textWrap);
-            grid.appendChild(item);
-          });
-
-          // ajustar altura del colapsable después de re-render
-          // para que no se corte cuando cambias porciones
-          const isOpen = ingredientesSection.bodyWrap.style.maxHeight !== "0px";
-          if (isOpen) {
-            ingredientesSection.bodyWrap.style.maxHeight = ingredientesSection.bodyWrap.scrollHeight + "px";
-          }
+        // ahora ingredientesSection ya existe
+        const isOpen = ingredientesSection.bodyWrap.style.maxHeight !== "0px";
+        if (isOpen) {
+          ingredientesSection.bodyWrap.style.maxHeight =
+            ingredientesSection.bodyWrap.scrollHeight + "px";
         }
+      }
 
-        // primer render
-        renderIngredientsGrid();
+      // armar los botones de porciones AHORA que ya tenemos contexto
+      servingsSelector.innerHTML = "";
+      for (let i = 1; i <= 4; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        Object.assign(btn.style, {
+          minWidth: "2.25rem",
+          height: "2.25rem",
+          borderRadius: "10px",
+          border: "1px solid rgba(0,0,0,0.08)",
+          boxShadow: "0 2px 5px rgba(0,0,0,0.06)",
+          backgroundColor: i === servings ? "#111" : "#fff",
+          color: i === servings ? "#fff" : "#111",
+          fontWeight: "600",
+          fontSize: "0.9rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        });
 
-        // guardamos para que otras funciones puedan llamar si queremos (opcional)
-        ingredientesSection.renderIngredientsGrid = renderIngredientsGrid;
-      },
-      collapsible: true,
-    });
+        btn.addEventListener("click", () => {
+          servings = i;
+          [...servingsSelector.children].forEach(ch => {
+            ch.style.backgroundColor = "#fff";
+            ch.style.color = "#111";
+          });
+          btn.style.backgroundColor = "#111";
+          btn.style.color = "#fff";
+
+          renderIngredientsGrid();
+        });
+
+        servingsSelector.appendChild(btn);
+      }
+
+      // primer render
+      renderIngredientsGrid();
+
+      // lo dejo colgado en la sección por si más tarde quieres reusar
+      ingredientesSection.renderIngredientsGrid = renderIngredientsGrid;
+    }; // end postRenderIngredientes
+  },
+  collapsible: true,
+});
+
+if (typeof ingredientesSection.postRender === "function") {
+  ingredientesSection.postRender();
+}
 
     // ---------- Sección: Valores nutricionales ----------
     createSection({
