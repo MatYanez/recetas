@@ -739,12 +739,14 @@ function createSection({ title, bodyBuilder, collapsible = true }) {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "0.75rem 0rem",
+    padding: "0.75rem 1rem",
     fontWeight: "600",
     color: "#111",
     fontSize: "1.1rem",
     userSelect: "none",
     cursor: collapsible ? "pointer" : "default",
+    borderRadius: "10px",
+    backgroundColor: "#ededed",
   });
 
   const titleText = document.createElement("span");
