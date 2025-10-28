@@ -712,7 +712,7 @@ Object.assign(header.style, {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  padding: "0.75rem 1rem",
+  padding: "0.75rem 0rem",
   fontWeight: "600",
   color: "#111",
   fontSize: "1.1rem",
