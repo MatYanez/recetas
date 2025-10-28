@@ -64,6 +64,9 @@ function expandCard(initialCard) {
     header.style.display = "none";
     app.innerHTML = "";
     app.style.opacity = "0";
+    app.style.pointerEvents = "none";
+app.style.height = "0";
+app.style.overflow = "hidden";
 
     /* ---------------------------------
        CREAMOS LA VISTA EXPANDIDA COMPLETA
@@ -75,12 +78,15 @@ const overlay = document.createElement("div");
 Object.assign(overlay.style, {
   position: "fixed",
   inset: "0",
-  background: "rgba(255,255,255,0.6)",
-  backdropFilter: "blur(18px)",
-  WebkitBackdropFilter: "blur(18px)",
-  opacity: "0",
-  zIndex: "5",
-  transition: "opacity 0.4s ease"
+background: "rgba(250,250,250,0.4)",
+backdropFilter: "blur(18px)",
+WebkitBackdropFilter: "blur(18px)",
+border: "1px solid rgba(255,255,255,0.5)",
+boxShadow: "0 30px 60px rgba(0,0,0,0.2)",
+opacity: "0",
+zIndex: "5",
+transition: "opacity 0.4s ease"
+
 });
 document.body.appendChild(overlay);
 
@@ -162,28 +168,29 @@ view.appendChild(content);
       border: "1px solid rgba(255,255,255,0.4)",
       zIndex: "50",
     });
-    bottomBar.innerHTML = `
-      <button class="tab-item" data-id="home">🏠</button>
-      <button class="tab-item" data-id="calendario">📅</button>
-      <button class="tab-item" data-id="almuerzos">🍽️</button>
-      <button class="tab-item" data-id="compras">🛒</button>
-      <div id="indicator"></div>
-    `;
+bottomBar.innerHTML = `
+  <button class="tab-item" data-id="home">🏠</button>
+  <button class="tab-item" data-id="calendario">📅</button>
+  <button class="tab-item" data-id="almuerzos">🍽️</button>
+  <button class="tab-item" data-id="compras">🛒</button>
+  <div id="indicator" style="
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:46px;
+    height:46px;
+    border-radius:12px;
+    background-color:rgb(237 237 237);
+    left:50%;
+    margin-left:-23px;
+    transition:left 0.25s ease, transform 0.3s ease;
+    z-index:-1;
+  "></div>
+`;
     document.body.appendChild(bottomBar);
 
     // --- Indicador pill detrás del tab activo ---
-    const indicator = bottomBar.querySelector("#indicator");
-    Object.assign(indicator.style, {
-      position: "absolute",
-      top: "50%",
-      transform: "translateY(-50%)",
-      width: "46px",
-      height: "46px",
-      backgroundColor: "rgb(237 237 237)",
-      borderRadius: "12px",
-      transition: "left 0.25s ease, transform 0.3s ease",
-      zIndex: "-1",
-    });
+const indicator = bottomBar.querySelector("#indicator");
 
     const items = bottomBar.querySelectorAll(".tab-item");
 
@@ -805,6 +812,12 @@ header.addEventListener("click", () => {
 
         // --- SWIPE LATERAL ENTRE TABS ---
 // --- SWIPE LATERAL ENTRE TABS (con protección anti clics) ---
+// --- SWIPE LATERAL ENTRE TABS (iOS-like) ---
+// Reinicia handlers viejos por seguridad
+content.ontouchstart = null;
+content.ontouchmove = null;
+content.ontouchend = null;
+
 let startX = 0;
 let endX = 0;
 let touchStartTime = 0;
@@ -812,8 +825,9 @@ let startTarget = null;
 
 content.ontouchstart = (e) => {
   startX = e.touches[0].clientX;
+  endX = startX;
   touchStartTime = Date.now();
-  startTarget = e.target; // guarda el elemento tocado
+  startTarget = e.target;
 };
 
 content.ontouchmove = (e) => {
@@ -821,9 +835,9 @@ content.ontouchmove = (e) => {
 };
 
 content.ontouchend = () => {
-  if (!swipeEnabled) return;
+  if (!swipeEnabled) return; // bloqueado en pantallas tipo "detalle receta"
 
-  // Ignorar si el usuario tocó elementos interactivos
+  // Evitar swipe si tocaste UI interactiva
   const interactiveTags = ["INPUT", "BUTTON", "IMG", "A", "TEXTAREA"];
   if (interactiveTags.includes(startTarget.tagName)) return;
 
@@ -831,22 +845,28 @@ content.ontouchend = () => {
   const distance = Math.abs(deltaX);
   const holdTime = Date.now() - touchStartTime;
 
-  // Si apenas tocó o fue un clic normal, no hacer nada
+  // Gesto válido = movimiento lateral rápido y corto
   if (distance < 60 || holdTime > 400) return;
 
-  const tabs = ["calendario", "almuerzos", "compras"];
-  const current = tabs.indexOf(sectionId);
+  const tabsOrder = ["calendario", "almuerzos", "compras"];
+  const current = tabsOrder.indexOf(sectionId);
 
-  if (deltaX < 0 && current < tabs.length - 1) {
-    const next = tabs[current + 1];
+  // Swipe izquierda → siguiente tab
+  if (deltaX < 0 && current < tabsOrder.length - 1) {
+    const next = tabsOrder[current + 1];
     const nextBtn = [...items].find(b => b.dataset.id === next);
     moveIndicatorTo(nextBtn);
     updateView(next);
-  } else if (deltaX > 0 && current > 0) {
-    const prev = tabs[current - 1];
+    return;
+  }
+
+  // Swipe derecha → tab anterior
+  if (deltaX > 0 && current > 0) {
+    const prev = tabsOrder[current - 1];
     const prevBtn = [...items].find(b => b.dataset.id === prev);
     moveIndicatorTo(prevBtn);
     updateView(prev);
+    return;
   }
 };
 
