@@ -409,11 +409,37 @@ if (overlay) {
         else if (sectionId === "almuerzos") {
           const recipes = [
             {
-              name: "Carne mongoliana con arroz",
-              img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg",
-              difficulty: "Fácil",
-              time: "30 min"
-            },
+  name: "Carne mongoliana con arroz",
+  img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg",
+  difficulty: "Fácil",
+  time: "30 min",
+  ingredients: [
+    {
+      name: "Carne de res",
+      qty: 250,
+      unit: "g",
+      img: "https://cdn-icons-png.flaticon.com/512/1046/1046769.png"
+    },
+    {
+      name: "Arroz blanco",
+      qty: 1,
+      unit: "taza",
+      img: "https://cdn-icons-png.flaticon.com/512/590/590836.png"
+    },
+    {
+      name: "Salsa de soja",
+      qty: 2,
+      unit: "cda",
+      img: "https://cdn-icons-png.flaticon.com/512/1047/1047711.png"
+    },
+    {
+      name: "Cebollín",
+      qty: 1,
+      unit: "unidad",
+      img: "https://cdn-icons-png.flaticon.com/512/765/765447.png"
+    }
+  ]
+},
             {
               name: "Pollo teriyaki",
               img: "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000546%2Fv3%2Frect.jpeg",
@@ -691,86 +717,292 @@ backBtn.addEventListener("click", () => {
     });
     detail.appendChild(info);
 
-    // --- Secciones colapsables ---
-    const sections = [
-      { title: "Ingredientes", content: "<ul><li>250g carne</li><li>1 taza de arroz</li><li>Salsa de soja</li></ul>" },
-      { title: "Valores nutricionales", content: "<p>Calorías: 520 kcal<br>Proteínas: 35g<br>Grasas: 12g<br>Carbohidratos: 55g</p>" },
-      { title: "Preparación", content: "<ol><li>Calentar la sartén.</li><li>Agregar la carne y cocinar 10 min.</li><li>Añadir salsa y servir con arroz.</li></ol>" }
-    ];
 
-sections.forEach(sec => {
-  const container = document.createElement("div");
-  Object.assign(container.style, {
-    width: "100%",
-    borderRadius: "14px",
-    background: "#f8f8f8",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    overflow: "hidden"
-  });
+    // --- Estado interno para las porciones ---
+    let servings = 1; // default 1 porción
 
-  // 👉 Reemplazá todo tu bloque del "header" actual por esto:
-  // --- Header del colapsable (título + flecha SVG moderna) ---
-const header = document.createElement("div");
-Object.assign(header.style, {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "0.75rem 0rem",
-  fontWeight: "600",
-  color: "#111",
-  fontSize: "1.1rem",
-  userSelect: "none",
-});
-
-// Texto del título
-const titleText = document.createElement("span");
-titleText.textContent = sec.title;
-
-// Flecha SVG moderna (caret hacia abajo estilo iOS)
-const arrow = document.createElement("span");
-arrow.innerHTML = `
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#555" width="20" height="20">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6" />
-  </svg>
-`;
-Object.assign(arrow.style, {
-  display: "inline-flex",
-  transition: "transform 0.25s ease",
-});
-
-header.appendChild(titleText);
-header.appendChild(arrow);
-
-      const body = document.createElement("div");
-      body.innerHTML = sec.content;
-      Object.assign(body.style, {
-        maxHeight: "0px",
+    // Helper para renderizar una sección colapsable iOS
+    function createSection({ title, bodyBuilder, collapsible = true }) {
+      const container = document.createElement("div");
+      Object.assign(container.style, {
+        width: "100%",
+        borderRadius: "14px",
+        background: "#f8f8f8",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+        transition: "all 0.3s ease",
         overflow: "hidden",
-        transition: "max-height 0.3s ease",
-        marginTop: "0.5rem",
-        color: "#333",
-        lineHeight: "1.5"
+        marginBottom: "1rem",
       });
 
-header.addEventListener("click", () => {
-  const isClosed = body.style.maxHeight === "0px" || !body.style.maxHeight;
+      // Header (título + flecha)
+      const headerRow = document.createElement("div");
+      Object.assign(headerRow.style, {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "0.75rem 0rem",
+        fontWeight: "600",
+        color: "#111",
+        fontSize: "1.1rem",
+        userSelect: "none",
+        cursor: collapsible ? "pointer" : "default",
+      });
 
-  if (isClosed) {
-    body.style.maxHeight = body.scrollHeight + "px";
-    arrow.style.transform = "rotate(180deg)"; // Flecha apunta hacia arriba
-  } else {
-    body.style.maxHeight = "0px";
-    arrow.style.transform = "rotate(0deg)"; // Flecha vuelve hacia abajo
-  }
-});
+      const titleText = document.createElement("span");
+      titleText.textContent = title;
 
+      const arrow = document.createElement("span");
+      arrow.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24" stroke-width="2" stroke="#555"
+          width="20" height="20">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M6 9l6 6 6-6" />
+        </svg>
+      `;
+      Object.assign(arrow.style, {
+        display: "inline-flex",
+        transition: "transform 0.25s ease",
+      });
 
-      container.appendChild(header);
-      container.appendChild(body);
+      headerRow.appendChild(titleText);
+      headerRow.appendChild(arrow);
+
+      // Body dinámico
+      const bodyWrap = document.createElement("div");
+      Object.assign(bodyWrap.style, {
+        maxHeight: collapsible ? "0px" : "none",
+        overflow: "hidden",
+        transition: collapsible ? "max-height 0.3s ease" : "none",
+        marginTop: "0.5rem",
+        color: "#333",
+        lineHeight: "1.5",
+      });
+
+      // Llamamos al builder para llenar el body
+      bodyBuilder(bodyWrap);
+
+      if (collapsible) {
+        headerRow.addEventListener("click", () => {
+          const isClosed = bodyWrap.style.maxHeight === "0px" || !bodyWrap.style.maxHeight;
+          if (isClosed) {
+            bodyWrap.style.maxHeight = bodyWrap.scrollHeight + "px";
+            arrow.style.transform = "rotate(180deg)";
+          } else {
+            bodyWrap.style.maxHeight = "0px";
+            arrow.style.transform = "rotate(0deg)";
+          }
+        });
+      } else {
+        // si no es colapsable, escondemos la flecha
+        arrow.style.display = "none";
+      }
+
+      container.appendChild(headerRow);
+      container.appendChild(bodyWrap);
       detail.appendChild(container);
+
+      return { container, bodyWrap, arrow, headerRow };
+    }
+
+    // ---------- Sección: Ingredientes ----------
+    const ingredientesSection = createSection({
+      title: "Ingredientes",
+      bodyBuilder: (wrapEl) => {
+        // 1) Selector de porciones arriba
+        const servingsRow = document.createElement("div");
+        Object.assign(servingsRow.style, {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "1rem",
+          gap: "0.75rem",
+          flexWrap: "wrap",
+        });
+
+        const servingsLabel = document.createElement("span");
+        servingsLabel.textContent = "Porciones:";
+        Object.assign(servingsLabel.style, {
+          fontSize: "0.95rem",
+          fontWeight: "500",
+          color: "#444",
+        });
+
+        const servingsSelector = document.createElement("div");
+        Object.assign(servingsSelector.style, {
+          display: "flex",
+          gap: "0.5rem",
+        });
+
+        // botones 1..4 tipo pill iOS
+        for (let i = 1; i <= 4; i++) {
+          const btn = document.createElement("button");
+          btn.textContent = i;
+          Object.assign(btn.style, {
+            minWidth: "2.25rem",
+            height: "2.25rem",
+            borderRadius: "10px",
+            border: "1px solid rgba(0,0,0,0.08)",
+            boxShadow: "0 2px 5px rgba(0,0,0,0.06)",
+            backgroundColor: i === servings ? "#111" : "#fff",
+            color: i === servings ? "#fff" : "#111",
+            fontWeight: "600",
+            fontSize: "0.9rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          });
+
+          btn.addEventListener("click", () => {
+            servings = i;
+            // visualmente marcar el activo
+            [...servingsSelector.children].forEach(ch => {
+              ch.style.backgroundColor = "#fff";
+              ch.style.color = "#111";
+            });
+            btn.style.backgroundColor = "#111";
+            btn.style.color = "#fff";
+
+            // recalcular cantidades
+            renderIngredientsGrid();
+          });
+
+          servingsSelector.appendChild(btn);
+        }
+
+        servingsRow.appendChild(servingsLabel);
+        servingsRow.appendChild(servingsSelector);
+
+        // 2) Grid de ingredientes (2 columnas)
+        const grid = document.createElement("div");
+        Object.assign(grid.style, {
+          display: "grid",
+          gridTemplateColumns: "repeat(2, minmax(0,1fr))",
+          gap: "0.75rem 0.75rem",
+          width: "100%",
+        });
+
+        wrapEl.appendChild(servingsRow);
+        wrapEl.appendChild(grid);
+
+        // función que vuelve a dibujar items con la cantidad ajustada
+        function renderIngredientsGrid() {
+          grid.innerHTML = "";
+
+          const list = recipe.ingredients || [];
+          list.forEach((ing) => {
+            const item = document.createElement("div");
+            Object.assign(item.style, {
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              backgroundColor: "#fff",
+              borderRadius: "12px",
+              padding: "0.6rem 0.6rem",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+              border: "1px solid rgba(0,0,0,0.03)",
+              minHeight: "64px",
+            });
+
+            // imagen ingrediente
+            const thumb = document.createElement("img");
+            thumb.src = ing.img;
+            thumb.alt = ing.name;
+            Object.assign(thumb.style, {
+              width: "48px",
+              height: "48px",
+              borderRadius: "10px",
+              objectFit: "cover",
+              backgroundColor: "#f3f4f6",
+              flexShrink: "0",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
+            });
+
+            // texto nombre + cantidad
+            const textWrap = document.createElement("div");
+            Object.assign(textWrap.style, {
+              display: "flex",
+              flexDirection: "column",
+              lineHeight: "1.2",
+              flexGrow: "1",
+            });
+
+            const nameEl = document.createElement("div");
+            nameEl.textContent = ing.name;
+            Object.assign(nameEl.style, {
+              fontSize: "0.9rem",
+              fontWeight: "600",
+              color: "#111",
+              marginBottom: "0.25rem",
+            });
+
+            const qtyEl = document.createElement("div");
+            // cantidad escalada según porciones
+            const scaledQty = ing.qty * servings;
+            qtyEl.textContent = `${scaledQty} ${ing.unit}`;
+            Object.assign(qtyEl.style, {
+              fontSize: "0.8rem",
+              fontWeight: "500",
+              color: "#555",
+            });
+
+            textWrap.appendChild(nameEl);
+            textWrap.appendChild(qtyEl);
+
+            item.appendChild(thumb);
+            item.appendChild(textWrap);
+            grid.appendChild(item);
+          });
+
+          // ajustar altura del colapsable después de re-render
+          // para que no se corte cuando cambias porciones
+          const isOpen = ingredientesSection.bodyWrap.style.maxHeight !== "0px";
+          if (isOpen) {
+            ingredientesSection.bodyWrap.style.maxHeight = ingredientesSection.bodyWrap.scrollHeight + "px";
+          }
+        }
+
+        // primer render
+        renderIngredientsGrid();
+
+        // guardamos para que otras funciones puedan llamar si queremos (opcional)
+        ingredientesSection.renderIngredientsGrid = renderIngredientsGrid;
+      },
+      collapsible: true,
     });
+
+    // ---------- Sección: Valores nutricionales ----------
+    createSection({
+      title: "Valores nutricionales",
+      bodyBuilder: (wrapEl) => {
+        wrapEl.innerHTML = `
+          <p style="font-size:1rem; color:#444; line-height:1.5;">
+            Calorías: 520 kcal<br>
+            Proteínas: 35 g<br>
+            Grasas: 12 g<br>
+            Carbohidratos: 55 g
+          </p>
+        `;
+      },
+      collapsible: true,
+    });
+
+    // ---------- Sección: Preparación ----------
+    createSection({
+      title: "Preparación",
+      bodyBuilder: (wrapEl) => {
+        wrapEl.innerHTML = `
+          <ol style="font-size:1rem; color:#444; line-height:1.5; padding-left:1.2rem;">
+            <li style="margin-bottom:0.5rem;">Calentar la sartén.</li>
+            <li style="margin-bottom:0.5rem;">Agregar la carne y cocinar 10 min.</li>
+            <li style="margin-bottom:0.5rem;">Añadir salsa y servir con arroz.</li>
+          </ol>
+        `;
+      },
+      collapsible: true,
+    });
+
+
 
     // Añade el bloque completo
     content.appendChild(detail);
