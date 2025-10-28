@@ -1121,11 +1121,11 @@ function showStepByStep(recipe) {
     const title = document.createElement("h3");
     title.textContent = `Paso ${i + 1}`;
     Object.assign(title.style, {
-      fontSize: "1.5rem",
+      fontSize: "3rem",
       fontWeight: "700",
       marginBottom: "0.5rem",
       color: "#111",
-    });
+      textAlign: "center",    });
 
     const desc = document.createElement("p");
     desc.textContent = text;
