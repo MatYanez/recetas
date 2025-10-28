@@ -784,7 +784,7 @@ header.addEventListener("click", () => {
             <button id="backBtn" style="
               margin-top:2rem;
               background-color:${section.color};
-              padding:0.75rem 1.5rem;
+              padding:0.75rem 0rem;
               border-radius:12px;
               font-weight:600;
               box-shadow:0 2px 10px rgba(0,0,0,0.1);
