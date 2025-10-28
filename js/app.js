@@ -1053,55 +1053,77 @@ function showStepByStep(recipe) {
     animation: "fadeIn 0.4s ease",
   });
 
-  // --- Botón volver ---
-  const backBtn = document.createElement("button");
-  backBtn.textContent = "← Atrás";
-  Object.assign(backBtn.style, {
-    position: "sticky",
-    top: "0",
-    alignSelf: "flex-start",
-    zIndex: "10",
-    background: "rgba(255,255,255,0.85)",
-    backdropFilter: "blur(6px)",
-    border: "none",
-    color: "#007AFF",
-    fontWeight: "600",
-    fontSize: "1rem",
-    cursor: "pointer",
-    padding: "0.6rem 1rem",
-    borderRadius: "10px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-  });
-  backBtn.addEventListener("click", () => {
-    // volver al detalle
-    content.innerHTML = "";
-    showRecipeDetail(recipe);
-    content.scrollTo({ top: previousScroll });
-  });
-  stepsView.appendChild(backBtn);
+ // --- Barra superior estilo iOS (con blur y botones alineados) ---
+const topBar = document.createElement("div");
+Object.assign(topBar.style, {
+  position: "sticky",
+  top: "0",
+  zIndex: "15",
+  width: "100%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "0.75rem 1rem",
+  background: "rgba(255,255,255,0.85)",
+  backdropFilter: "blur(10px)",
+  WebkitBackdropFilter: "blur(10px)",
+  borderBottom: "1px solid rgba(0,0,0,0.05)",
+  boxShadow: "0 1px 8px rgba(0,0,0,0.08)",
+  borderRadius: "0 0 16px 16px",
+});
 
-  // --- Botón flotante de ingredientes ---
-  const ingredientsBtn = document.createElement("button");
-  ingredientsBtn.textContent = "🧂 Ingredientes";
-  Object.assign(ingredientsBtn.style, {
-    position: "fixed",
-    top: "1.2rem",
-    right: "1.2rem",
-    background: "rgba(255,255,255,0.9)",
-    backdropFilter: "blur(8px)",
-    border: "1px solid rgba(0,0,0,0.08)",
-    borderRadius: "12px",
-    padding: "0.5rem 1rem",
-    fontWeight: "600",
-    fontSize: "0.9rem",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-    cursor: "pointer",
-    zIndex: "20",
-  });
-  ingredientsBtn.addEventListener("click", () => {
-    showIngredientsOverlay(recipe);
-  });
-  stepsView.appendChild(ingredientsBtn);
+const backBtn = document.createElement("button");
+backBtn.textContent = "← Atrás";
+Object.assign(backBtn.style, {
+  background: "none",
+  border: "none",
+  color: "#007AFF",
+  fontWeight: "600",
+  fontSize: "1rem",
+  cursor: "pointer",
+  padding: "0.4rem 0.75rem",
+  borderRadius: "10px",
+  transition: "background-color 0.2s ease",
+});
+backBtn.addEventListener("mouseover", () => {
+  backBtn.style.backgroundColor = "rgba(0,0,0,0.05)";
+});
+backBtn.addEventListener("mouseout", () => {
+  backBtn.style.backgroundColor = "transparent";
+});
+backBtn.addEventListener("click", () => {
+  content.innerHTML = "";
+  showRecipeDetail(recipe);
+  content.scrollTo({ top: previousScroll });
+});
+
+const ingredientsBtn = document.createElement("button");
+ingredientsBtn.textContent = "🧂 Ingredientes";
+Object.assign(ingredientsBtn.style, {
+  background: "none",
+  border: "none",
+  color: "#007AFF",
+  fontWeight: "600",
+  fontSize: "1rem",
+  cursor: "pointer",
+  padding: "0.4rem 0.75rem",
+  borderRadius: "10px",
+  transition: "background-color 0.2s ease",
+});
+ingredientsBtn.addEventListener("mouseover", () => {
+  ingredientsBtn.style.backgroundColor = "rgba(0,0,0,0.05)";
+});
+ingredientsBtn.addEventListener("mouseout", () => {
+  ingredientsBtn.style.backgroundColor = "transparent";
+});
+ingredientsBtn.addEventListener("click", () => {
+  showIngredientsOverlay(recipe);
+});
+
+topBar.appendChild(backBtn);
+topBar.appendChild(ingredientsBtn);
+stepsView.appendChild(topBar);
+
 
   // --- Lista de pasos ---
   const steps = [
