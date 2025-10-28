@@ -877,8 +877,8 @@ const ingredientesSection = createSection({
           thumb.src = ing.img;
           thumb.alt = ing.name;
           Object.assign(thumb.style, {
-            width: "48px",
-            height: "48px",
+            width: "25px",
+            height: "25px",
             borderRadius: "10px",
             objectFit: "cover",
             backgroundColor: "#f3f4f6",
