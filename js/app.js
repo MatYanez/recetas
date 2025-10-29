@@ -568,7 +568,7 @@ else if (sectionId === "almuerzos") {
 
     const title = document.createElement("h2");
     title.textContent = recipe.name;
-    Object.assign(title.style, { fontSize: "1.8rem", fontWeight: "700" });
+    Object.assign(title.style, { fontSize: "1.8rem", fontWeight: "700", lineHeight: "1.4" });
     content.appendChild(title);
 
     const info = document.createElement("p");
