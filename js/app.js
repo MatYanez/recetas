@@ -619,16 +619,23 @@ function createExpandable(title, innerHTML) {
   header.appendChild(arrow);
 
   // --- Contenido expandible ---
-  const body = document.createElement("div");
-  body.innerHTML = innerHTML;
-  Object.assign(body.style, {
-    height: "0",
-    overflow: "hidden",
-    opacity: "0",
-    padding: "0 1.25rem",
-    transition: "height 0.4s ease, opacity 0.4s ease"
-  });
+// body = contenedor colapsable
+const body = document.createElement("div");
+Object.assign(body.style, {
+  overflow: "hidden",
+  padding: "0 1.25rem",
+});
 
+// innerWrapper = contenido real animable
+const innerWrapper = document.createElement("div");
+innerWrapper.innerHTML = innerHTML;
+Object.assign(innerWrapper.style, {
+  transformOrigin: "top center",
+  transform: "scaleY(0.6)",
+  opacity: "0",
+  maxHeight: "0px",
+});
+body.appendChild(innerWrapper);
   // --- Acción al hacer click ---
   header.addEventListener("click", () => {
     const expanded = container.classList.toggle("expanded");
