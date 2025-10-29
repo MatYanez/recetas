@@ -731,7 +731,7 @@ const ingredientsCardHTML = `
         <div style="
           background: #fafafa;
           border-radius: 14px;
-          padding: 0.75rem;
+          padding: 0.25rem;
           box-shadow: 0 1px 4px rgba(0,0,0,0.05);
           display: flex;
           align-items: center;
@@ -742,8 +742,8 @@ const ingredientsCardHTML = `
         onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.05)';"
         >
           <img src="${el.img}" alt="${el.name}" style="
-            width: 42px;
-            height: 42px;
+            width: 30px;
+            height: 30px;
             border-radius: 10px;
             object-fit: contain;
             background: white;
