@@ -622,7 +622,7 @@ function createExpandable(title, innerHTML) {
 const body = document.createElement("div");
 Object.assign(body.style, {
   overflow: "hidden",
-  padding: "0 1.25rem",
+  padding: "10px 0px",
 });
 
 // innerWrapper = contenido real animable
@@ -724,7 +724,7 @@ const ingredientsCardHTML = `
   <div style="
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 0.25rem;
   ">
     ${recipe.ingredients
       .map(el => `
