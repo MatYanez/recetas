@@ -576,33 +576,107 @@ else if (sectionId === "almuerzos") {
     Object.assign(info.style, { color: "#555", marginBottom: "1.5rem" , marginTop: "0.5rem"});
     content.appendChild(info);
 
-    // --- Ingredientes (colapsable) ---
-    const ing = document.createElement("details");
-    const sum = document.createElement("summary");
-    sum.textContent = "🧂 Ingredientes";
-    sum.style.fontWeight = "600";
-    ing.appendChild(sum);
-    recipe.ingredients.forEach(el => {
-      const row = document.createElement("div");
-      row.textContent = `${el.qty} ${el.unit} ${el.name}`;
-      row.style.padding = "0.3rem 1rem";
-      ing.appendChild(row);
-    });
-    content.appendChild(ing);
+  
 
-    // --- Nutrición (colapsable) ---
-    const nutri = document.createElement("details");
-    const sum2 = document.createElement("summary");
-    sum2.textContent = "⚡ Valores nutricionales";
-    sum2.style.fontWeight = "600";
-    nutri.appendChild(sum2);
-    for (const [k, v] of Object.entries(recipe.nutrition || {})) {
-      const p = document.createElement("p");
-      p.textContent = `${k}: ${v}`;
-      p.style.padding = "0.3rem 1rem";
-      nutri.appendChild(p);
+// Función para crear un bloque expandible con animación moderna
+function createExpandable(title, innerHTML) {
+  const container = document.createElement("div");
+  container.className = "expandable-card";
+  Object.assign(container.style, {
+    background: "#fff",
+    borderRadius: "16px",
+    boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
+    overflow: "hidden",
+    marginBottom: "1rem",
+    transition: "background 0.3s ease",
+  });
+
+  const header = document.createElement("div");
+  Object.assign(header.style, {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "1rem 1.25rem",
+    fontWeight: "600",
+    fontSize: "1.1rem",
+    cursor: "pointer",
+  });
+  header.textContent = title;
+
+  const arrow = document.createElement("span");
+  arrow.innerHTML = "⌄";
+  Object.assign(arrow.style, {
+    transition: "transform 0.3s ease",
+    fontSize: "1.2rem",
+    transformOrigin: "center",
+  });
+  header.appendChild(arrow);
+
+  const body = document.createElement("div");
+  body.innerHTML = innerHTML;
+  Object.assign(body.style, {
+    height: "0",
+    overflow: "hidden",
+    opacity: "0",
+    padding: "0 1.25rem",
+  });
+
+  header.addEventListener("click", () => {
+    const expanded = container.classList.toggle("expanded");
+
+    if (expanded) {
+      // Abrir animación
+      const fullHeight = body.scrollHeight;
+      animate(body, { height: [`0px`, `${fullHeight}px`], opacity: [0, 1] }, { duration: 0.45, easing: "ease-out" });
+      arrow.style.transform = "rotate(180deg)";
+      body.style.paddingBottom = "1rem";
+    } else {
+      // Cerrar animación
+      animate(body, { height: [`${body.scrollHeight}px`, `0px`], opacity: [1, 0] }, { duration: 0.35, easing: "ease-in" });
+      arrow.style.transform = "rotate(0deg)";
+      body.style.paddingBottom = "0";
     }
-    content.appendChild(nutri);
+  });
+
+  container.appendChild(header);
+  container.appendChild(body);
+  return container;
+}
+
+// --- Ingredientes moderno ---
+const ingredientsHTML = recipe.ingredients
+  .map(el => `
+    <div style="
+      display:flex;
+      align-items:center;
+      gap:0.5rem;
+      padding:0.4rem 0;
+      font-size:1rem;
+      border-bottom:1px solid #f2f2f2;
+    ">
+      <img src="${el.img}" alt="" style="width:22px; height:22px; object-fit:contain;">
+      <span>${el.qty} ${el.unit} ${el.name}</span>
+    </div>
+  `).join("");
+content.appendChild(createExpandable("🧂 Ingredientes", ingredientsHTML));
+
+// --- Nutrición moderno ---
+const nutritionHTML = Object.entries(recipe.nutrition || {})
+  .map(([k, v]) => `
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      padding:0.4rem 0;
+      font-size:1rem;
+      border-bottom:1px solid #f2f2f2;
+    ">
+      <span style="text-transform:capitalize;">${k}</span>
+      <strong>${v}</strong>
+    </div>
+  `).join("");
+content.appendChild(createExpandable("⚡ Valores nutricionales", nutritionHTML));
+
+
 
     // --- Botón pasos ---
     const btn = document.createElement("button");
