@@ -599,23 +599,26 @@ function createExpandable(title, innerHTML) {
     fontWeight: "600",
     fontSize: "1.1rem",
     cursor: "pointer",
+    userSelect: "none",
+    WebkitTapHighlightColor: "transparent"
   });
 
   const label = document.createElement("span");
   label.textContent = title;
   header.appendChild(label);
 
-  // Flecha moderna Font Awesome
+  // --- Flecha moderna Font Awesome ---
   const arrow = document.createElement("i");
   arrow.className = "fa-solid fa-chevron-down";
   Object.assign(arrow.style, {
     fontSize: "1rem",
     color: "#555",
     transition: "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
-    transformOrigin: "center center",
+    transformOrigin: "center center"
   });
   header.appendChild(arrow);
 
+  // --- Contenido expandible ---
   const body = document.createElement("div");
   body.innerHTML = innerHTML;
   Object.assign(body.style, {
@@ -623,17 +626,45 @@ function createExpandable(title, innerHTML) {
     overflow: "hidden",
     opacity: "0",
     padding: "0 1.25rem",
+    transition: "height 0.4s ease, opacity 0.4s ease"
   });
 
+  // --- Acción al hacer click ---
   header.addEventListener("click", () => {
     const expanded = container.classList.toggle("expanded");
+
     if (expanded) {
+      // Forzamos repintado antes de medir la altura real
+      body.style.height = "auto";
       const fullHeight = body.scrollHeight;
-      animate(body, { height: [0, fullHeight], opacity: [0, 1] }, { duration: 0.45, easing: "ease-out" });
+      body.style.height = "0px";
+      void body.offsetHeight; // 🧠 fuerza reflow antes de animar
+
+      // Animación de apertura
+      animate(
+        body,
+        { height: [0, fullHeight], opacity: [0, 1] },
+        { duration: 0.45, easing: "ease-out" }
+      ).finished.then(() => {
+        body.style.height = "auto"; // 🔥 mantiene el tamaño correcto después
+      });
+
       arrow.style.transform = "rotate(180deg)";
       body.style.paddingBottom = "1rem";
     } else {
-      animate(body, { height: [body.scrollHeight, 0], opacity: [1, 0] }, { duration: 0.35, easing: "ease-in" });
+      // Medimos altura actual antes de cerrar
+      const currentHeight = body.scrollHeight;
+      body.style.height = `${currentHeight}px`;
+      void body.offsetHeight; // reflow
+
+      animate(
+        body,
+        { height: [currentHeight, 0], opacity: [1, 0] },
+        { duration: 0.35, easing: "ease-in" }
+      ).finished.then(() => {
+        body.style.height = "0";
+      });
+
       arrow.style.transform = "rotate(0deg)";
       body.style.paddingBottom = "0";
     }
@@ -676,7 +707,6 @@ const nutritionCardHTML = Object.entries(recipe.nutrition || {})
     </div>
   `).join("");
 content.appendChild(createExpandable("⚡ Valores nutricionales", nutritionCardHTML));
-
 
     // --- Botón pasos ---
     const btn = document.createElement("button");
