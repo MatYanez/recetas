@@ -578,7 +578,6 @@ else if (sectionId === "almuerzos") {
 
   
 
-// Función para crear un bloque expandible con animación moderna
 function createExpandable(title, innerHTML) {
   const container = document.createElement("div");
   container.className = "expandable-card";
@@ -601,14 +600,19 @@ function createExpandable(title, innerHTML) {
     fontSize: "1.1rem",
     cursor: "pointer",
   });
-  header.textContent = title;
 
-  const arrow = document.createElement("span");
-  arrow.innerHTML = "⌄";
+  const label = document.createElement("span");
+  label.textContent = title;
+  header.appendChild(label);
+
+  // Flecha moderna Font Awesome
+  const arrow = document.createElement("i");
+  arrow.className = "fa-solid fa-chevron-down";
   Object.assign(arrow.style, {
-    transition: "transform 0.3s ease",
-    fontSize: "1.2rem",
-    transformOrigin: "center",
+    fontSize: "1rem",
+    color: "#555",
+    transition: "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+    transformOrigin: "center center",
   });
   header.appendChild(arrow);
 
@@ -623,16 +627,13 @@ function createExpandable(title, innerHTML) {
 
   header.addEventListener("click", () => {
     const expanded = container.classList.toggle("expanded");
-
     if (expanded) {
-      // Abrir animación
       const fullHeight = body.scrollHeight;
-      animate(body, { height: [`0px`, `${fullHeight}px`], opacity: [0, 1] }, { duration: 0.45, easing: "ease-out" });
+      animate(body, { height: [0, fullHeight], opacity: [0, 1] }, { duration: 0.45, easing: "ease-out" });
       arrow.style.transform = "rotate(180deg)";
       body.style.paddingBottom = "1rem";
     } else {
-      // Cerrar animación
-      animate(body, { height: [`${body.scrollHeight}px`, `0px`], opacity: [1, 0] }, { duration: 0.35, easing: "ease-in" });
+      animate(body, { height: [body.scrollHeight, 0], opacity: [1, 0] }, { duration: 0.35, easing: "ease-in" });
       arrow.style.transform = "rotate(0deg)";
       body.style.paddingBottom = "0";
     }
@@ -642,8 +643,6 @@ function createExpandable(title, innerHTML) {
   container.appendChild(body);
   return container;
 }
-
-
 
 // --- Ingredientes moderno ---
 const ingredientsCardHTML = recipe.ingredients
