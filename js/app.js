@@ -719,20 +719,55 @@ header.addEventListener("click", () => {
 }
 
 // --- Ingredientes moderno ---
-const ingredientsCardHTML = recipe.ingredients
-  .map(el => `
-    <div style="
-      display:flex;
-      align-items:center;
-      gap:0.5rem;
-      padding:0.4rem 0;
-      font-size:1rem;
-      border-bottom:1px solid #f2f2f2;
-    ">
-      <img src="${el.img}" alt="" style="width:22px; height:22px; object-fit:contain;">
-      <span>${el.qty} ${el.unit} ${el.name}</span>
-    </div>
-  `).join("");
+// --- Ingredientes moderno (2 columnas, imagen + nombre arriba, medida abajo) ---
+const ingredientsCardHTML = `
+  <div style="
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  ">
+    ${recipe.ingredients
+      .map(el => `
+        <div style="
+          background: #fafafa;
+          border-radius: 14px;
+          padding: 0.75rem;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+        "
+        onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)';"
+        onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 1px 4px rgba(0,0,0,0.05)';"
+        >
+          <img src="${el.img}" alt="${el.name}" style="
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            object-fit: contain;
+            background: white;
+            padding: 6px;
+          ">
+          <div style="display:flex; flex-direction:column; justify-content:center; text-align:left;">
+            <span style="
+              font-weight:600;
+              font-size:1rem;
+              color:#222;
+              line-height:1.2;
+            ">${el.name}</span>
+            <span style="
+              font-size:0.85rem;
+              color:#555;
+              margin-top:2px;
+            ">${el.qty} ${el.unit}</span>
+          </div>
+        </div>
+      `)
+      .join("")}
+  </div>
+`;
+
 content.appendChild(createExpandable("🧂 Ingredientes", ingredientsCardHTML));
 
 // --- Nutrición moderno ---
