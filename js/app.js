@@ -572,7 +572,7 @@ else if (sectionId === "almuerzos") {
     content.appendChild(title);
 
     const info = document.createElement("p");
-    info.textContent = `${recipe.difficulty} • ${recipe.time}`;
+    info.textContent = `${recipe.difficulty} - ${recipe.time}`;
     Object.assign(info.style, { color: "#555", marginBottom: "1.5rem" , marginTop: "0.5rem"});
     content.appendChild(info);
 
