@@ -633,25 +633,32 @@ function createExpandable(title, innerHTML) {
   header.addEventListener("click", () => {
     const expanded = container.classList.toggle("expanded");
 
-    if (expanded) {
-      // Forzamos repintado antes de medir la altura real
-      body.style.height = "auto";
-      const fullHeight = body.scrollHeight;
-      body.style.height = "0px";
-      void body.offsetHeight; // 🧠 fuerza reflow antes de animar
+  if (expanded) {
+  // 🧠 1. Ocultamos visualmente antes del cálculo
+  body.style.opacity = "0";
+  body.style.height = "auto";
+  const fullHeight = body.scrollHeight;
+  body.style.height = "0px";
+  void body.offsetHeight; // reflow
 
-      // Animación de apertura
-      animate(
-        body,
-        { height: [0, fullHeight], opacity: [0, 1] },
-        { duration: 0.45, easing: "ease-out" }
-      ).finished.then(() => {
-        body.style.height = "auto"; // 🔥 mantiene el tamaño correcto después
-      });
+  // 🪄 2. Animación mucho más natural
+  animate(
+    body,
+    { height: [0, fullHeight], opacity: [0, 1] },
+    {
+      duration: 0.55,
+      easing: "cubic-bezier(0.22, 1, 0.36, 1)", // curva tipo iOS spring
+    }
+  ).finished.then(() => {
+    body.style.height = "auto";
+    body.style.opacity = "1";
+  });
 
-      arrow.style.transform = "rotate(180deg)";
-      body.style.paddingBottom = "1rem";
-    } else {
+  // 🧭 3. Flecha con transición independiente
+  arrow.style.transition = "transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)";
+  arrow.style.transform = "rotate(180deg)";
+  body.style.paddingBottom = "1rem";
+}else {
       // Medimos altura actual antes de cerrar
       const currentHeight = body.scrollHeight;
       body.style.height = `${currentHeight}px`;
