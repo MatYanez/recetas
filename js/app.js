@@ -261,7 +261,7 @@ if (overlay) {
 
       // setup visual para esta sección
       topBar.style.backgroundColor = section.color;
-      topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;">${section.title}</h2>`;
+      topBar.innerHTML = `<h2 style="font-size:1.5rem;font-weight:700;line-height: 1.3;">${section.title}</h2>`;
       body.style.backgroundColor = "#fff"; // fondo siempre blanco
 
       // detectar dirección swipe (para la animación horizontal)
@@ -573,7 +573,7 @@ else if (sectionId === "almuerzos") {
 
     const info = document.createElement("p");
     info.textContent = `${recipe.difficulty} • ${recipe.time}`;
-    Object.assign(info.style, { color: "#555", marginBottom: "1rem" });
+    Object.assign(info.style, { color: "#555", marginBottom: "1.5rem" , marginTop: "0.5rem"});
     content.appendChild(info);
 
     // --- Ingredientes (colapsable) ---
