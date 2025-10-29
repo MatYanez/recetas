@@ -618,7 +618,6 @@ function createExpandable(title, innerHTML) {
   });
   header.appendChild(arrow);
 
-  // --- Contenido expandible ---
 // body = contenedor colapsable
 const body = document.createElement("div");
 Object.assign(body.style, {
@@ -636,53 +635,83 @@ Object.assign(innerWrapper.style, {
   maxHeight: "0px",
 });
 body.appendChild(innerWrapper);
+
   // --- Acción al hacer click ---
-  header.addEventListener("click", () => {
-    const expanded = container.classList.toggle("expanded");
+header.addEventListener("click", () => {
+  const expanded = container.classList.toggle("expanded");
 
   if (expanded) {
-  // 🧠 1. Ocultamos visualmente antes del cálculo
-  body.style.opacity = "0";
-  body.style.height = "auto";
-  const fullHeight = body.scrollHeight;
-  body.style.height = "0px";
-  void body.offsetHeight; // reflow
+    // Calculamos altura natural del contenido
+    // forzamos altura auto para medir
+    innerWrapper.style.maxHeight = "none";
+    const fullHeight = innerWrapper.scrollHeight;
 
-  // 🪄 2. Animación mucho más natural
-  animate(
-    body,
-    { height: [0, fullHeight], opacity: [0, 1] },
-    {
-      duration: 0.55,
-      easing: "cubic-bezier(0.22, 1, 0.36, 1)", // curva tipo iOS spring
-    }
-  ).finished.then(() => {
-    body.style.height = "auto";
-    body.style.opacity = "1";
-  });
+    // estado inicial para animación
+    innerWrapper.style.maxHeight = "0px";
+    innerWrapper.style.opacity = "0";
+    innerWrapper.style.transform = "scaleY(0.6)";
+    void innerWrapper.offsetHeight; // reflow
 
-  // 🧭 3. Flecha con transición independiente
-  arrow.style.transition = "transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)";
-  arrow.style.transform = "rotate(180deg)";
-  body.style.paddingBottom = "1rem";
-}else {
-      // Medimos altura actual antes de cerrar
-      const currentHeight = body.scrollHeight;
-      body.style.height = `${currentHeight}px`;
-      void body.offsetHeight; // reflow
+    // animación de despliegue suave tipo iOS
+    animate(
+      innerWrapper,
+      {
+        maxHeight: [`0px`, `${fullHeight}px`],
+        opacity: [0, 1],
+        transform: ["scaleY(0.6)", "scaleY(1)"],
+      },
+      {
+        duration: 0.28,
+        easing: "cubic-bezier(0.2, 0.8, 0.3, 1)",
+      }
+    ).finished.then(() => {
+      // fijar estado final estable
+      innerWrapper.style.maxHeight = "none";
+      innerWrapper.style.opacity = "1";
+      innerWrapper.style.transform = "scaleY(1)";
+    });
 
-      animate(
-        body,
-        { height: [currentHeight, 0], opacity: [1, 0] },
-        { duration: 0.35, easing: "ease-in" }
-      ).finished.then(() => {
-        body.style.height = "0";
-      });
+    // flecha rota
+    arrow.style.transition = "transform 0.28s cubic-bezier(0.2, 0.8, 0.3, 1)";
+    arrow.style.transform = "rotate(180deg)";
 
-      arrow.style.transform = "rotate(0deg)";
-      body.style.paddingBottom = "0";
-    }
-  });
+    // padding inferior solo cuando está abierto
+    body.style.paddingBottom = "1rem";
+
+  } else {
+    // volvemos a una altura fija actual para poder animar a 0
+    const currentHeight = innerWrapper.scrollHeight;
+    innerWrapper.style.maxHeight = `${currentHeight}px`;
+    innerWrapper.style.opacity = "1";
+    innerWrapper.style.transform = "scaleY(1)";
+    void innerWrapper.offsetHeight; // reflow
+
+    // animación de colapso
+    animate(
+      innerWrapper,
+      {
+        maxHeight: [`${currentHeight}px`, `0px`],
+        opacity: [1, 0],
+        transform: ["scaleY(1)", "scaleY(0.6)"],
+      },
+      {
+        duration: 0.22,
+        easing: "cubic-bezier(0.4, 0, 0.6, 1)",
+      }
+    ).finished.then(() => {
+      // estado final cerrado
+      innerWrapper.style.maxHeight = "0px";
+      innerWrapper.style.opacity = "0";
+      innerWrapper.style.transform = "scaleY(0.6)";
+    });
+
+    arrow.style.transition = "transform 0.22s cubic-bezier(0.4, 0, 0.6, 1)";
+    arrow.style.transform = "rotate(0deg)";
+
+    body.style.paddingBottom = "0";
+  }
+});
+
 
   container.appendChild(header);
   container.appendChild(body);
