@@ -1,49 +1,64 @@
 [
   {
-    "name": "Carne mongoliana con arroz",
-    "img": "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg",
+    "name": "Pasta cremosa con champiñones y pollo",
+    "img": "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000721%2Fv3%2Frect.jpeg",
     "difficulty": "Fácil",
-    "time": "30 min",
+    "time": "35 min",
     "ingredients": [
-      { "name": "Carne de res", "qty": 250, "unit": "g", "img": "https://cdn-icons-png.flaticon.com/512/1046/1046769.png" },
-      { "name": "Arroz blanco", "qty": 1, "unit": "taza", "img": "https://cdn-icons-png.flaticon.com/512/590/590836.png" },
-      { "name": "Salsa de soja", "qty": 2, "unit": "cda", "img": "https://cdn-icons-png.flaticon.com/512/1047/1047711.png" },
-      { "name": "Cebollín", "qty": 1, "unit": "unidad", "img": "https://cdn-icons-png.flaticon.com/512/765/765447.png" }
+      { "name": "Pechuga de pollo", "qty": 200, "unit": "g", "img": "https://cdn-icons-png.flaticon.com/512/1046/1046769.png" },
+      { "name": "Champiñones frescos", "qty": 150, "unit": "g", "img": "https://cdn-icons-png.flaticon.com/512/415/415733.png" },
+      { "name": "Pasta (fettuccine o espagueti)", "qty": 120, "unit": "g", "img": "https://cdn-icons-png.flaticon.com/512/3175/3175043.png" },
+      { "name": "Crema de leche", "qty": 100, "unit": "ml", "img": "https://cdn-icons-png.flaticon.com/512/1047/1047714.png" },
+      { "name": "Aceite de oliva", "qty": 1, "unit": "cda", "img": "https://cdn-icons-png.flaticon.com/512/415/415733.png" },
+      { "name": "Ajo", "qty": 2, "unit": "dientes", "img": "https://cdn-icons-png.flaticon.com/512/2909/2909761.png" },
+      { "name": "Sal y pimienta", "qty": 1, "unit": "al gusto", "img": "https://cdn-icons-png.flaticon.com/512/1046/1046784.png" },
+      { "name": "Perejil fresco", "qty": 1, "unit": "cda", "img": "https://cdn-icons-png.flaticon.com/512/415/415731.png" }
     ],
     "nutrition": {
-      "calories": "520 kcal",
-      "protein": "35 g",
-      "fat": "12 g",
+      "calories": "600 kcal",
+      "protein": "40 g",
+      "fat": "20 g",
       "carbs": "55 g"
     },
     "steps": [
-      "Calentar la sartén con una cucharadita de aceite.",
-      "Agregar la carne y cocinar por 10 minutos hasta que esté dorada.",
-      "Añadir la salsa de soja y el cebollín picado.",
-      "Servir con arroz blanco recién hecho."
+      "Cocer la pasta en una olla grande con agua y sal según las instrucciones del paquete. Escurrir y reservar con un chorrito de aceite para evitar que se pegue.",
+      "Cortar el pollo en tiras o cubos pequeños y salpimentar al gusto.",
+      "En una sartén amplia, calentar una cucharada de aceite de oliva y dorar el pollo durante 8-10 minutos hasta que esté bien cocido. Retirar y reservar.",
+      "En la misma sartén, agregar los champiñones laminados y saltearlos hasta que suelten su jugo y se doren ligeramente.",
+      "Añadir el ajo picado y cocinar por 1 minuto sin que se queme.",
+      "Incorporar la crema de leche, remover y cocinar a fuego medio hasta que espese ligeramente (3-5 minutos).",
+      "Devolver el pollo a la sartén, mezclar bien y añadir la pasta cocida. Integrar todos los ingredientes para que la salsa cubra bien la pasta.",
+      "Servir caliente y decorar con perejil picado fresco."
     ]
   },
   {
-    "name": "Pollo teriyaki",
-    "img": "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000546%2Fv3%2Frect.jpeg",
-    "difficulty": "Medio",
-    "time": "40 min",
+    "name": "Ensalada de quinoa con aguacate y garbanzos",
+    "img": "https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000988%2Fv3%2Frect.jpeg",
+    "difficulty": "Fácil",
+    "time": "20 min",
     "ingredients": [
-      { "name": "Pechuga de pollo", "qty": 200, "unit": "g", "img": "https://cdn-icons-png.flaticon.com/512/1046/1046769.png" },
-      { "name": "Salsa teriyaki", "qty": 3, "unit": "cda", "img": "https://cdn-icons-png.flaticon.com/512/1047/1047711.png" },
-      { "name": "Arroz blanco", "qty": 1, "unit": "taza", "img": "https://cdn-icons-png.flaticon.com/512/590/590836.png" }
+      { "name": "Quinoa", "qty": 100, "unit": "g", "img": "https://cdn-icons-png.flaticon.com/512/1047/1047710.png" },
+      { "name": "Garbanzos cocidos", "qty": 150, "unit": "g", "img": "https://cdn-icons-png.flaticon.com/512/590/590836.png" },
+      { "name": "Aguacate", "qty": 1, "unit": "unidad", "img": "https://cdn-icons-png.flaticon.com/512/766/766270.png" },
+      { "name": "Tomates cherry", "qty": 8, "unit": "unidad", "img": "https://cdn-icons-png.flaticon.com/512/766/766290.png" },
+      { "name": "Pepino", "qty": 0.5, "unit": "unidad", "img": "https://cdn-icons-png.flaticon.com/512/766/766294.png" },
+      { "name": "Aceite de oliva", "qty": 1, "unit": "cda", "img": "https://cdn-icons-png.flaticon.com/512/415/415733.png" },
+      { "name": "Zumo de limón", "qty": 1, "unit": "cda", "img": "https://cdn-icons-png.flaticon.com/512/766/766269.png" },
+      { "name": "Sal y pimienta", "qty": 1, "unit": "al gusto", "img": "https://cdn-icons-png.flaticon.com/512/1046/1046784.png" },
+      { "name": "Hojas de menta o perejil", "qty": 1, "unit": "cda", "img": "https://cdn-icons-png.flaticon.com/512/415/415731.png" }
     ],
     "nutrition": {
-      "calories": "480 kcal",
-      "protein": "40 g",
-      "fat": "10 g",
-      "carbs": "50 g"
+      "calories": "420 kcal",
+      "protein": "14 g",
+      "fat": "18 g",
+      "carbs": "45 g"
     },
     "steps": [
-      "Cortar el pollo en cubos medianos.",
-      "Sellar en sartén con un poco de aceite.",
-      "Agregar salsa teriyaki y cocinar hasta reducir.",
-      "Servir con arroz caliente."
+      "Lavar bien la quinoa con agua fría para eliminar las saponinas. Cocinarla en una olla con el doble de agua durante unos 12 minutos o hasta que esté suave. Escurrir y dejar enfriar.",
+      "En un bol grande, colocar la quinoa cocida, los garbanzos escurridos, el aguacate en cubos, los tomates cherry cortados por la mitad y el pepino en rodajas finas.",
+      "Aliñar con aceite de oliva, zumo de limón, sal y pimienta. Mezclar bien todos los ingredientes con suavidad para no romper el aguacate.",
+      "Agregar las hojas de menta o perejil picado y mezclar nuevamente.",
+      "Servir fría o a temperatura ambiente, ideal como plato principal ligero o acompañamiento."
     ]
   }
 ]
