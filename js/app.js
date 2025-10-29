@@ -643,8 +643,74 @@ function createExpandable(title, innerHTML) {
   return container;
 }
 
+function createExpandable(title, innerHTML) {
+  const container = document.createElement("div");
+  container.className = "expandable-card";
+  Object.assign(container.style, {
+    background: "#fff",
+    borderRadius: "16px",
+    boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
+    overflow: "hidden",
+    marginBottom: "1rem",
+    transition: "background 0.3s ease",
+  });
+
+  const header = document.createElement("div");
+  Object.assign(header.style, {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "1rem 1.25rem",
+    fontWeight: "600",
+    fontSize: "1.1rem",
+    cursor: "pointer",
+  });
+
+  const label = document.createElement("span");
+  label.textContent = title;
+  header.appendChild(label);
+
+  // Flecha moderna Font Awesome
+  const arrow = document.createElement("i");
+  arrow.className = "fa-solid fa-chevron-down";
+  Object.assign(arrow.style, {
+    fontSize: "1rem",
+    color: "#555",
+    transition: "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+    transformOrigin: "center center",
+  });
+  header.appendChild(arrow);
+
+  const body = document.createElement("div");
+  body.innerHTML = innerHTML;
+  Object.assign(body.style, {
+    height: "0",
+    overflow: "hidden",
+    opacity: "0",
+    padding: "0 1.25rem",
+  });
+
+  header.addEventListener("click", () => {
+    const expanded = container.classList.toggle("expanded");
+    if (expanded) {
+      const fullHeight = body.scrollHeight;
+      animate(body, { height: [0, fullHeight], opacity: [0, 1] }, { duration: 0.45, easing: "ease-out" });
+      arrow.style.transform = "rotate(180deg)";
+      body.style.paddingBottom = "1rem";
+    } else {
+      animate(body, { height: [body.scrollHeight, 0], opacity: [1, 0] }, { duration: 0.35, easing: "ease-in" });
+      arrow.style.transform = "rotate(0deg)";
+      body.style.paddingBottom = "0";
+    }
+  });
+
+  container.appendChild(header);
+  container.appendChild(body);
+  return container;
+}
+
 // --- Ingredientes moderno ---
-const ingredientsHTML = recipe.ingredients
+const ingredientsCardHTML = recipe.ingredients
   .map(el => `
     <div style="
       display:flex;
@@ -658,10 +724,10 @@ const ingredientsHTML = recipe.ingredients
       <span>${el.qty} ${el.unit} ${el.name}</span>
     </div>
   `).join("");
-content.appendChild(createExpandable("🧂 Ingredientes", ingredientsHTML));
+content.appendChild(createExpandable("🧂 Ingredientes", ingredientsCardHTML));
 
 // --- Nutrición moderno ---
-const nutritionHTML = Object.entries(recipe.nutrition || {})
+const nutritionCardHTML = Object.entries(recipe.nutrition || {})
   .map(([k, v]) => `
     <div style="
       display:flex;
@@ -674,8 +740,7 @@ const nutritionHTML = Object.entries(recipe.nutrition || {})
       <strong>${v}</strong>
     </div>
   `).join("");
-content.appendChild(createExpandable("⚡ Valores nutricionales", nutritionHTML));
-
+content.appendChild(createExpandable("⚡ Valores nutricionales", nutritionCardHTML));
 
 
     // --- Botón pasos ---
