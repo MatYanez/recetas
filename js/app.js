@@ -324,21 +324,6 @@ content.innerHTML = `
       ${monthName}
     </h2>
 
-    <!-- Días fijos -->
-<div style="
-  display:grid;
-  grid-template-columns: repeat(5, 1fr);
-  text-align:center;
-  padding:0 0.5rem;
-  margin-bottom:0.5rem;
-  font-weight:600;
-  font-size:1rem;
-  letter-spacing:0.5px;
-">
-  <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span>
-</div>
-
-
     <!-- Carrusel -->
  <div id="weekCarousel" style="
   display:flex;
@@ -366,6 +351,7 @@ content.innerHTML = `
           grid-template-columns:repeat(5, 1fr);
           text-align:center;
           font-weight:600;
+          gap:1rem;
         ">
           <span>L</span>
           <span>M</span>
@@ -379,6 +365,7 @@ content.innerHTML = `
           display:grid;
           grid-template-columns:repeat(5, 1fr);
           text-align:center;
+                    gap:1rem;
         ">
           ${week
             .map((d) => {
