@@ -427,14 +427,26 @@ if (todayIndex !== -1) {
   });
 }
 
+// ====================================================
+// BOTÓN "ORGANIZAR" SOLO EN LA PANTALLA DEL CALENDARIO
+// ====================================================
 
-// BOTÓN FLOTANTE “Organizar”
+// borrar botón previo si existe
+const oldOrganize = document.getElementById("organizeBtn");
+if (oldOrganize) oldOrganize.remove();
+
+// crear el botón
 const organizeBtn = document.createElement("button");
+organizeBtn.id = "organizeBtn";
 organizeBtn.textContent = "Organizar";
 
+// TU ESTILO EXACTO
 Object.assign(organizeBtn.style, {
   position: "fixed",
   bottom: "7rem",
+  left: "50%",
+  transform: "translateX(-50%)",
+  width: "80%",
   background: "#000",
   color: "#fff",
   backdropFilter: "blur(10px)",
@@ -442,85 +454,74 @@ Object.assign(organizeBtn.style, {
   padding: "0.9rem 1.3rem",
   borderRadius: "14px",
   border: "1px solid rgba(0,0,0,0.1)",
-  boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+  boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
   fontWeight: "600",
   fontSize: "1rem",
   zIndex: "200",
-  cursor: "pointer",
-  width: "80%",
+  cursor: "pointer"
 });
 
 document.body.appendChild(organizeBtn);
 
-// FUNCIÓN PARA ABRIR LA PANTALLA "Organizar"
+
+// ====================================================
+// PANTALLA ORGANIZAR
+// ====================================================
 function openOrganizeScreen() {
   const screen = document.createElement("div");
+  screen.id = "organizeScreen";
 
   Object.assign(screen.style, {
     position: "fixed",
     inset: "0",
     background: "#fff",
-    zIndex: "300",
+    zIndex: "400",
     transform: "translateY(100%)",
     display: "flex",
     flexDirection: "column",
-    padding: "1.5rem",
+    padding: "1.4rem"
   });
 
-  // animación tipo iOS (slide-up)
   animate(
     screen,
     { y: ["100%", "0%"], opacity: [0, 1] },
     { duration: 0.45, easing: "ease-out" }
   );
 
-  // botón volver
-  const backBtn = document.createElement("button");
-  backBtn.textContent = "← Volver";
-
-  Object.assign(backBtn.style, {
+  const back = document.createElement("button");
+  back.textContent = "← Volver";
+  Object.assign(back.style, {
     background: "none",
     border: "none",
     color: "#007AFF",
-    fontSize: "1.15rem",
     fontWeight: "600",
-    padding: "0",
+    fontSize: "1.2rem",
     marginBottom: "1rem",
     cursor: "pointer",
-    width: "fit-content",
+    width: "fit-content"
   });
+  back.addEventListener("click", closeOrganizeScreen);
 
-  backBtn.addEventListener("click", () => closeOrganizeScreen(screen));
-
-  // contenido interno
   const title = document.createElement("h2");
   title.textContent = "Organizar semana";
   title.style.fontSize = "1.8rem";
   title.style.fontWeight = "700";
-  title.style.marginBottom = "1.5rem";
+  title.style.marginBottom = "1rem";
 
-  const info = document.createElement("p");
-  info.textContent = "Aquí podrás organizar tus comidas, tareas o planificación semanal.";
-  info.style.fontSize = "1rem";
-  info.style.lineHeight = "1.6";
-  info.style.color = "#444";
-
-  screen.appendChild(backBtn);
+  screen.appendChild(back);
   screen.appendChild(title);
-  screen.appendChild(info);
-
   document.body.appendChild(screen);
 }
 
-// cerrar pantalla
-function closeOrganizeScreen(screen) {
+function closeOrganizeScreen() {
+  const screen = document.getElementById("organizeScreen");
+  if (!screen) return;
+
   animate(
     screen,
     { y: ["0%", "100%"], opacity: [1, 0] },
     { duration: 0.35, easing: "ease-in" }
-  ).finished.then(() => {
-    screen.remove();
-  });
+  ).finished.then(() => screen.remove());
 }
 
 organizeBtn.addEventListener("click", openOrganizeScreen);
@@ -1057,6 +1058,16 @@ content.ontouchend = () => {
       // mover el indicador al botón activo actual
       moveIndicatorTo([...items].find((b) => b.dataset.id === sectionId));
       content.scrollTo({ top: 0, behavior: "instant" });
+
+      // remover botón y modal si no estamos en calendario
+if (sectionId !== "calendario") {
+  const b = document.getElementById("organizeBtn");
+  if (b) b.remove();
+
+  const s = document.getElementById("organizeScreen");
+  if (s) s.remove();
+}
+
     } // fin updateView
 
 
