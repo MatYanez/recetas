@@ -426,8 +426,120 @@ if (todayIndex !== -1) {
     behavior: "instant"
   });
 }
+ }
 
-        }
+
+
+
+
+// BOTÓN FLOTANTE “Organizar”
+const organizeBtn = document.createElement("button");
+organizeBtn.textContent = "Organizar";
+
+Object.assign(organizeBtn.style, {
+  position: "fixed",
+  bottom: "6rem",
+  right: "1.5rem",
+  background: "rgba(255,255,255,0.8)",
+  backdropFilter: "blur(10px)",
+  WebkitBackdropFilter: "blur(10px)",
+  padding: "0.9rem 1.3rem",
+  borderRadius: "14px",
+  border: "1px solid rgba(0,0,0,0.1)",
+  boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+  fontWeight: "600",
+  fontSize: "1rem",
+  zIndex: "200",
+  cursor: "pointer",
+});
+
+document.body.appendChild(organizeBtn);
+
+// FUNCIÓN PARA ABRIR LA PANTALLA "Organizar"
+function openOrganizeScreen() {
+  const screen = document.createElement("div");
+
+  Object.assign(screen.style, {
+    position: "fixed",
+    inset: "0",
+    background: "#fff",
+    zIndex: "300",
+    transform: "translateY(100%)",
+    display: "flex",
+    flexDirection: "column",
+    padding: "1.5rem",
+  });
+
+  // animación tipo iOS (slide-up)
+  animate(
+    screen,
+    { y: ["100%", "0%"], opacity: [0, 1] },
+    { duration: 0.45, easing: "ease-out" }
+  );
+
+  // botón volver
+  const backBtn = document.createElement("button");
+  backBtn.textContent = "← Volver";
+
+  Object.assign(backBtn.style, {
+    background: "none",
+    border: "none",
+    color: "#007AFF",
+    fontSize: "1.15rem",
+    fontWeight: "600",
+    padding: "0",
+    marginBottom: "1rem",
+    cursor: "pointer",
+    width: "fit-content",
+  });
+
+  backBtn.addEventListener("click", () => closeOrganizeScreen(screen));
+
+  // contenido interno
+  const title = document.createElement("h2");
+  title.textContent = "Organizar semana";
+  title.style.fontSize = "1.8rem";
+  title.style.fontWeight = "700";
+  title.style.marginBottom = "1.5rem";
+
+  const info = document.createElement("p");
+  info.textContent = "Aquí podrás organizar tus comidas, tareas o planificación semanal.";
+  info.style.fontSize = "1rem";
+  info.style.lineHeight = "1.6";
+  info.style.color = "#444";
+
+  screen.appendChild(backBtn);
+  screen.appendChild(title);
+  screen.appendChild(info);
+
+  document.body.appendChild(screen);
+}
+
+// cerrar pantalla
+function closeOrganizeScreen(screen) {
+  animate(
+    screen,
+    { y: ["0%", "100%"], opacity: [1, 0] },
+    { duration: 0.35, easing: "ease-in" }
+  ).finished.then(() => {
+    screen.remove();
+  });
+}
+
+organizeBtn.addEventListener("click", openOrganizeScreen);
+
+
+
+
+
+
+
+
+
+
+
+
+
         // =========================
         // ====== ALMUERZOS ========
         // =========================
