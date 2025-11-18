@@ -340,50 +340,74 @@ content.innerHTML = `
 
 
     <!-- Carrusel -->
-    <div id="weekCarousel" style="
-      display:flex;
-      overflow-x:auto;
-      scroll-snap-type:x mandatory;
-      gap:1rem;
-      padding-bottom:1rem;
-      -webkit-overflow-scrolling:touch;
-    ">
-      ${weeks
-        .map(
-          (week, wi) => `
-        <div class="week-slide" style="
-          display:flex;
-          justify-content:space-between;
-          min-width:100%;
-          scroll-snap-align:center;
-          padding:0 0.5rem;
+ <div id="weekCarousel" style="
+  display:flex;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  gap:1rem;
+  padding-bottom:1rem;
+  -webkit-overflow-scrolling:touch;
+">
+  ${weeks
+    .map(
+      (week) => `
+      <div class="week-slide" style="
+        min-width:100%;
+        scroll-snap-align:center;
+        padding:0 0.5rem;
+        display:flex;
+        flex-direction:column;
+        gap:0.5rem;
+      ">
+        
+        <!-- ENCABEZADO Y DÍAS TODO EN EL MISMO BLOQUE -->
+        <div style="
+          display:grid;
+          grid-template-columns:repeat(5, 1fr);
+          text-align:center;
+          font-weight:600;
+        ">
+          <span>L</span>
+          <span>M</span>
+          <span>X</span>
+          <span>J</span>
+          <span>V</span>
+        </div>
+
+        <!-- NÚMEROS ALINEADOS PERFECTAMENTE A LO MISMO -->
+        <div style="
+          display:grid;
+          grid-template-columns:repeat(5, 1fr);
+          text-align:center;
         ">
           ${week
             .map((d) => {
               const isToday =
                 d && d.toDateString() === new Date().toDateString();
               return `
-              <div style="
-                width:50px;
-                height:50px;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                border-radius:12px;
-                font-weight:600;
-                background:${isToday ? "#000" : "#f3f4f6"};
-                color:${isToday ? "#fff" : "#333"};
-              ">
-                ${d ? d.getDate() : ""}
-              </div>`;
+                <div style="
+                  width:100%;
+                  height:50px;
+                  display:flex;
+                  align-items:center;
+                  justify-content:center;
+                  background:${isToday ? "#000" : "#f3f4f6"};
+                  color:${isToday ? "#fff" : "#333"};
+                  border-radius:12px;
+                  font-weight:600;
+                ">
+                  ${d ? d.getDate() : ""}
+                </div>
+              `;
             })
             .join("")}
         </div>
-      `
-        )
-        .join("")}
-    </div>
 
+      </div>
+    `
+    )
+    .join("")}
+</div>
   </div>
 `;
 
