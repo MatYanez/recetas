@@ -434,9 +434,9 @@ organizeBtn.textContent = "Organizar";
 
 Object.assign(organizeBtn.style, {
   position: "fixed",
-  bottom: "6rem",
-  right: "1.5rem",
-  background: "rgba(255,255,255,0.8)",
+  bottom: "7rem",
+  background: "#000",
+  color: "#fff"
   backdropFilter: "blur(10px)",
   WebkitBackdropFilter: "blur(10px)",
   padding: "0.9rem 1.3rem",
@@ -447,6 +447,7 @@ Object.assign(organizeBtn.style, {
   fontSize: "1rem",
   zIndex: "200",
   cursor: "pointer",
+  with: "80%"
 });
 
 document.body.appendChild(organizeBtn);
