@@ -287,114 +287,120 @@ if (overlay) {
             month: "long",
             year: "numeric",
           });
-          const year = today.getFullYear();
-          const month = today.getMonth();
+// Generar todos los días laborales del mes
+const days = [];
+let d = new Date(year, month, 1);
+while (d.getMonth() === month) {
+  const day = d.getDay();
+  if (day >= 1 && day <= 5) {
+    days.push(new Date(d));
+  }
+  d.setDate(d.getDate() + 1);
+}
 
-          // generar días laborales del mes
-          const days = [];
-          const date = new Date(year, month, 1);
-          while (date.getMonth() === month) {
-            const day = date.getDay(); // 0=domingo
-            if (day >= 1 && day <= 5) days.push(new Date(date));
-            date.setDate(date.getDate() + 1);
-          }
+// Dividir en semanas de 5 días
+const weeks = [];
+for (let i = 0; i < days.length; i += 5) {
+  const slice = days.slice(i, i + 5);
 
-          content.innerHTML = `
-            <div style="display:flex; flex-direction:column; width:100%;">
-              <h2 style="font-size:1.4rem; font-weight:700; margin-bottom:1rem; text-transform:capitalize;">
-                ${monthName}
-              </h2>
+  while (slice.length < 5) slice.push(null);
 
-              <div class="scroll-cal" style="
-                overflow-x:auto;
-                white-space:nowrap;
-                scroll-behavior:smooth;
-                padding-bottom:1rem;
+  weeks.push(slice);
+}
+
+
+          
+content.innerHTML = `
+  <div style="width:100%;">
+    
+    <h2 style="
+      font-size:1.4rem;
+      font-weight:700;
+      margin-bottom:1rem;
+      text-transform:capitalize;
+    ">
+      ${monthName}
+    </h2>
+
+    <!-- Días fijos -->
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      padding:0 0.5rem;
+      margin-bottom:0.5rem;
+      font-weight:600;
+    ">
+      <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span>
+    </div>
+
+    <!-- Carrusel -->
+    <div id="weekCarousel" style="
+      display:flex;
+      overflow-x:auto;
+      scroll-snap-type:x mandatory;
+      gap:1rem;
+      padding-bottom:1rem;
+      -webkit-overflow-scrolling:touch;
+    ">
+      ${weeks
+        .map(
+          (week, wi) => `
+        <div class="week-slide" style="
+          display:flex;
+          justify-content:space-between;
+          min-width:100%;
+          scroll-snap-align:center;
+          padding:0 0.5rem;
+        ">
+          ${week
+            .map((d) => {
+              const isToday =
+                d && d.toDateString() === new Date().toDateString();
+              return `
+              <div style="
+                width:50px;
+                height:50px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                border-radius:12px;
+                font-weight:600;
+                background:${isToday ? "#000" : "#f3f4f6"};
+                color:${isToday ? "#fff" : "#333"};
               ">
-                <div style="display:inline-flex; flex-direction:column;">
-                  <!-- Encabezado de días -->
-                  <div style="display:flex; gap:1rem; justify-content:flex-start; margin-bottom:0.5rem;">
-                    ${days.map(d => {
-                      const initials = ["D","L","M","X","J","V","S"];
-                      return `<div style="min-width:50px; text-align:center; font-weight:600;">
-                        ${initials[d.getDay()]}
-                      </div>`;
-                    }).join("")}
-                  </div>
+                ${d ? d.getDate() : ""}
+              </div>`;
+            })
+            .join("")}
+        </div>
+      `
+        )
+        .join("")}
+    </div>
 
-                  <!-- Números -->
-                  <div style="display:flex; gap:1rem; justify-content:flex-start;">
-                    ${days.map(d => {
-                      const isToday = (d.toDateString() === new Date().toDateString());
-                      const todayClass = isToday
-                        ? "background-color:#000; color:#fff; border-radius:12px;"
-                        : "";
-                      return `<div style="
-                        min-width:50px;
-                        height:50px;
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        font-weight:600;
-                        ${todayClass}">
-                        ${d.getDate()}
-                      </div>`;
-                    }).join("")}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-           <!-- Contenido dinámico: título + imagen -->
-<!-- Contenido dinámico: título + imagen -->
-<div style="
-  width:100%;                  /* ✅ usa todo el ancho del content */
-  margin-top:1.5rem;
-  text-align:left;
-">
-  <h3 style="
-    font-size:1.8rem;
-    font-weight:700;
-    margin-bottom:0.75rem;
-    color:#111;
-    line-height:1.2;
-    word-wrap:break-word;
-  ">
-    Carne mongoliana con arroz
-  </h3>
-
-  <div style="
-    width:100%;
-    border-radius:18px;
-    overflow:hidden;
-    box-shadow:0 4px 15px rgba(0,0,0,0.1);
-    margin-bottom:1.5rem;
-    background-color:#f9f9f9;
-  ">
-    <img
-      src="https://storage.googleapis.com/fitia_recipe_images/GR-R-V-00000554%2Fv3%2Frect.jpeg"
-      alt="Carne mongoliana con arroz"
-      style="
-        width:100%;
-        height:auto;             /* ✅ deja que ajuste proporcionalmente */
-        aspect-ratio:16/9;       /* ✅ mantiene proporción sin distorsión */
-        object-fit:cover;
-        display:block;
-      ">
   </div>
-</div>
+`;
 
-          `;
+// Animación iOS del carrusel
+const weekCarousel = content.querySelector("#weekCarousel");
 
-          // centrar la semana actual
-          const scrollContainer = content.querySelector(".scroll-cal");
-          const todayIndex = days.findIndex(
-            d => d.toDateString() === new Date().toDateString()
-          );
-          if (todayIndex !== -1) {
-            const scrollPos = todayIndex * 60 - 150;
-            scrollContainer.scrollTo({ left: scrollPos, behavior: "instant" });
-          }
+animate(
+  weekCarousel,
+  { opacity: [0, 1], x: [40, 0] },
+  { duration: 0.45, easing: "ease-out" }
+);
+
+const todayIndex = days.findIndex(
+  d => d && d.toDateString() === new Date().toDateString()
+);
+
+if (todayIndex !== -1) {
+  const weekNumber = Math.floor(todayIndex / 5);
+  weekCarousel.scrollTo({
+    left: weekNumber * weekCarousel.clientWidth,
+    behavior: "instant"
+  });
+}
 
           // bloquear swipe lateral mientras scrollea el calendario horizontal
           scrollContainer.addEventListener("touchstart", () => (swipeEnabled = false));
