@@ -510,7 +510,211 @@ function openOrganizeScreen() {
 
   screen.appendChild(back);
   screen.appendChild(title);
+    // =====================================================
+  // =============== CARRUSEL DE SEMANAS ==================
+  // =====================================================
+
+  let currentMonth = new Date().getMonth();
+  let currentYear = new Date().getFullYear();
+
+  function getWeeksOfMonth(year, month) {
+    const weeks = [];
+    const date = new Date(year, month, 1);
+
+    while (date.getDay() !== 1) date.setDate(date.getDate() - 1);
+
+    while (true) {
+      const start = new Date(date);
+      date.setDate(date.getDate() + 4);
+      const end = new Date(date);
+
+      weeks.push({ start, end });
+
+      date.setDate(date.getDate() + 3);
+
+      if (date.getMonth() !== month) break;
+    }
+
+    return weeks;
+  }
+
+  let weeks = getWeeksOfMonth(currentYear, currentMonth);
+
+  const weekCarousel = document.createElement("div");
+  weekCarousel.id = "weekSelector";
+  Object.assign(weekCarousel.style, {
+    display: "flex",
+    overflowX: "auto",
+    scrollSnapType: "x mandatory",
+    gap: "1rem",
+    paddingBottom: "1rem",
+    marginBottom: "2rem",
+    WebkitOverflowScrolling: "touch",
+  });
+
+  weeks.forEach((w, i) => {
+    const start = w.start.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
+    const end = w.end.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
+
+    const card = document.createElement("div");
+    Object.assign(card.style, {
+      minWidth: "80%",
+      background: "#f5f5f5",
+      padding: "1rem",
+      borderRadius: "16px",
+      scrollSnapAlign: "center",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    });
+
+    card.innerHTML = `
+      <h3 style="font-size:1.2rem; margin-bottom:0.5rem;">Semana ${i + 1}</h3>
+      <p style="font-size:1rem; color:#555;">${start} – ${end}</p>
+    `;
+
+    weekCarousel.appendChild(card);
+  });
+
+  screen.appendChild(weekCarousel);
+
+
+  // =====================================================
+  // ============ 3 BLOQUES PARA SELECCIONAR COMIDA ======
+  // =====================================================
+
+  const mealsContainer = document.createElement("div");
+  mealsContainer.style.display = "flex";
+  mealsContainer.style.flexDirection = "column";
+  mealsContainer.style.gap = "1rem";
+
+  function createMealBlock() {
+    const box = document.createElement("div");
+    Object.assign(box.style, {
+      border: "2px dashed #ccc",
+      borderRadius: "14px",
+      padding: "1rem",
+      height: "70px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      fontSize: "1rem",
+      fontWeight: "600",
+      color: "#777",
+    });
+
+    box.textContent = "Seleccionar comida";
+
+    box.addEventListener("click", () => openMealSelector(box));
+
+    return box;
+  }
+
+  const mealBox1 = createMealBlock();
+  const mealBox2 = createMealBlock();
+  const mealBox3 = createMealBlock();
+
+  mealsContainer.appendChild(mealBox1);
+  mealsContainer.appendChild(mealBox2);
+  mealsContainer.appendChild(mealBox3);
+
+  screen.appendChild(mealsContainer);
+
+
+  // =====================================================
+  // =============== MODAL PARA ELEGIR COMIDA =============
+  // =====================================================
+  function openMealSelector(targetBox) {
+    const modal = document.createElement("div");
+    modal.id = "mealSelector";
+    Object.assign(modal.style, {
+      position: "fixed",
+      inset: "0",
+      background: "#fff",
+      zIndex: "999",
+      padding: "1.5rem",
+      overflowY: "auto",
+      transform: "translateY(100%)"
+    });
+
+    animate(modal, { y: ["100%", "0%"] }, { duration: 0.35 });
+
+    const back = document.createElement("button");
+    back.textContent = "← Cerrar";
+    Object.assign(back.style, {
+      background: "none", border: "none",
+      color: "#007AFF", fontSize: "1.2rem",
+      fontWeight: "600", marginBottom: "1rem",
+      cursor: "pointer"
+    });
+    back.addEventListener("click", () => {
+      animate(modal, { y: ["0%", "100%"] }, { duration: 0.35 })
+        .finished.then(() => modal.remove());
+    });
+
+    const input = document.createElement("input");
+    Object.assign(input.style, {
+      width: "100%", padding: "0.8rem",
+      borderRadius: "12px",
+      border: "1px solid #ddd",
+      marginBottom: "1rem"
+    });
+    input.placeholder = "Buscar comida...";
+
+    const list = document.createElement("div");
+    list.style.display = "flex";
+    list.style.flexDirection = "column";
+    list.style.gap = "1rem";
+
+    fetch("./data/recetas.json")
+      .then(res => res.json())
+      .then(data => {
+        function renderList(q = "") {
+          list.innerHTML = "";
+          data
+            .filter(r => r.name.toLowerCase().includes(q.toLowerCase()))
+            .forEach(r => {
+              const item = document.createElement("div");
+              Object.assign(item.style, {
+                padding: "1rem",
+                borderRadius: "12px",
+                background: "#f5f5f5",
+                cursor: "pointer",
+                display: "flex",
+                gap: "1rem",
+                alignItems: "center"
+              });
+
+              item.innerHTML = `
+                <img src="${r.img}" style="width:55px;height:55px;border-radius:12px;object-fit:cover;">
+                <span style="font-size:1rem;font-weight:600;">${r.name}</span>
+              `;
+
+              item.addEventListener("click", () => {
+                targetBox.textContent = r.name;
+                targetBox.style.color = "#000";
+                targetBox.style.border = "2px solid #000";
+
+                animate(modal, { y: ["0%", "100%"] }, { duration: 0.35 })
+                  .finished.then(() => modal.remove());
+              });
+
+              list.appendChild(item);
+            });
+        }
+
+        renderList();
+
+        input.addEventListener("input", (e) => renderList(e.target.value));
+      });
+
+    modal.appendChild(back);
+    modal.appendChild(input);
+    modal.appendChild(list);
+    document.body.appendChild(modal);
+  }
+
   document.body.appendChild(screen);
+
 }
 
 function closeOrganizeScreen() {
