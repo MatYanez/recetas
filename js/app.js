@@ -558,8 +558,8 @@ function openOrganizeScreen() {
 
     const card = document.createElement("div");
     Object.assign(card.style, {
-      minWidth: "80%",
-      background: "#f5f5f5",
+      minWidth: "60%",
+      background: "#ededed",
       padding: "1rem",
       borderRadius: "16px",
       scrollSnapAlign: "center",
@@ -567,7 +567,7 @@ function openOrganizeScreen() {
     });
 
     card.innerHTML = `
-      <h3 style="font-size:1.2rem; margin-bottom:0.5rem;">Semana ${i + 1}</h3>
+      <h3 style="font-size:1.7rem;font-weight:600;">Semana ${i + 1}</h3>
       <p style="font-size:1rem; color:#555;">${start} – ${end}</p>
     `;
 
