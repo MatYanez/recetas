@@ -318,7 +318,7 @@ content.innerHTML = `
     <h2 style="
       font-size:1.4rem;
       font-weight:700;
-      margin-bottom:1rem;
+      margin:1rem;
       text-transform:capitalize;
     ">
       ${monthName}
