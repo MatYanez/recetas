@@ -402,11 +402,6 @@ if (todayIndex !== -1) {
   });
 }
 
-          // bloquear swipe lateral mientras scrollea el calendario horizontal
-          scrollContainer.addEventListener("touchstart", () => (swipeEnabled = false));
-          scrollContainer.addEventListener("touchend", () => {
-            setTimeout(() => (swipeEnabled = true), 150);
-          });
         }
         // =========================
         // ====== ALMUERZOS ========
