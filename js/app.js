@@ -436,7 +436,7 @@ Object.assign(organizeBtn.style, {
   position: "fixed",
   bottom: "7rem",
   background: "#000",
-  color: "#fff"
+  color: "#fff",
   backdropFilter: "blur(10px)",
   WebkitBackdropFilter: "blur(10px)",
   padding: "0.9rem 1.3rem",
@@ -447,7 +447,7 @@ Object.assign(organizeBtn.style, {
   fontSize: "1rem",
   zIndex: "200",
   cursor: "pointer",
-  with: "80%"
+  with: "80%",
 });
 
 document.body.appendChild(organizeBtn);
