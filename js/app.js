@@ -283,6 +283,8 @@ if (overlay) {
         // =========================
         if (sectionId === "calendario") {
           const today = new Date();
+           const year = today.getFullYear();
+           const month = today.getMonth();
           const monthName = today.toLocaleString("es-ES", {
             month: "long",
             year: "numeric",
