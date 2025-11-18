@@ -432,7 +432,7 @@ else if (sectionId === "almuerzos") {
         background:#f3f4f6;
         border-radius:14px;
         padding:0.6rem 1rem;
-        margin-bottom:1rem;
+        margin:1rem 0rem;
         box-shadow:0 2px 6px rgba(0,0,0,0.05);
       ">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
