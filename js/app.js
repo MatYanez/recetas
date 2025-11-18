@@ -447,7 +447,7 @@ Object.assign(organizeBtn.style, {
   fontSize: "1rem",
   zIndex: "200",
   cursor: "pointer",
-  with: "80%",
+  width: "80%",
 });
 
 document.body.appendChild(organizeBtn);
