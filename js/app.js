@@ -426,10 +426,6 @@ if (todayIndex !== -1) {
     behavior: "instant"
   });
 }
- }
-
-
-
 
 
 // BOTÓN FLOTANTE “Organizar”
@@ -529,17 +525,7 @@ function closeOrganizeScreen(screen) {
 organizeBtn.addEventListener("click", openOrganizeScreen);
 
 
-
-
-
-
-
-
-
-
-
-
-
+        }
         // =========================
         // ====== ALMUERZOS ========
         // =========================
