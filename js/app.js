@@ -400,6 +400,14 @@ content.innerHTML = `
 
 // Animación iOS del carrusel
 const weekCarousel = content.querySelector("#weekCarousel");
+weekCarousel.addEventListener("touchstart", () => {
+  swipeEnabled = false;
+});
+
+weekCarousel.addEventListener("touchend", () => {
+  setTimeout(() => (swipeEnabled = true), 120);
+});
+
 
 animate(
   weekCarousel,
