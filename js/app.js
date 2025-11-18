@@ -325,15 +325,19 @@ content.innerHTML = `
     </h2>
 
     <!-- Días fijos -->
-    <div style="
-      display:flex;
-      justify-content:space-between;
-      padding:0 0.5rem;
-      margin-bottom:0.5rem;
-      font-weight:600;
-    ">
-      <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span>
-    </div>
+<div style="
+  display:grid;
+  grid-template-columns: repeat(5, 1fr);
+  text-align:center;
+  padding:0 0.5rem;
+  margin-bottom:0.5rem;
+  font-weight:600;
+  font-size:1rem;
+  letter-spacing:0.5px;
+">
+  <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span>
+</div>
+
 
     <!-- Carrusel -->
     <div id="weekCarousel" style="
