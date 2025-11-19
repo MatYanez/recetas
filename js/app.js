@@ -1482,9 +1482,11 @@ function renderWeeklySummary() {
   const week = getLast7Days();
 
   return `
-    <button id="backHabits" style="background:none;border:none;color:#007AFF;font-weight:600;margin-bottom:1rem;">← Volver</button>
+<div class="habit-header">
+  <button id="backHabits" class="habit-back">← Volver</button>
+  <h2 class="habit-title">Resumen semanal</h2>
+</div>
 
-    <h2 style="font-size:1.6rem;font-weight:700;margin-bottom:1rem;">Últimos 7 días</h2>
 
     ${week
       .map(day => `
@@ -1508,15 +1510,21 @@ function renderWeeklySummary() {
 // ---------- PLACEHOLDERS ----------
 function renderTrends() {
   return `
-    <button id="backHabits" style="background:none;border:none;color:#007AFF;font-weight:600;margin-bottom:1rem;">← Volver</button>
-    <h2>Tendencias (próximamente)</h2>
+<div class="habit-header">
+  <button id="backHabits" class="habit-back">← Volver</button>
+  <h2 class="habit-title">Tendencias</h2>
+</div>
+
   `;
 }
 
 function renderGoals() {
   return `
-    <button id="backHabits" style="background:none;border:none;color:#007AFF;font-weight:600;margin-bottom:1rem;">← Volver</button>
-    <h2>Metas personales (próximamente)</h2>
+<div class="habit-header">
+  <button id="backHabits" class="habit-back">← Volver</button>
+  <h2 class="habit-title">Metas personales</h2>
+</div>
+
   `;
 }
 
