@@ -1279,7 +1279,10 @@ if (sectionId !== "calendario") {
   const s = document.getElementById("organizeScreen");
   if (s) s.remove();
 }
-
+else if (sectionId === "habitos") {
+  content.innerHTML = renderHabitsScreen();
+  attachHabitEvents();
+}
     } // fin updateView
 
 
@@ -1307,6 +1310,199 @@ if (sectionId !== "calendario") {
   }); // fin Promise.all
 }
 
+// =========================
+// HABITS MODULE
+// =========================
+
+// --- Template principal ---
+function renderHabitsScreen() {
+  const today = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+  const data = loadHabitData(today);
+
+  return `
+    <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:1rem;">
+      Hábitos de hoy
+    </h2>
+
+    <div class="habit-box" data-key="water">
+      <label>💧 Agua (litros)</label>
+      <input type="number" step="0.1" value="${data.water || ""}">
+    </div>
+
+    <div class="habit-box" data-key="sweets">
+      <label>🍬 Dulces (cantidad)</label>
+      <input type="number" step="1" value="${data.sweets || ""}">
+    </div>
+
+    <div class="habit-box" data-key="sugarDrinks">
+      <label>🥤 Bebidas azucaradas (0 = no)</label>
+      <input type="number" step="1" value="${data.sugarDrinks || ""}">
+    </div>
+
+    <div class="habit-box" data-key="energy">
+      <label>⚡ Energía del día (1–10)</label>
+      <input type="number" step="1" value="${data.energy || ""}">
+    </div>
+
+    <div class="habit-box" data-key="exercise">
+      <label>🏃 Ejercicio (minutos)</label>
+      <input type="number" step="1" value="${data.exercise || ""}">
+    </div>
+
+    <button id="saveHabits" style="
+      width:100%;
+      padding:1rem;
+      margin-top:1rem;
+      background:#111;
+      color:#fff;
+      border:none;
+      border-radius:12px;
+      font-weight:600;
+    ">
+      Guardar hábitos de hoy
+    </button>
+
+    <h2 style="
+      font-size:1.6rem;
+      font-weight:700;
+      margin:2rem 0 1rem;
+    ">
+      Resumen semanal
+    </h2>
+
+    <button id="openWeekly" style="
+      width:100%;
+      padding:0.9rem;
+      background:#f3f4f6;
+      border-radius:12px;
+      border:1px solid #ddd;
+      font-weight:600;
+    ">Ver resumen semanal →</button>
+  `;
+}
+
+function attachHabitEvents() {
+  const today = new Date().toISOString().slice(0,10);
+
+  document.getElementById("saveHabits").addEventListener("click", () => {
+    const boxes = document.querySelectorAll(".habit-box");
+    const newData = {};
+
+    boxes.forEach(box => {
+      const key = box.dataset.key;
+      const val = box.querySelector("input").value;
+      newData[key] = Number(val);
+    });
+
+    saveHabitData(today, newData);
+
+    animateAlert("guardado");
+  });
+
+  document.getElementById("openWeekly").addEventListener("click", () => {
+    showWeeklySummary();
+  });
+}
+
+// =========================
+// LocalStorage helpers
+// =========================
+function loadHabitData(date) {
+  const raw = localStorage.getItem("habits-" + date);
+  return raw ? JSON.parse(raw) : {};
+}
+
+function saveHabitData(date, data) {
+  localStorage.setItem("habits-" + date, JSON.stringify(data));
+}
+
+// =========================
+// Weekly Summary
+// =========================
+function showWeeklySummary() {
+  const today = new Date();
+  const week = [];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    week.push({ 
+      date: key, 
+      data: loadHabitData(key)
+    });
+  }
+
+  const view = document.querySelector("#app-content") || document.querySelector("[data-content]") || document.querySelector("div[style*='overflow']");
+  if (!view) return;
+
+  view.innerHTML = `
+    <button id="backToHabits" style="
+      background:none;
+      border:none;
+      color:#007AFF;
+      font-size:1rem;
+      font-weight:600;
+      margin-bottom:1rem;
+    ">← Volver</button>
+
+    <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:1rem;">
+      Últimos 7 días
+    </h2>
+
+    ${week.map(day => `
+      <div style="
+        padding:1rem;
+        background:#fafafa;
+        border-radius:14px;
+        margin-bottom:0.8rem;
+        border:1px solid #eee;
+      ">
+        <strong>${day.date}</strong><br>
+        Agua: ${(day.data.water ?? 0)} L<br>
+        Dulces: ${(day.data.sweets ?? 0)}<br>
+        Bebidas azucaradas: ${(day.data.sugarDrinks ?? 0)}<br>
+        Energía: ${(day.data.energy ?? 0)}<br>
+        Ejercicio: ${(day.data.exercise ?? 0)} min<br>
+      </div>
+    `).join("")}
+  `;
+
+  document.getElementById("backToHabits").addEventListener("click", () => {
+    view.innerHTML = renderHabitsScreen();
+    attachHabitEvents();
+  });
+}
+
+// =========================
+// Mini animación de guardado
+// =========================
+function animateAlert(type) {
+  const div = document.createElement("div");
+  div.textContent = type === "guardado" ? "✔ Guardado" : "";
+  div.style.position = "fixed";
+  div.style.bottom = "2rem";
+  div.style.left = "50%";
+  div.style.transform = "translateX(-50%)";
+  div.style.background = "#111";
+  div.style.color = "#fff";
+  div.style.padding = "0.6rem 1.2rem";
+  div.style.borderRadius = "12px";
+  div.style.opacity = "0";
+  div.style.transition = "opacity 0.3s ease";
+  div.style.zIndex = "999";
+
+  document.body.appendChild(div);
+
+  requestAnimationFrame(() => {
+    div.style.opacity = "1";
+  });
+
+  setTimeout(() => {
+    div.style.opacity = "0";
+    setTimeout(() => div.remove(), 300);
+  }, 1500);
+}
 
 
 
