@@ -305,7 +305,7 @@ animate(content, { opacity: [1, 0], x: [0, -40 * direction] }, { duration: 0.25 
     // =========================
 if (sectionId === "habitos") {
   content.innerHTML = renderHabitsScreen();
-  attachHabitEvents();
+  attachHabitEvents(content); 
   showNavigationBars(); // ← Mantén las tabs en la pantalla principal
   return;
 }
@@ -1516,9 +1516,7 @@ function renderGoals() {
 }
 
 
-function attachHabitEvents() {
-const content = document.querySelector("div[style*='overflow-y']");
-
+function attachHabitEvents(content) {
   document.querySelectorAll(".habit-nav").forEach(btn => {
     btn.addEventListener("click", () => {
       const go = btn.dataset.go;
@@ -1526,28 +1524,28 @@ const content = document.querySelector("div[style*='overflow-y']");
       if (go === "daily") {
         hideNavigationBars();
         content.innerHTML = renderDailyHabits();
-        attachDailyEvents();
+        attachDailyEvents(content);
         return;
       }
 
       if (go === "weekly") {
         hideNavigationBars();
         content.innerHTML = renderWeeklySummary();
-        attachHabitEvents();
+        attachHabitEvents(content);
         return;
       }
 
       if (go === "trends") {
         hideNavigationBars();
         content.innerHTML = renderTrends();
-        attachHabitEvents();
+        attachHabitEvents(content);
         return;
       }
 
       if (go === "goals") {
         hideNavigationBars();
         content.innerHTML = renderGoals();
-        attachHabitEvents();
+        attachHabitEvents(content);
         return;
       }
     });
@@ -1558,7 +1556,7 @@ const content = document.querySelector("div[style*='overflow-y']");
     backBtn.addEventListener("click", () => {
       showNavigationBars();
       content.innerHTML = renderHabitsScreen();
-      attachHabitEvents();
+      attachHabitEvents(content);
     });
   }
 }
@@ -1661,45 +1659,37 @@ function renderDailyHabits() {
 // ===============================================
 // EVENTS FOR DAILY INTERACTIONS
 // ===============================================
-function attachDailyEvents() {
+function attachDailyEvents(content) {
   const today = getToday();
   let data = loadHabitData(today);
 
-  // click in yes/no
   document.querySelectorAll(".habit-opt").forEach(btn => {
     btn.addEventListener("click", () => {
       const parent = btn.closest(".habit-row");
       const key = parent.dataset.key;
       const val = Number(btn.dataset.val);
 
-      // update visual
       parent.querySelectorAll(".habit-opt").forEach(o => o.classList.remove("selected"));
       btn.classList.add("selected");
 
-      // update data
       data[key] = val;
       updateDailyScore(data);
     });
   });
 
-  // save button
   const saveBtn = document.getElementById("saveHabits");
   saveBtn.addEventListener("click", () => {
     saveHabitData(today, data);
     animateAlert("guardado");
   });
 
-  // back
   const backBtn = document.getElementById("backHabits");
-backBtn.addEventListener("click", () => {
-  showNavigationBars();
-  const content = document.querySelector("div[style*='overflow-y']");
-  content.innerHTML = renderHabitsScreen();
-  attachHabitEvents();
-});
+  backBtn.addEventListener("click", () => {
+    showNavigationBars();
+    content.innerHTML = renderHabitsScreen();
+    attachHabitEvents(content);
+  });
 
-
-  // initial score
   updateDailyScore(data);
 }
 
