@@ -1851,6 +1851,26 @@ function setupHabitCalendar(container, onDateSelected) {
       slide.appendChild(daysRow);
       weekCarousel.appendChild(slide);
     });
+
+
+    // === AUTO-SCROLL A LA SEMANA ACTUAL ===
+setTimeout(() => {
+  const slides = weekCarousel.children;
+
+  for (let i = 0; i < weeks.length; i++) {
+    const week = weeks[i];
+
+    // si la semana contiene el día seleccionado
+    if (week.some(d => d && d.toISOString().slice(0,10) === currentHabitDate)) {
+      weekCarousel.scrollTo({
+        left: slides[i].offsetLeft,
+        behavior: "instant"
+      });
+      break;
+    }
+  }
+}, 10);
+
   }
 
   // ---- Generar semanas del mes ----
