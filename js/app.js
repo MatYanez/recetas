@@ -1346,6 +1346,8 @@ if (sectionId !== "calendario") {
 // HABITS MODULE (NEW STRUCTURE)
 // =========================
 
+// === FECHA SELECCIONADA PARA HABITOS ===
+let currentHabitDate = getToday();
 
 
 // ---------- UTILS ----------
@@ -1618,8 +1620,8 @@ const HABITS = [
 ];
 
 function renderDailyHabits() {
-  const today = getToday();
-  const saved = loadHabitData(today);
+// usamos la fecha seleccionada, no siempre hoy
+const saved = loadHabitData(currentHabitDate);
 
   const rows = HABITS.map(h => {
     const val = saved[h.key] ?? null;
@@ -1676,7 +1678,7 @@ function renderDailyHabits() {
 // ===============================================
 function attachDailyEvents(content) {
   const today = getToday();
-  let data = loadHabitData(today);
+let data = loadHabitData(currentHabitDate);
 
   const calContainer = document.getElementById("habitCalendarContainer");
 
@@ -1684,6 +1686,7 @@ setupHabitCalendar(calContainer, (selectedDate) => {
   const dateStr = selectedDate.toISOString().slice(0,10);
 
   data = loadHabitData(dateStr);
+  currentHabitDate = dateStr;
 
   document.querySelectorAll(".habit-row").forEach(row => {
     const key = row.dataset.key;
@@ -1715,7 +1718,7 @@ setupHabitCalendar(calContainer, (selectedDate) => {
 
   const saveBtn = document.getElementById("saveHabits");
   saveBtn.addEventListener("click", () => {
-    saveHabitData(today, data);
+saveHabitData(currentHabitDate, data);
     animateAlert("guardado");
   });
 
@@ -1805,25 +1808,31 @@ function setupHabitCalendar(container, onDateSelected) {
       `;
 
       week.forEach(day => {
-        const isToday = day && day.toDateString() === new Date().toDateString();
-        const div = document.createElement("div");
+const isSelected = day && day.toISOString().slice(0,10) === currentHabitDate;
 
-        div.style.cssText = `
-          height:50px;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          border-radius:12px;
-          background:${isToday ? "#000" : "#f3f4f6"};
-          color:${isToday ? "#fff" : "#333"};
-          font-weight:600;
-          cursor:pointer;
-        `;
+div.style.cssText = `
+  height:50px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:12px;
+  background:${isSelected ? "#000" : "#f3f4f6"};
+  color:${isSelected ? "#fff" : "#333"};
+  font-weight:600;
+  cursor:pointer;
+  transition:background .25s, color .25s;
+`;
+
 
         div.textContent = day ? day.getDate() : "";
 
         if (day) {
-          div.addEventListener("click", () => onDateSelected(day));
+div.addEventListener("click", () => {
+  currentHabitDate = day.toISOString().slice(0,10);
+  onDateSelected(day);
+  renderMonth(); // <- refresca el calendario para mover highlight
+});
+
         }
 
         daysRow.appendChild(div);
