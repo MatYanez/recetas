@@ -1336,21 +1336,6 @@ function showNavigationBars() {
 }
 
 
-function showNavigationBars() {
-  const topBar = document.querySelector("div[style*='box-shadow'][style*='20px']");
-  const bottomBar = document.querySelector("div[style*='backdrop-filter'][style*='position: fixed']");
-
-  if (topBar) topBar.style.display = "flex";
-  if (bottomBar) bottomBar.style.display = "flex";
-}
-
-
-
-
-
-
-
-
 // ---------- UTILS ----------
 function getToday() {
   return new Date().toISOString().slice(0,10);
