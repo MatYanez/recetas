@@ -1323,103 +1323,17 @@ else if (sectionId !== "calendario") {
   }); // fin Promise.all
 }
 
+
 // =========================
-// HABITS MODULE
+// HABITS MODULE (NEW STRUCTURE)
 // =========================
 
-// --- Template principal ---
-function renderHabitsScreen() {
-  const today = new Date().toISOString().slice(0,10); // YYYY-MM-DD
-  const data = loadHabitData(today);
-
-  return `
-    <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:1rem;">
-      Hábitos de hoy
-    </h2>
-
-    <div class="habit-box" data-key="water">
-      <label>💧 Agua (litros)</label>
-      <input type="number" step="0.1" value="${data.water || ""}">
-    </div>
-
-    <div class="habit-box" data-key="sweets">
-      <label>🍬 Dulces (cantidad)</label>
-      <input type="number" step="1" value="${data.sweets || ""}">
-    </div>
-
-    <div class="habit-box" data-key="sugarDrinks">
-      <label>🥤 Bebidas azucaradas (0 = no)</label>
-      <input type="number" step="1" value="${data.sugarDrinks || ""}">
-    </div>
-
-    <div class="habit-box" data-key="energy">
-      <label>⚡ Energía del día (1–10)</label>
-      <input type="number" step="1" value="${data.energy || ""}">
-    </div>
-
-    <div class="habit-box" data-key="exercise">
-      <label>🏃 Ejercicio (minutos)</label>
-      <input type="number" step="1" value="${data.exercise || ""}">
-    </div>
-
-    <button id="saveHabits" style="
-      width:100%;
-      padding:1rem;
-      margin-top:1rem;
-      background:#111;
-      color:#fff;
-      border:none;
-      border-radius:12px;
-      font-weight:600;
-    ">
-      Guardar hábitos de hoy
-    </button>
-
-    <h2 style="
-      font-size:1.6rem;
-      font-weight:700;
-      margin:2rem 0 1rem;
-    ">
-      Resumen semanal
-    </h2>
-
-    <button id="openWeekly" style="
-      width:100%;
-      padding:0.9rem;
-      background:#f3f4f6;
-      border-radius:12px;
-      border:1px solid #ddd;
-      font-weight:600;
-    ">Ver resumen semanal →</button>
-  `;
+// ---------- UTILS ----------
+function getToday() {
+  return new Date().toISOString().slice(0,10);
 }
 
-function attachHabitEvents() {
-  const today = new Date().toISOString().slice(0,10);
-
-  document.getElementById("saveHabits").addEventListener("click", () => {
-    const boxes = document.querySelectorAll(".habit-box");
-    const newData = {};
-
-    boxes.forEach(box => {
-      const key = box.dataset.key;
-      const val = box.querySelector("input").value;
-      newData[key] = Number(val);
-    });
-
-    saveHabitData(today, newData);
-
-    animateAlert("guardado");
-  });
-
-  document.getElementById("openWeekly").addEventListener("click", () => {
-    showWeeklySummary();
-  });
-}
-
-// =========================
-// LocalStorage helpers
-// =========================
+// ---------- LOAD & SAVE ----------
 function loadHabitData(date) {
   const raw = localStorage.getItem("habits-" + date);
   return raw ? JSON.parse(raw) : {};
@@ -1429,93 +1343,289 @@ function saveHabitData(date, data) {
   localStorage.setItem("habits-" + date, JSON.stringify(data));
 }
 
-// =========================
-// Weekly Summary
-// =========================
-function showWeeklySummary() {
+// ---------- WEEK CALC ----------
+function getLast7Days() {
+  const out = [];
   const today = new Date();
-  const week = [];
-
   for (let i = 0; i < 7; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
     const key = d.toISOString().slice(0,10);
-    week.push({ 
-      date: key, 
+    out.push({
+      date: key,
       data: loadHabitData(key)
     });
   }
+  return out;
+}
 
-  const view = document.querySelector("#app-content") || document.querySelector("[data-content]") || document.querySelector("div[style*='overflow']");
-  if (!view) return;
+function calculateWeeklyPoints() {
+  const week = getLast7Days();
+  let total = 0;
 
-  view.innerHTML = `
-    <button id="backToHabits" style="
-      background:none;
-      border:none;
-      color:#007AFF;
-      font-size:1rem;
-      font-weight:600;
-      margin-bottom:1rem;
-    ">← Volver</button>
+  week.forEach(day => {
+    const d = day.data;
+    let pts = 0;
 
+    if (d.water >= 1.5) pts += 10;
+    if (d.sweets === 0) pts += 10;
+    if (d.sugarDrinks === 0) pts += 10;
+    if (d.energy >= 7) pts += 10;
+    if (d.exercise >= 20) pts += 10;
+
+    total += pts;
+  });
+
+  const avg = Math.round((total / (7 * 50)) * 100);
+  return isNaN(avg) ? 0 : avg;
+}
+
+function getScoreColor(score) {
+  if (score < 40) return { color: "#ff7676", label: "Deficiente" };
+  if (score < 70) return { color: "#ffd76a", label: "Regular" };
+  return { color: "#9cff8f", label: "Muy bien" };
+}
+
+// ---------- MAIN SCREEN ----------
+function renderHabitsScreen() {
+  const score = calculateWeeklyPoints();
+  const { color, label } = getScoreColor(score);
+
+  return `
     <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:1rem;">
-      Últimos 7 días
+      Hábitos
     </h2>
 
-    ${week.map(day => `
-      <div style="
-        padding:1rem;
-        background:#fafafa;
-        border-radius:14px;
-        margin-bottom:0.8rem;
-        border:1px solid #eee;
-      ">
-        <strong>${day.date}</strong><br>
-        Agua: ${(day.data.water ?? 0)} L<br>
-        Dulces: ${(day.data.sweets ?? 0)}<br>
-        Bebidas azucaradas: ${(day.data.sugarDrinks ?? 0)}<br>
-        Energía: ${(day.data.energy ?? 0)}<br>
-        Ejercicio: ${(day.data.exercise ?? 0)} min<br>
-      </div>
-    `).join("")}
-  `;
+    <!-- SCORE CARD -->
+    <div style="
+      width:100%;
+      padding:1.3rem;
+      background:#fff;
+      border-radius:18px;
+      box-shadow:0 3px 12px rgba(0,0,0,0.07);
+      margin-bottom:1.5rem;
+      text-align:center;
+    ">
+      <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:1rem;">Tu puntaje semanal</h3>
 
-  document.getElementById("backToHabits").addEventListener("click", () => {
-    view.innerHTML = renderHabitsScreen();
-    attachHabitEvents();
-  });
+      <div style="
+        width:120px;
+        height:120px;
+        margin:0 auto 0.5rem;
+        border-radius:999px;
+        background:${color};
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        font-weight:700;
+      ">
+        <span style="font-size:1.8rem;">${score}</span>
+        <span style="font-size:0.9rem;">pts</span>
+      </div>
+
+      <p style="font-size:1.1rem; font-weight:600; color:#333;">${label}</p>
+    </div>
+
+    <!-- NAV BUTTONS -->
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+
+      <button class="habit-nav" data-go="daily" style="
+        width:100%; text-align:left;
+        padding:1rem; border-radius:14px;
+        background:#f3f4f6; border:none; font-weight:600;
+      ">📋 Registrar hábitos diarios →</button>
+
+      <button class="habit-nav" data-go="weekly" style="
+        width:100%; text-align:left;
+        padding:1rem; border-radius:14px;
+        background:#f3f4f6; border:none; font-weight:600;
+      ">📅 Resumen semanal →</button>
+
+      <button class="habit-nav" data-go="trends" style="
+        width:100%; text-align:left;
+        padding:1rem; border-radius:14px;
+        background:#f3f4f6; border:none; font-weight:600;
+      ">📈 Tendencias →</button>
+
+      <button class="habit-nav" data-go="goals" style="
+        width:100%; text-align:left;
+        padding:1rem; border-radius:14px;
+        background:#f3f4f6; border:none; font-weight:600;
+      ">🎯 Metas personales →</button>
+
+    </div>
+  `;
 }
 
-// =========================
-// Mini animación de guardado
-// =========================
-function animateAlert(type) {
+// ---------- DAILY ENTRY SCREEN ----------
+function renderDailyHabits() {
+  const today = getToday();
+  const data = loadHabitData(today);
+
+  return `
+    <button id="backHabits" style="background:none;border:none;color:#007AFF;font-weight:600;margin-bottom:1rem;">← Volver</button>
+
+    <h2 style="font-size:1.6rem;font-weight:700;margin-bottom:1rem;">Registrar hábitos de hoy</h2>
+
+    <div class="habit-box" data-key="water">
+      <label>💧 Agua (L)</label>
+      <input type="number" step="0.1" value="${data.water ?? ""}">
+    </div>
+
+    <div class="habit-box" data-key="sweets">
+      <label>🍬 Dulces</label>
+      <input type="number" step="1" value="${data.sweets ?? ""}">
+    </div>
+
+    <div class="habit-box" data-key="sugarDrinks">
+      <label>🥤 Bebidas azucaradas</label>
+      <input type="number" step="1" value="${data.sugarDrinks ?? ""}">
+    </div>
+
+    <div class="habit-box" data-key="energy">
+      <label>⚡ Energía (1–10)</label>
+      <input type="number" step="1" value="${data.energy ?? ""}">
+    </div>
+
+    <div class="habit-box" data-key="exercise">
+      <label>🏃 Ejercicio (min)</label>
+      <input type="number" step="1" value="${data.exercise ?? ""}">
+    </div>
+
+    <button id="saveHabits" style="
+      width:100%; padding:1rem; background:#111;
+      color:white; border:none; border-radius:12px; font-weight:600;
+    ">Guardar</button>
+  `;
+}
+
+// ---------- WEEKLY SUMMARY ----------
+function renderWeeklySummary() {
+  const week = getLast7Days();
+
+  return `
+    <button id="backHabits" style="background:none;border:none;color:#007AFF;font-weight:600;margin-bottom:1rem;">← Volver</button>
+
+    <h2 style="font-size:1.6rem;font-weight:700;margin-bottom:1rem;">Últimos 7 días</h2>
+
+    ${week
+      .map(day => `
+        <div style="
+          background:#fafafa; padding:1rem;
+          border-radius:14px; margin-bottom:0.8rem;
+          border:1px solid #eee;
+        ">
+          <strong>${day.date}</strong><br>
+          Agua: ${day.data.water ?? 0} L<br>
+          Dulces: ${day.data.sweets ?? 0}<br>
+          Bebidas: ${day.data.sugarDrinks ?? 0}<br>
+          Energía: ${day.data.energy ?? 0}<br>
+          Ejercicio: ${day.data.exercise ?? 0} min
+        </div>
+      `)
+      .join("")}
+  `;
+}
+
+// ---------- PLACEHOLDERS ----------
+function renderTrends() {
+  return `
+    <button id="backHabits" style="background:none;border:none;color:#007AFF;font-weight:600;margin-bottom:1rem;">← Volver</button>
+    <h2>Tendencias (próximamente)</h2>
+  `;
+}
+
+function renderGoals() {
+  return `
+    <button id="backHabits" style="background:none;border:none;color:#007AFF;font-weight:600;margin-bottom:1rem;">← Volver</button>
+    <h2>Metas personales (próximamente)</h2>
+  `;
+}
+
+// ---------- ATTACH EVENTS ----------
+function attachHabitEvents() {
+  const content = document.querySelector("div[style*='overflow']");
+
+  // nav buttons
+  document.querySelectorAll(".habit-nav").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const go = btn.dataset.go;
+
+      if (go === "daily") content.innerHTML = renderDailyHabits();
+      if (go === "weekly") content.innerHTML = renderWeeklySummary();
+      if (go === "trends") content.innerHTML = renderTrends();
+      if (go === "goals") content.innerHTML = renderGoals();
+
+      attachHabitEvents();
+    });
+  });
+
+  const backBtn = document.getElementById("backHabits");
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      content.innerHTML = renderHabitsScreen();
+      attachHabitEvents();
+    });
+  }
+
+  const saveBtn = document.getElementById("saveHabits");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      const boxes = document.querySelectorAll(".habit-box");
+      const today = getToday();
+      const newData = {};
+
+      boxes.forEach(b => {
+        const key = b.dataset.key;
+        newData[key] = Number(b.querySelector("input").value);
+      });
+
+      saveHabitData(today, newData);
+      animateAlert("guardado");
+    });
+  }
+}
+
+// ---------- SMALL ALERT ----------
+function animateAlert() {
   const div = document.createElement("div");
-  div.textContent = type === "guardado" ? "✔ Guardado" : "";
-  div.style.position = "fixed";
-  div.style.bottom = "2rem";
-  div.style.left = "50%";
-  div.style.transform = "translateX(-50%)";
-  div.style.background = "#111";
-  div.style.color = "#fff";
-  div.style.padding = "0.6rem 1.2rem";
-  div.style.borderRadius = "12px";
-  div.style.opacity = "0";
-  div.style.transition = "opacity 0.3s ease";
-  div.style.zIndex = "999";
+  div.textContent = "✔ Guardado";
+  Object.assign(div.style, {
+    position: "fixed",
+    bottom: "2rem",
+    left: "50%",
+    transform: "translateX(-50%)",
+    background: "#111",
+    color: "#fff",
+    padding: "0.6rem 1.2rem",
+    borderRadius: "12px",
+    opacity: "0",
+    transition: "opacity 0.3s ease",
+    zIndex: "999"
+  });
 
   document.body.appendChild(div);
-
-  requestAnimationFrame(() => {
-    div.style.opacity = "1";
-  });
+  requestAnimationFrame(() => (div.style.opacity = 1));
 
   setTimeout(() => {
-    div.style.opacity = "0";
+    div.style.opacity = 0;
     setTimeout(() => div.remove(), 300);
-  }, 1500);
+  }, 1400);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
