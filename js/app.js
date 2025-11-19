@@ -1502,7 +1502,8 @@ function renderGoals() {
 
 // ---------- ATTACH EVENTS ----------
 function attachHabitEvents() {
-  const content = document.querySelector("div[style*='overflow']");
+const content = document.querySelector("#app") || document.querySelector("div[style*='overflow']");
+
 
   // nav buttons
   document.querySelectorAll(".habit-nav").forEach(btn => {
