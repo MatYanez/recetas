@@ -32,6 +32,25 @@ const app = document.getElementById("app");
 const saludo = document.getElementById("saludo");
 let selected = null;
 
+/* ---------- GLOBAL NAV HELPERS ---------- */
+function hideNavigationBars() {
+  const topBar = document.querySelector("[data-topbar]");
+  const bottomBar = document.querySelector("[data-bottombar]");
+
+  if (topBar) topBar.style.display = "none";
+  if (bottomBar) bottomBar.style.display = "none";
+}
+
+function showNavigationBars() {
+  const topBar = document.querySelector("[data-topbar]");
+  const bottomBar = document.querySelector("[data-bottombar]");
+
+  if (topBar) topBar.style.display = "flex";
+  if (bottomBar) bottomBar.style.display = "flex";
+}
+
+
+
 /* ---------- Render inicial ---------- */
 function render() {
   app.removeAttribute("style");
@@ -285,15 +304,9 @@ animate(content, { opacity: [1, 0], x: [0, -40 * direction] }, { duration: 0.25 
     // ====== HABITOS ==========
     // =========================
 if (sectionId === "habitos") {
-  hideNavigationBars();  // 👈 OCULTAR BARRAS SOLO EN SUBPÁGINAS
-
   content.innerHTML = renderHabitsScreen();
   attachHabitEvents();
-
-  animate(content, { opacity: [0, 1], x: [40 * direction, 0] }, { duration: 0.35 });
-  moveIndicatorTo([...items].find(b => b.dataset.id === "habitos"));
-  content.scrollTo({ top: 0, behavior: "instant" });
-
+  showNavigationBars(); // ← Mantén las tabs en la pantalla principal
   return;
 }
 
@@ -1513,51 +1526,52 @@ function renderGoals() {
 
 
 function attachHabitEvents() {
-  const content = document.querySelector("div[style*='overflow-y']");
+const content = document.querySelector("div[style*='overflow']");
 
   document.querySelectorAll(".habit-nav").forEach(btn => {
     btn.addEventListener("click", () => {
       const go = btn.dataset.go;
 
-if (go === "daily") {
-  hideNavigationBars();   // 👈 OCULTAR
-  content.innerHTML = renderDailyHabits();
-  attachDailyEvents();
-}
+      if (go === "daily") {
+        hideNavigationBars();
+        content.innerHTML = renderDailyHabits();
+        attachDailyEvents();
+        return;
+      }
 
-if (go === "weekly") {
-  hideNavigationBars();   // 👈 OCULTAR
-  content.innerHTML = renderDailyHabits();
-  attachDailyEvents();
-}
+      if (go === "weekly") {
+        hideNavigationBars();
+        content.innerHTML = renderWeeklySummary();
+        attachHabitEvents();
+        return;
+      }
 
-if (go === "trends") {
-  hideNavigationBars();   // 👈 OCULTAR
-  content.innerHTML = renderDailyHabits();
-  attachDailyEvents();
-}
+      if (go === "trends") {
+        hideNavigationBars();
+        content.innerHTML = renderTrends();
+        attachHabitEvents();
+        return;
+      }
 
-if (go === "goals") {
-  hideNavigationBars();   // 👈 OCULTAR
-  content.innerHTML = renderDailyHabits();
-  attachDailyEvents();
-}
-
-
-      attachHabitEvents();
+      if (go === "goals") {
+        hideNavigationBars();
+        content.innerHTML = renderGoals();
+        attachHabitEvents();
+        return;
+      }
     });
   });
 
   const backBtn = document.getElementById("backHabits");
   if (backBtn) {
-backBtn.addEventListener("click", () => {
-  showNavigationBars();
-  content.innerHTML = renderHabitsScreen();
-  attachHabitEvents();
-});
-
+    backBtn.addEventListener("click", () => {
+      showNavigationBars();
+      content.innerHTML = renderHabitsScreen();
+      attachHabitEvents();
+    });
   }
 }
+
 
 
 
