@@ -1500,12 +1500,9 @@ function renderGoals() {
 }
 
 
-// ---------- ATTACH EVENTS ----------
 function attachHabitEvents() {
-const content = document.querySelector("#app") || document.querySelector("div[style*='overflow']");
+  const content = document.querySelector("div[style*='overflow-y']");
 
-
-  // nav buttons
   document.querySelectorAll(".habit-nav").forEach(btn => {
     btn.addEventListener("click", () => {
       const go = btn.dataset.go;
@@ -1516,17 +1513,9 @@ const content = document.querySelector("#app") || document.querySelector("div[st
         return;
       }
 
-      if (go === "weekly") {
-        content.innerHTML = renderWeeklySummary();
-      }
-
-      if (go === "trends") {
-        content.innerHTML = renderTrends();
-      }
-
-      if (go === "goals") {
-        content.innerHTML = renderGoals();
-      }
+      if (go === "weekly") content.innerHTML = renderWeeklySummary();
+      if (go === "trends") content.innerHTML = renderTrends();
+      if (go === "goals") content.innerHTML = renderGoals();
 
       attachHabitEvents();
     });
@@ -1537,24 +1526,6 @@ const content = document.querySelector("#app") || document.querySelector("div[st
     backBtn.addEventListener("click", () => {
       content.innerHTML = renderHabitsScreen();
       attachHabitEvents();
-    });
-  }
-
-  const saveBtn = document.getElementById("saveHabits");
-  if (saveBtn) {
-    saveBtn.addEventListener("click", () => {
-      const boxes = document.querySelectorAll(".habit-row");
-      const today = getToday();
-      const newData = {};
-
-      boxes.forEach(b => {
-        const key = b.dataset.key;
-        const active = b.querySelector(".habit-opt.selected");
-        if (active) newData[key] = Number(active.dataset.val);
-      });
-
-      saveHabitData(today, newData);
-      animateAlert("guardado");
     });
   }
 }
