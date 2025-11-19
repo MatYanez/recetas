@@ -1755,13 +1755,14 @@ function setupHabitCalendar(container, onDateSelected) {
   monthLabel.style.textAlign = "center";
   monthLabel.style.fontWeight = "700";
   monthLabel.style.fontSize = "1.1rem";
+  monthLabel.style.marginBottom = "0.5rem";
   container.appendChild(monthLabel);
 
   const weekCarousel = document.createElement("div");
   weekCarousel.style.cssText = `
     display:flex;
     overflow-x:auto;
-    scroll-snap-type: x mandatory;
+    scroll-snap-type:x mandatory;
     gap:1rem;
     padding-bottom:1rem;
     -webkit-overflow-scrolling:touch;
@@ -1808,31 +1809,40 @@ function setupHabitCalendar(container, onDateSelected) {
       `;
 
       week.forEach(day => {
-const isSelected = day && day.toISOString().slice(0,10) === currentHabitDate;
 
-div.style.cssText = `
-  height:50px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:12px;
-  background:${isSelected ? "#000" : "#f3f4f6"};
-  color:${isSelected ? "#fff" : "#333"};
-  font-weight:600;
-  cursor:pointer;
-  transition:background .25s, color .25s;
-`;
+        // crear el div (ESTO FALTABA EN TU CÓDIGO)
+        const div = document.createElement("div");
 
+        const isSelected =
+          day && day.toISOString().slice(0,10) === currentHabitDate;
+
+        div.style.cssText = `
+          height:50px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          border-radius:12px;
+          background:${isSelected ? "#000" : "#f3f4f6"};
+          color:${isSelected ? "#fff" : "#333"};
+          font-weight:600;
+          cursor:pointer;
+          transition:background .25s, color .25s;
+        `;
 
         div.textContent = day ? day.getDate() : "";
 
         if (day) {
-div.addEventListener("click", () => {
-  currentHabitDate = day.toISOString().slice(0,10);
-  onDateSelected(day);
-  renderMonth(); // <- refresca el calendario para mover highlight
-});
+          div.addEventListener("click", () => {
 
+            // actualizamos fecha seleccionada
+            currentHabitDate = day.toISOString().slice(0,10);
+
+            // refresca el calendario (mueve highlight)
+            renderMonth();
+
+            // notifica al formulario
+            onDateSelected(day);
+          });
         }
 
         daysRow.appendChild(div);
@@ -1843,14 +1853,14 @@ div.addEventListener("click", () => {
     });
   }
 
-  // función auxiliar
+  // ---- Generar semanas del mes ----
   function getWeeksOfMonth(year, month) {
     const days = [];
     let d = new Date(year, month, 1);
 
     while (d.getMonth() === month) {
-      const day = d.getDay();
-      if (day >= 1 && day <= 5) days.push(new Date(d));
+      const dow = d.getDay();
+      if (dow >= 1 && dow <= 5) days.push(new Date(d));
       d.setDate(d.getDate() + 1);
     }
 
@@ -1863,7 +1873,7 @@ div.addEventListener("click", () => {
     return weeks;
   }
 
-  // swipe vertical entre meses
+  // ---- Swipe vertical para cambiar mes ----
   let startY = 0;
   container.addEventListener("touchstart", e => startY = e.touches[0].clientY);
   container.addEventListener("touchend", e => {
@@ -1875,6 +1885,7 @@ div.addEventListener("click", () => {
 
   renderMonth();
 }
+
 
 
 // ===============================================
