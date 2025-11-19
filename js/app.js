@@ -1517,7 +1517,7 @@ function renderGoals() {
 
 
 function attachHabitEvents() {
-const content = document.querySelector("div[style*='overflow']");
+const content = document.querySelector("div[style*='overflow-y']");
 
   document.querySelectorAll(".habit-nav").forEach(btn => {
     btn.addEventListener("click", () => {
