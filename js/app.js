@@ -1340,15 +1340,6 @@ if (sectionId !== "calendario") {
 
 
 
-function showNavigationBars() {
-  const topBar = document.querySelector("[data-topbar]");
-  const bottomBar = document.querySelector("[data-bottombar]");
-
-  if (topBar) topBar.style.display = "flex";
-  if (bottomBar) bottomBar.style.display = "flex";
-}
-
-
 // ---------- UTILS ----------
 function getToday() {
   return new Date().toISOString().slice(0,10);
