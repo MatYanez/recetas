@@ -1412,9 +1412,6 @@ function renderHabitsScreen() {
   const { color, label } = getScoreColor(score);
 
   return `
-    <h2 style="font-size:1.6rem; font-weight:700; margin-bottom:1rem;">
-      Hábitos
-    </h2>
 
     <!-- SCORE CARD -->
     <div style="
