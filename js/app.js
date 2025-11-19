@@ -19,6 +19,12 @@ const cards = [
     color: "#dcfce7",
     title: "Compras",
     content: "Tu lista dinámica de compras basada en tu planificación semanal."
+  },
+    { 
+    id: "habitos",
+    color: "#fef3c7",
+    title: "Hábitos",
+    content: "Registra agua, dulces, bebidas, energía y actividad diaria."
   }
 ];
 
@@ -173,6 +179,7 @@ bottomBar.innerHTML = `
   <button class="tab-item" data-id="calendario">📅</button>
   <button class="tab-item" data-id="almuerzos">🍽️</button>
   <button class="tab-item" data-id="compras">🛒</button>
+  <button class="tab-item" data-id="habitos">🌱</button>
   <div id="indicator" style="
     position:absolute;
     top:50%;
@@ -187,6 +194,7 @@ bottomBar.innerHTML = `
     z-index:-1;
   "></div>
 `;
+
     document.body.appendChild(bottomBar);
 
     // --- Indicador pill detrás del tab activo ---
