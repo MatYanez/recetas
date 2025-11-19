@@ -218,37 +218,30 @@ const indicator = bottomBar.querySelector("#indicator");
     ----------------------------------*/
     function updateView(sectionId) {
       // ========== HOME ==========
-      if (sectionId === "home") {
-        selected = null;
-        body.style.overflow = "auto";
+if (sectionId === "home") {
+  selected = null;
+  body.style.overflow = "auto";
 
-        // animar salida de la bottom bar y luego eliminarla
-        animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 })
-          .finished
-          .then(() => {
-            bottomBar.remove();
-          });
+  showNavigationBars(); // 👈 RESTAURAR BARRAS
 
-        // sacar la vista expandida fija que creamos arriba
-        // (el primer div fijo grande: "view")
-        view.remove();
+  animate(bottomBar, { y: ["0%", "100%"], opacity: [1, 0] }, { duration: 0.4 })
+    .finished.then(() => bottomBar.remove());
 
-        // --- Desaparecer el overlay iOS ---
-if (overlay) {
-  overlay.style.opacity = "0";
-  setTimeout(() => overlay.remove(), 300);
+  view.remove();
+
+  if (overlay) {
+    overlay.style.opacity = "0";
+    setTimeout(() => overlay.remove(), 300);
+  }
+
+  header.style.display = "block";
+  saludo.removeAttribute("style");
+  animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
+
+  render();
+  return;
 }
 
-
-        // restaurar header y saludo
-        header.style.display = "block";
-        saludo.removeAttribute("style");
-        animate(saludo, { opacity: [0, 1] }, { duration: 0.5 });
-
-        // volver a dibujar las cards iniciales
-        render();
-        return;
-      }
 
       // buscamos la card que corresponde
       const section = cards.find((c) => c.id === sectionId);
@@ -291,16 +284,18 @@ animate(content, { opacity: [1, 0], x: [0, -40 * direction] }, { duration: 0.25 
     // =========================
     // ====== HABITOS ==========
     // =========================
-    if (sectionId === "habitos") {
-      content.innerHTML = renderHabitsScreen();
-      attachHabitEvents();
+if (sectionId === "habitos") {
+  hideNavigationBars();  // 👈 OCULTAR BARRAS SOLO EN SUBPÁGINAS
 
-      animate(content, { opacity: [0, 1], x: [40 * direction, 0] }, { duration: 0.35 });
-      moveIndicatorTo([...items].find(b => b.dataset.id === "habitos"));
-      content.scrollTo({ top: 0, behavior: "instant" });
+  content.innerHTML = renderHabitsScreen();
+  attachHabitEvents();
 
-      return; // ← IMPORTANTE, evita que entre al código de otras secciones
-    }
+  animate(content, { opacity: [0, 1], x: [40 * direction, 0] }, { duration: 0.35 });
+  moveIndicatorTo([...items].find(b => b.dataset.id === "habitos"));
+  content.scrollTo({ top: 0, behavior: "instant" });
+
+  return;
+}
 
 
         // =========================
@@ -1540,31 +1535,27 @@ function attachHabitEvents() {
       const go = btn.dataset.go;
 
 if (go === "daily") {
-  hideNavigationBars();
+  hideNavigationBars();   // 👈 OCULTAR
   content.innerHTML = renderDailyHabits();
   attachDailyEvents();
-  return;
 }
 
 if (go === "weekly") {
-  hideNavigationBars();
-  content.innerHTML = renderWeeklySummary();
-  attachHabitEvents();
-  return;
+  hideNavigationBars();   // 👈 OCULTAR
+  content.innerHTML = renderDailyHabits();
+  attachDailyEvents();
 }
 
 if (go === "trends") {
-  hideNavigationBars();
-  content.innerHTML = renderTrends();
-  attachHabitEvents();
-  return;
+  hideNavigationBars();   // 👈 OCULTAR
+  content.innerHTML = renderDailyHabits();
+  attachDailyEvents();
 }
 
 if (go === "goals") {
-  hideNavigationBars();
-  content.innerHTML = renderGoals();
-  attachHabitEvents();
-  return;
+  hideNavigationBars();   // 👈 OCULTAR
+  content.innerHTML = renderDailyHabits();
+  attachDailyEvents();
 }
 
 
