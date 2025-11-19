@@ -1718,6 +1718,29 @@ function updateDailyScore(data) {
 // ===============================================
 const style = document.createElement("style");
 style.textContent = `
+.habit-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.habit-back {
+  background: none;
+  border: none;
+  color: #007AFF;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0;
+  cursor: pointer;
+}
+
+.habit-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
   .habit-row {
     background:#fafafa;
     border:1px solid #eee;
