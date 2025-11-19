@@ -1499,6 +1499,7 @@ function renderGoals() {
   `;
 }
 
+
 // ---------- ATTACH EVENTS ----------
 function attachHabitEvents() {
   const content = document.querySelector("div[style*='overflow']");
@@ -1508,13 +1509,23 @@ function attachHabitEvents() {
     btn.addEventListener("click", () => {
       const go = btn.dataset.go;
 
-if (go === "daily") {
-  content.innerHTML = renderDailyHabits();
-  attachDailyEvents();
-}
-      if (go === "weekly") content.innerHTML = renderWeeklySummary();
-      if (go === "trends") content.innerHTML = renderTrends();
-      if (go === "goals") content.innerHTML = renderGoals();
+      if (go === "daily") {
+        content.innerHTML = renderDailyHabits();
+        attachDailyEvents();
+        return;
+      }
+
+      if (go === "weekly") {
+        content.innerHTML = renderWeeklySummary();
+      }
+
+      if (go === "trends") {
+        content.innerHTML = renderTrends();
+      }
+
+      if (go === "goals") {
+        content.innerHTML = renderGoals();
+      }
 
       attachHabitEvents();
     });
@@ -1531,13 +1542,14 @@ if (go === "daily") {
   const saveBtn = document.getElementById("saveHabits");
   if (saveBtn) {
     saveBtn.addEventListener("click", () => {
-      const boxes = document.querySelectorAll(".habit-box");
+      const boxes = document.querySelectorAll(".habit-row");
       const today = getToday();
       const newData = {};
 
       boxes.forEach(b => {
         const key = b.dataset.key;
-        newData[key] = Number(b.querySelector("input").value);
+        const active = b.querySelector(".habit-opt.selected");
+        if (active) newData[key] = Number(active.dataset.val);
       });
 
       saveHabitData(today, newData);
@@ -1545,6 +1557,8 @@ if (go === "daily") {
     });
   }
 }
+
+
 
 // ---------- SMALL ALERT ----------
 function animateAlert() {
