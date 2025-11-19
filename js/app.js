@@ -1482,9 +1482,30 @@ function renderWeeklySummary() {
   const week = getLast7Days();
 
   return `
-    <button id="backHabits" style="background:none;border:none;color:#007AFF;font-weight:600;margin-bottom:1rem;">← Volver</button>
+<div style="
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+">
+  <button id="backHabits" style="
+    background:none;
+    border:none;
+    color:#007AFF;
+    font-weight:600;
+    font-size:1rem;
+  ">
+    ← Volver
+  </button>
 
-    <h2 style="font-size:1.6rem;font-weight:700;margin-bottom:1rem;">Últimos 7 días</h2>
+  <h2 style="
+    font-size:1.4rem;
+    font-weight:700;
+    margin:0;
+  ">
+    Registrar hábitos de hoy
+  </h2>
+</div>
 
     ${week
       .map(day => `
