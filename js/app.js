@@ -122,7 +122,9 @@ animate(view, { opacity: [0, 1], y: [40, 0] }, { duration: 0.45, easing: "ease-o
     document.body.appendChild(view);
 
     // --- Barra superior ---
-    const topBar = document.createElement("div");
+const topBar = document.createElement("div");
+topBar.setAttribute("data-topbar", "true");
+
     Object.assign(topBar.style, {
       height: "5rem",
       width: "90%",
@@ -154,7 +156,9 @@ Object.assign(content.style, {
 view.appendChild(content);
 
     // --- Barra inferior fija (tabs tipo iOS) ---
-    const bottomBar = document.createElement("div");
+const bottomBar = document.createElement("div");
+bottomBar.setAttribute("data-bottombar", "true");
+
     Object.assign(bottomBar.style, {
       position: "fixed",
       bottom: "1rem",
@@ -1328,13 +1332,14 @@ if (sectionId !== "calendario") {
 
 
 
-function hideNavigationBars() {
-  const topBar = document.querySelector("div[style*='box-shadow'][style*='20px']");
-  const bottomBar = document.querySelector("div[style*='backdrop-filter'][style*='position: fixed']");
-  
-  if (topBar) topBar.style.display = "none";
-  if (bottomBar) bottomBar.style.display = "none";
+function showNavigationBars() {
+  const topBar = document.querySelector("[data-topbar]");
+  const bottomBar = document.querySelector("[data-bottombar]");
+
+  if (topBar) topBar.style.display = "flex";
+  if (bottomBar) bottomBar.style.display = "flex";
 }
+
 
 function showNavigationBars() {
   const topBar = document.querySelector("div[style*='box-shadow'][style*='20px']");
