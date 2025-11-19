@@ -1615,6 +1615,176 @@ function animateAlert() {
 }
 
 
+// ===============================================
+//  DAILY HABITS SCREEN (INTERACTIVE TABLE)
+// ===============================================
+
+const HABITS = [
+  { key: "water", label: "💧 Tomé 1.5 L de agua", yes: 10, no: 0 },
+  { key: "sweets", label: "🍬 Comí dulces", yes: 0,  no: 10 },
+  { key: "sugarDrinks", label: "🥤 Bebida azucarada", yes: 0, no: 10 },
+  { key: "energy7", label: "⚡ Energía ≥ 7", yes: 10, no: 0 },
+  { key: "exercise20", label: "🏃 Ejercicio ≥ 20 min", yes: 10, no: 0 }
+];
+
+function renderDailyHabits() {
+  const today = getToday();
+  const saved = loadHabitData(today);
+
+  const rows = HABITS.map(h => {
+    const val = saved[h.key] ?? null;
+
+    const yesActive = val === 1 ? "selected" : "";
+    const noActive = val === 0 ? "selected" : "";
+
+    return `
+      <div class="habit-row" data-key="${h.key}">
+        <span class="habit-label">${h.label}</span>
+
+        <div class="habit-options">
+          <div class="habit-opt yes ${yesActive}" data-val="1">Sí</div>
+          <div class="habit-opt no ${noActive}" data-val="0">No</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <button id="backHabits" style="background:none;border:none;color:#007AFF;font-weight:600;margin-bottom:1rem;">
+      ← Volver
+    </button>
+
+    <h2 style="font-size:1.6rem;font-weight:700;margin-bottom:1.2rem;">
+      Registrar hábitos de hoy
+    </h2>
+
+    <div id="dailyTable" style="display:flex;flex-direction:column;gap:1rem;">
+      ${rows}
+    </div>
+
+    <div id="dailyScore" style="
+      margin-top:1.5rem;
+      font-size:1.2rem;
+      font-weight:700;
+      text-align:center;
+    ">
+      Puntaje de hoy: 0 / 50
+    </div>
+
+    <button id="saveHabits" style="
+      width:100%; padding:1rem; background:#111;
+      color:white; border:none; border-radius:12px; font-weight:600;
+      margin-top:1.5rem;
+    ">Guardar</button>
+  `;
+}
+
+// ===============================================
+// EVENTS FOR DAILY INTERACTIONS
+// ===============================================
+function attachDailyEvents() {
+  const today = getToday();
+  let data = loadHabitData(today);
+
+  // click in yes/no
+  document.querySelectorAll(".habit-opt").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const parent = btn.closest(".habit-row");
+      const key = parent.dataset.key;
+      const val = Number(btn.dataset.val);
+
+      // update visual
+      parent.querySelectorAll(".habit-opt").forEach(o => o.classList.remove("selected"));
+      btn.classList.add("selected");
+
+      // update data
+      data[key] = val;
+      updateDailyScore(data);
+    });
+  });
+
+  // save button
+  const saveBtn = document.getElementById("saveHabits");
+  saveBtn.addEventListener("click", () => {
+    saveHabitData(today, data);
+    animateAlert("guardado");
+  });
+
+  // back
+  const backBtn = document.getElementById("backHabits");
+  backBtn.addEventListener("click", () => {
+    const content = document.querySelector("div[style*='overflow']");
+    content.innerHTML = renderHabitsScreen();
+    attachHabitEvents();
+  });
+
+  // initial score
+  updateDailyScore(data);
+}
+
+// ===============================================
+// SCORE CALCULATION FOR TODAY
+// ===============================================
+function updateDailyScore(data) {
+  let total = 0;
+
+  HABITS.forEach(h => {
+    const val = data[h.key];
+    if (val === 1) total += h.yes;
+    if (val === 0) total += h.no;
+  });
+
+  const el = document.getElementById("dailyScore");
+  if (el) el.textContent = `Puntaje de hoy: ${total} / 50`;
+}
+
+// ===============================================
+// CSS (inject minimal styles)
+// ===============================================
+const style = document.createElement("style");
+style.textContent = `
+  .habit-row {
+    background:#fafafa;
+    border:1px solid #eee;
+    padding:1rem;
+    border-radius:14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+
+  .habit-label {
+    font-size:1rem;
+    font-weight:600;
+  }
+
+  .habit-options {
+    display:flex;
+    align-items:center;
+    gap:0.5rem;
+  }
+
+  .habit-opt {
+    padding:0.4rem 0.8rem;
+    border-radius:12px;
+    border:1px solid #ddd;
+    font-weight:600;
+    cursor:pointer;
+    transition:transform .15s ease, background .2s;
+  }
+
+  .habit-opt.selected {
+    background:#111;
+    color:white;
+    transform:scale(1.05);
+  }
+
+  .habit-opt:not(.selected):active {
+    transform:scale(0.95);
+    opacity:0.7;
+  }
+`;
+document.head.appendChild(style);
 
 
 
