@@ -1877,7 +1877,7 @@ style.textContent = `
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin: 1rem 0rem;
 }
 
 .habit-back {
