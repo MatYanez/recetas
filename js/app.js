@@ -1632,30 +1632,11 @@ function renderDailyHabits() {
   }).join("");
 
   return `
-<div style="
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-">
-  <button id="backHabits" style="
-    background:none;
-    border:none;
-    color:#007AFF;
-    font-weight:600;
-    font-size:1rem;
-  ">
-    ← Volver
-  </button>
-
-  <h2 style="
-    font-size:1.4rem;
-    font-weight:700;
-    margin:0;
-  ">
-    Registrar hábitos de hoy
-  </h2>
+<div class="habit-header">
+  <button id="backHabits" class="habit-back">← Volver</button>
+  <h2 class="habit-title">Registrar hábitos de hoy</h2>
 </div>
+
 
 
     <div id="dailyTable" style="display:flex;flex-direction:column;gap:1rem;">
