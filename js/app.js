@@ -1284,11 +1284,7 @@ const tabsOrder = ["calendario", "almuerzos", "compras", "habitos"];
       moveIndicatorTo([...items].find((b) => b.dataset.id === sectionId));
       content.scrollTo({ top: 0, behavior: "instant" });
 
-if (sectionId === "habitos") {
-  content.innerHTML = renderHabitsScreen();
-  attachHabitEvents();
-} 
-else if (sectionId !== "calendario") {
+if (sectionId !== "calendario") {
   const b = document.getElementById("organizeBtn");
   if (b) b.remove();
 
@@ -1458,57 +1454,6 @@ function renderHabitsScreen() {
   `;
 }
 
-function renderDailyHabits() {
-  const today = getToday();
-  const saved = loadHabitData(today);
-
-  const rows = HABITS.map(h => {
-    const val = saved[h.key] ?? null;
-
-    const yesActive = val === 1 ? "selected" : "";
-    const noActive = val === 0 ? "selected" : "";
-
-    return `
-      <div class="habit-row" data-key="${h.key}">
-        <span class="habit-label">${h.label}</span>
-
-        <div class="habit-options">
-          <div class="habit-opt yes ${yesActive}" data-val="1">Sí</div>
-          <div class="habit-opt no ${noActive}" data-val="0">No</div>
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  return `
-    <button id="backHabits" style="background:none;border:none;color:#007AFF;font-weight:600;margin-bottom:1rem;">
-      ← Volver
-    </button>
-
-    <h2 style="font-size:1.6rem;font-weight:700;margin-bottom:1.2rem;">
-      Registrar hábitos de hoy
-    </h2>
-
-    <div id="dailyTable" style="display:flex;flex-direction:column;gap:1rem;">
-      ${rows}
-    </div>
-
-    <div id="dailyScore" style="
-      margin-top:1.5rem;
-      font-size:1.2rem;
-      font-weight:700;
-      text-align:center;
-    ">
-      Puntaje de hoy: 0 / 50
-    </div>
-
-    <button id="saveHabits" style="
-      width:100%; padding:1rem; background:#111;
-      color:white; border:none; border-radius:12px; font-weight:600;
-      margin-top:1.5rem;
-    ">Guardar</button>
-  `;
-}
 
 
 // ---------- WEEKLY SUMMARY ----------
@@ -1563,7 +1508,10 @@ function attachHabitEvents() {
     btn.addEventListener("click", () => {
       const go = btn.dataset.go;
 
-      if (go === "daily") content.innerHTML = renderDailyHabits();
+if (go === "daily") {
+  content.innerHTML = renderDailyHabits();
+  attachDailyEvents();
+}
       if (go === "weekly") content.innerHTML = renderWeeklySummary();
       if (go === "trends") content.innerHTML = renderTrends();
       if (go === "goals") content.innerHTML = renderGoals();
