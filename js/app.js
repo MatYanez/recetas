@@ -1888,9 +1888,9 @@ function setupHabitCalendar(container, onDateSelected) {
 
 
 
-// ===============================================
+// ==============================================
 // CSS (inject minimal styles)
-// ===============================================
+// ==============================================
 const style = document.createElement("style");
 style.textContent = `
 .habit-header {
