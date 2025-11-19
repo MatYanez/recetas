@@ -1320,9 +1320,36 @@ if (sectionId !== "calendario") {
 }
 
 
+
+
 // =========================
 // HABITS MODULE (NEW STRUCTURE)
 // =========================
+
+
+
+function hideNavigationBars() {
+  const topBar = document.querySelector("div[style*='box-shadow'][style*='20px']");
+  const bottomBar = document.querySelector("div[style*='backdrop-filter'][style*='position: fixed']");
+  
+  if (topBar) topBar.style.display = "none";
+  if (bottomBar) bottomBar.style.display = "none";
+}
+
+function showNavigationBars() {
+  const topBar = document.querySelector("div[style*='box-shadow'][style*='20px']");
+  const bottomBar = document.querySelector("div[style*='backdrop-filter'][style*='position: fixed']");
+
+  if (topBar) topBar.style.display = "flex";
+  if (bottomBar) bottomBar.style.display = "flex";
+}
+
+
+
+
+
+
+
 
 // ---------- UTILS ----------
 function getToday() {
@@ -1507,15 +1534,34 @@ function attachHabitEvents() {
     btn.addEventListener("click", () => {
       const go = btn.dataset.go;
 
-      if (go === "daily") {
-        content.innerHTML = renderDailyHabits();
-        attachDailyEvents();
-        return;
-      }
+if (go === "daily") {
+  hideNavigationBars();
+  content.innerHTML = renderDailyHabits();
+  attachDailyEvents();
+  return;
+}
 
-      if (go === "weekly") content.innerHTML = renderWeeklySummary();
-      if (go === "trends") content.innerHTML = renderTrends();
-      if (go === "goals") content.innerHTML = renderGoals();
+if (go === "weekly") {
+  hideNavigationBars();
+  content.innerHTML = renderWeeklySummary();
+  attachHabitEvents();
+  return;
+}
+
+if (go === "trends") {
+  hideNavigationBars();
+  content.innerHTML = renderTrends();
+  attachHabitEvents();
+  return;
+}
+
+if (go === "goals") {
+  hideNavigationBars();
+  content.innerHTML = renderGoals();
+  attachHabitEvents();
+  return;
+}
+
 
       attachHabitEvents();
     });
@@ -1523,10 +1569,12 @@ function attachHabitEvents() {
 
   const backBtn = document.getElementById("backHabits");
   if (backBtn) {
-    backBtn.addEventListener("click", () => {
-      content.innerHTML = renderHabitsScreen();
-      attachHabitEvents();
-    });
+backBtn.addEventListener("click", () => {
+  showNavigationBars();
+  content.innerHTML = renderHabitsScreen();
+  attachHabitEvents();
+});
+
   }
 }
 
@@ -1657,11 +1705,13 @@ function attachDailyEvents() {
 
   // back
   const backBtn = document.getElementById("backHabits");
-  backBtn.addEventListener("click", () => {
-    const content = document.querySelector("div[style*='overflow']");
-    content.innerHTML = renderHabitsScreen();
-    attachHabitEvents();
-  });
+backBtn.addEventListener("click", () => {
+  showNavigationBars();
+  const content = document.querySelector("div[style*='overflow-y']");
+  content.innerHTML = renderHabitsScreen();
+  attachHabitEvents();
+});
+
 
   // initial score
   updateDailyScore(data);
