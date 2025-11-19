@@ -1645,6 +1645,9 @@ function renderDailyHabits() {
   <h2 class="habit-title">Registrar hábitos de hoy</h2>
 </div>
 
+<!-- CALENDARIO PRO -->
+<div id="habitCalendarContainer" style="width:100%; margin-bottom:1.5rem;"></div>
+
 
 
     <div id="dailyTable" style="display:flex;flex-direction:column;gap:1rem;">
@@ -1674,6 +1677,27 @@ function renderDailyHabits() {
 function attachDailyEvents(content) {
   const today = getToday();
   let data = loadHabitData(today);
+
+  const calContainer = document.getElementById("habitCalendarContainer");
+
+setupHabitCalendar(calContainer, (selectedDate) => {
+  const dateStr = selectedDate.toISOString().slice(0,10);
+
+  data = loadHabitData(dateStr);
+
+  document.querySelectorAll(".habit-row").forEach(row => {
+    const key = row.dataset.key;
+    const val = data[key];
+
+    row.querySelectorAll(".habit-opt").forEach(o => o.classList.remove("selected"));
+
+    if (val === 1) row.querySelector(".yes").classList.add("selected");
+    if (val === 0) row.querySelector(".no").classList.add("selected");
+  });
+
+  updateDailyScore(data);
+});
+
 
   document.querySelectorAll(".habit-opt").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -1720,6 +1744,129 @@ function updateDailyScore(data) {
   const el = document.getElementById("dailyScore");
   if (el) el.textContent = `Puntaje de hoy: ${total} / 50`;
 }
+
+// === CALENDARIO PRO PARA HABITOS ===
+function setupHabitCalendar(container, onDateSelected) {
+
+  const monthLabel = document.createElement("div");
+  monthLabel.style.textAlign = "center";
+  monthLabel.style.fontWeight = "700";
+  monthLabel.style.fontSize = "1.1rem";
+  container.appendChild(monthLabel);
+
+  const weekCarousel = document.createElement("div");
+  weekCarousel.style.cssText = `
+    display:flex;
+    overflow-x:auto;
+    scroll-snap-type: x mandatory;
+    gap:1rem;
+    padding-bottom:1rem;
+    -webkit-overflow-scrolling:touch;
+  `;
+  container.appendChild(weekCarousel);
+
+  let current = new Date();
+
+  function renderMonth() {
+    const year = current.getFullYear();
+    const month = current.getMonth();
+
+    monthLabel.textContent = current.toLocaleDateString("es-ES", {
+      month: "long",
+      year: "numeric"
+    });
+
+    weekCarousel.innerHTML = "";
+    const weeks = getWeeksOfMonth(year, month);
+
+    weeks.forEach(week => {
+      const slide = document.createElement("div");
+      slide.style.cssText = `
+        min-width:100%;
+        scroll-snap-align:center;
+        padding:0 0.5rem;
+        display:flex;
+        flex-direction:column;
+        gap:0.5rem;
+      `;
+
+      slide.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);text-align:center;font-weight:600;">
+          <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span>
+        </div>
+      `;
+
+      const daysRow = document.createElement("div");
+      daysRow.style.cssText = `
+        display:grid;
+        grid-template-columns:repeat(5,1fr);
+        text-align:center;
+        gap:0.5rem;
+      `;
+
+      week.forEach(day => {
+        const isToday = day && day.toDateString() === new Date().toDateString();
+        const div = document.createElement("div");
+
+        div.style.cssText = `
+          height:50px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          border-radius:12px;
+          background:${isToday ? "#000" : "#f3f4f6"};
+          color:${isToday ? "#fff" : "#333"};
+          font-weight:600;
+          cursor:pointer;
+        `;
+
+        div.textContent = day ? day.getDate() : "";
+
+        if (day) {
+          div.addEventListener("click", () => onDateSelected(day));
+        }
+
+        daysRow.appendChild(div);
+      });
+
+      slide.appendChild(daysRow);
+      weekCarousel.appendChild(slide);
+    });
+  }
+
+  // función auxiliar
+  function getWeeksOfMonth(year, month) {
+    const days = [];
+    let d = new Date(year, month, 1);
+
+    while (d.getMonth() === month) {
+      const day = d.getDay();
+      if (day >= 1 && day <= 5) days.push(new Date(d));
+      d.setDate(d.getDate() + 1);
+    }
+
+    const weeks = [];
+    for (let i = 0; i < days.length; i += 5) {
+      const slice = days.slice(i, i + 5);
+      while (slice.length < 5) slice.push(null);
+      weeks.push(slice);
+    }
+    return weeks;
+  }
+
+  // swipe vertical entre meses
+  let startY = 0;
+  container.addEventListener("touchstart", e => startY = e.touches[0].clientY);
+  container.addEventListener("touchend", e => {
+    const delta = e.changedTouches[0].clientY - startY;
+    if (delta < -80) current.setMonth(current.getMonth() + 1);
+    if (delta > 80)  current.setMonth(current.getMonth() - 1);
+    renderMonth();
+  });
+
+  renderMonth();
+}
+
 
 // ===============================================
 // CSS (inject minimal styles)
