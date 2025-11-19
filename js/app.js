@@ -273,7 +273,7 @@ if (overlay) {
       body.style.backgroundColor = "#fff"; // fondo siempre blanco
 
       // detectar dirección swipe (para la animación horizontal)
-      const order = ["home", "calendario", "almuerzos", "compras"];
+const order = ["home", "calendario", "almuerzos", "compras", "habitos"];
       const currentIndex = order.indexOf(sectionId);
       const previousIndex = order.indexOf(selected);
       const direction = currentIndex > previousIndex ? 1 : -1;
@@ -1243,7 +1243,7 @@ content.ontouchend = () => {
   // Gesto válido = movimiento lateral rápido y corto
   if (distance < 60 || holdTime > 400) return;
 
-  const tabsOrder = ["calendario", "almuerzos", "compras"];
+const tabsOrder = ["calendario", "almuerzos", "compras", "habitos"];
   const current = tabsOrder.indexOf(sectionId);
 
   // Swipe izquierda → siguiente tab
@@ -1271,18 +1271,18 @@ content.ontouchend = () => {
       moveIndicatorTo([...items].find((b) => b.dataset.id === sectionId));
       content.scrollTo({ top: 0, behavior: "instant" });
 
-      // remover botón y modal si no estamos en calendario
-if (sectionId !== "calendario") {
+if (sectionId === "habitos") {
+  content.innerHTML = renderHabitsScreen();
+  attachHabitEvents();
+} 
+else if (sectionId !== "calendario") {
   const b = document.getElementById("organizeBtn");
   if (b) b.remove();
 
   const s = document.getElementById("organizeScreen");
   if (s) s.remove();
 }
-else if (sectionId === "habitos") {
-  content.innerHTML = renderHabitsScreen();
-  attachHabitEvents();
-}
+
     } // fin updateView
 
 
