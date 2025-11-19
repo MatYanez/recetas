@@ -305,8 +305,16 @@ animate(content, { opacity: [1, 0], x: [0, -40 * direction] }, { duration: 0.25 
     // =========================
 if (sectionId === "habitos") {
   content.innerHTML = renderHabitsScreen();
-  attachHabitEvents(content); 
-  showNavigationBars(); // ← Mantén las tabs en la pantalla principal
+  attachHabitEvents(content);
+  showNavigationBars();
+
+  // 💥 REPARA EL PROBLEMA DE OPACIDAD
+  animate(
+    content,
+    { opacity: [0, 1], x: [40, 0] },
+    { duration: 0.35, easing: "ease-out" }
+  );
+
   return;
 }
 
