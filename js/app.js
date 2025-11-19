@@ -280,11 +280,24 @@ const order = ["home", "calendario", "almuerzos", "compras", "habitos"];
       selected = sectionId;
 
       // animación de salida del contenido anterior
-      animate(
-        content,
-        { opacity: [1, 0], x: [0, -40 * direction] },
-        { duration: 0.25 }
-      ).finished.then(() => {
+ // animación de salida del contenido anterior
+animate(content, { opacity: [1, 0], x: [0, -40 * direction] }, { duration: 0.25 })
+  .finished.then(() => {
+
+    // =========================
+    // ====== HABITOS ==========
+    // =========================
+    if (sectionId === "habitos") {
+      content.innerHTML = renderHabitsScreen();
+      attachHabitEvents();
+
+      animate(content, { opacity: [0, 1], x: [40 * direction, 0] }, { duration: 0.35 });
+      moveIndicatorTo([...items].find(b => b.dataset.id === "habitos"));
+      content.scrollTo({ top: 0, behavior: "instant" });
+
+      return; // ← IMPORTANTE, evita que entre al código de otras secciones
+    }
+
 
         // =========================
         // ====== CALENDARIO =======
