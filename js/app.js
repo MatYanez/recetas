@@ -127,6 +127,45 @@ const app = document.getElementById("app");
 const saludo = document.getElementById("saludo");
 let selected = null;
 
+function drawLineChart(canvas, data, options = {}) {
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  const padding = 30;
+  const points = data;
+  if (points.length < 2) return;
+
+  const max = Math.max(...points);
+  const min = Math.min(...points);
+
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = options.color || "#000";
+
+  // Mapear puntos
+  const mapped = points.map((v, i) => {
+    const x = padding + (i / (points.length - 1)) * (w - padding * 2);
+    const y = h - padding - ((v - min) / (max - min || 1)) * (h - padding * 2);
+    return { x, y };
+  });
+
+  // Línea suavizada
+  ctx.beginPath();
+  ctx.moveTo(mapped[0].x, mapped[0].y);
+  for (let i = 1; i < mapped.length; i++) {
+    const prev = mapped[i - 1];
+    const curr = mapped[i];
+    const midX = (prev.x + curr.x) / 2;
+    const midY = (prev.y + curr.y) / 2;
+    ctx.quadraticCurveTo(prev.x, prev.y, midX, midY);
+  }
+  ctx.stroke();
+}
+
+
+
 /* ---------- GLOBAL NAV HELPERS ---------- */
 function hideNavigationBars() {
   const topBar = document.querySelector("[data-topbar]");
@@ -1451,6 +1490,59 @@ if (sectionId !== "calendario") {
 // HABITS MODULE (NEW STRUCTURE)
 // =========================
 
+
+
+
+
+
+
+
+
+function getTrendData() {
+  const last30 = [];
+  for (let i = 0; i < 30; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    last30.push(loadHabitData(key));
+  }
+
+  // Invertir para que vaya de más antiguo → más reciente
+  last30.reverse();
+
+  const habitTrends = {};
+
+  HABITS.forEach(h => {
+    const values = last30.map(day => {
+      const v = day[h.key];
+      return v === 1 ? 1 : 0;
+    });
+    habitTrends[h.key] = values;
+  });
+
+  return habitTrends;
+}
+
+function getWeightTrend() {
+  const logs = loadWeightLog().slice().reverse(); // más antiguo → más nuevo
+  return logs.map(l => l.weight);
+}
+
+function analyzeTrend(values) {
+  if (values.length < 5) return "No hay datos suficientes.";
+
+  const first = values[0];
+  const last = values[values.length - 1];
+
+  const diff = last - first;
+
+  if (diff > 0.2) return "Tendencia a la baja 👇⚠️";
+  if (diff < -0.2) return "Tendencia positiva 👍🔥";
+  return "Estable ✔️";
+}
+
+
+
 // === FECHA SELECCIONADA PARA HABITOS ===
 let currentHabitDate = getToday();
 
@@ -1832,16 +1924,37 @@ function renderWeeklySummary() {
 }
 
 
-// ---------- PLACEHOLDERS ----------
 function renderTrends() {
-  return `
-<div class="habit-header">
-  <button id="backHabits" class="habit-back">← Volver</button>
-  <h2 class="habit-title">Tendencias</h2>
-</div>
+  const habitTrends = getTrendData();
+  const weightTrend = getWeightTrend();
 
+  let html = `
+    <div class="habit-header">
+      <button id="backHabits" class="habit-back">← Volver</button>
+      <h2 class="habit-title">Tendencias</h2>
+    </div>
   `;
+
+  // PESO
+  html += `
+    <h3 style="margin-top:1rem;">⚖️ Peso</h3>
+    <canvas id="chartWeight" width="300" height="140" style="width:100%;"></canvas>
+    <p style="color:#555;margin:0.5rem 0;">${analyzeTrend(weightTrend)}</p>
+  `;
+
+  // HÁBITOS
+  HABITS.forEach(h => {
+    const values = habitTrends[h.key];
+    html += `
+      <h3 style="margin-top:1.5rem;">${h.label}</h3>
+      <canvas id="chart_${h.key}" width="300" height="140" style="width:100%;"></canvas>
+      <p style="color:#555;margin:0.5rem 0;">${analyzeTrend(values)}</p>
+    `;
+  });
+
+  return html;
 }
+
 
 function renderGoals() {
   return `
@@ -1906,12 +2019,33 @@ function attachHabitEvents(content) {
         return;
       }
 
-      if (go === "trends") {
-        hideNavigationBars();
-        content.innerHTML = renderTrends();
-        attachHabitEvents(content);
-        return;
-      }
+if (go === "trends") {
+  hideNavigationBars();
+  content.innerHTML = renderTrends();
+  attachHabitEvents(content);
+
+  setTimeout(() => {
+    // pintar gráfico de peso
+    drawLineChart(
+      document.getElementById("chartWeight"),
+      getWeightTrend(),
+      { color: "#000" }
+    );
+
+    // pintar gráficos de hábitos
+    const trendData = getTrendData();
+    HABITS.forEach(h => {
+      drawLineChart(
+        document.getElementById("chart_" + h.key),
+        trendData[h.key],
+        { color: "#007AFF" }
+      );
+    });
+  }, 50);
+
+  return;
+}
+
 
 if (go === "registro") {
   hideNavigationBars();
