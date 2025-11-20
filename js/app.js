@@ -1427,13 +1427,12 @@ function renderHabitsScreen() {
         Tu puntaje semanal
       </h3>
 
-      <!-- SOLO EL NÚMERO, SIN CÍRCULO -->
+      <!-- SOLO NÚMERO SIN CÍRCULO -->
       <div style="
-        font-size:2.8rem;
+        font-size:2.9rem;
         font-weight:800;
         color:${color};
-        line-height:1;
-        margin-bottom:0.5rem;
+        margin-bottom:0.3rem;
       ">
         ${score}
       </div>
@@ -1473,6 +1472,7 @@ function renderHabitsScreen() {
     </div>
   `;
 }
+
 
 
 
