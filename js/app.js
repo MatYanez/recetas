@@ -1408,13 +1408,11 @@ function getScoreColor(score) {
   return { color: "#9cff8f", label: "Muy bien" };
 }
 
-// ---------- MAIN SCREEN ----------
 function renderHabitsScreen() {
   const score = calculateWeeklyPoints();
   const { color, label } = getScoreColor(score);
 
   return `
-
     <!-- SCORE CARD -->
     <div style="
       width:100%;
@@ -1425,25 +1423,24 @@ function renderHabitsScreen() {
       margin-bottom:1.5rem;
       text-align:center;
     ">
-      <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:1rem;">Tu puntaje semanal</h3>
+      <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:1rem;">
+        Tu puntaje semanal
+      </h3>
 
+      <!-- SOLO EL NÚMERO, SIN CÍRCULO -->
       <div style="
-        width:120px;
-        height:120px;
-        margin:0 auto 0.5rem;
-        border-radius:999px;
-        background:${color};
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        align-items:center;
-        font-weight:700;
+        font-size:2.8rem;
+        font-weight:800;
+        color:${color};
+        line-height:1;
+        margin-bottom:0.5rem;
       ">
-        <span style="font-size:1.8rem;">${score}</span>
-        <span style="font-size:0.9rem;">pts</span>
+        ${score}
       </div>
 
-      <p style="font-size:1.1rem; font-weight:600; color:#333;">${label}</p>
+      <p style="font-size:1.1rem; font-weight:600; color:#333;">
+        ${label}
+      </p>
     </div>
 
     <!-- NAV BUTTONS -->
