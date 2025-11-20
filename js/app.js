@@ -368,11 +368,20 @@ function moveIndicatorTo(el) {
   indicator.style.left = `${centerX - 23}px`;
 }
 
+function removeOrganizeButton() {
+  const b = document.getElementById("organizeBtn");
+  if (b) b.remove();
+
+  const s = document.getElementById("organizeScreen");
+  if (s) s.remove();
+}
+
 
     /* ---------------------------------
        CAMBIAR DE SECCIÓN / TABS / HOME
     ----------------------------------*/
     function updateView(sectionId) {
+      removeOrganizeButton();
       // ========== HOME ==========
 if (sectionId === "home") {
   selected = null;
