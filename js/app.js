@@ -89,6 +89,12 @@ const MEDALS = [
     type: "streak-nonegative"
   }
 ];
+const ACCUMULATION_MEDALS = [
+  { key: "collector_5",  title: "Coleccionista Nivel 1", emoji: "🏆", required: 5 },
+  { key: "collector_10", title: "Coleccionista Nivel 2", emoji: "🏆", required: 10 },
+  { key: "collector_15", title: "Coleccionista Nivel 3", emoji: "🏆", required: 15 },
+  { key: "collector_20", title: "Coleccionista Nivel 4", emoji: "🏆", required: 20 },
+];
 
 const cards = [
   {
@@ -1853,6 +1859,16 @@ function attachHabitEvents(content) {
 function renderMedalsScreen() {
   const { earned, progress } = calculateMedals();
 
+  // Mezclar medallas normales + medallas de acumulación
+  const allMedals = [...MEDALS, ...ACCUMULATION_MEDALS];
+
+  // Ordenar → primero las ganadas (mayor count), luego las bloqueadas
+  const sortedMedals = allMedals.sort((a, b) => {
+    const ea = earned[a.key] || 0;
+    const eb = earned[b.key] || 0;
+    return eb - ea; // mayor a menor
+  });
+
   let html = `
   <div class="habit-header">
     <button id="backAchievements" class="habit-back">← Volver</button>
@@ -1860,13 +1876,16 @@ function renderMedalsScreen() {
   </div>
 
   <p style="text-align:center;color:#555;margin-bottom:1rem;">
-    Tu progreso de logros
+    Logros obtenidos y progreso hacia nuevas medallas
   </p>
   `;
 
-  MEDALS.forEach(m => {
-    const isEarned = earned[m.key];
-    const pct = Math.min(100, Math.round(progress[m.key] * 100));
+  sortedMedals.forEach(m => {
+    const count = earned[m.key] || 0;
+    const pct = Math.min(100, Math.round(((progress[m.key] || 0) * 100)));
+
+    const unlocked = count > 0;
+    const displayEmoji = unlocked ? m.emoji : "🔒";
 
     html += `
       <div style="
@@ -1875,30 +1894,33 @@ function renderMedalsScreen() {
         border-radius:16px;
         margin-bottom:1rem;
         border:1px solid #eee;
-        opacity:${isEarned ? "1" : "0.5"};
+        opacity:${unlocked ? "1" : "0.5"};
+        transition:0.3s;
       ">
         <div style="display:flex; gap:1rem; align-items:center;">
-          <div style="font-size:2rem;">
-            ${isEarned ? m.emoji : "🔒"}
+          <div style="font-size:2rem; min-width:48px; text-align:center;">
+            ${displayEmoji}
           </div>
 
           <div style="flex:1;">
-            <strong>${m.title}</strong><br>
-            <small>${m.description}</small>
+            <strong style="font-size:1.1rem;">${m.title}</strong><br>
+            <small style="color:#666;">${m.description || ""}</small>
+            ${count > 1 ? `<div style="margin-top:4px;font-weight:700;">×${count}</div>` : ""}
           </div>
         </div>
 
-        <div style="margin-top:0.6rem;width:100%;background:#eee;height:6px;border-radius:6px;">
+        <div style="margin-top:0.8rem;width:100%;background:#eee;height:6px;border-radius:6px;">
           <div style="
             width:${pct}%;
             height:6px;
-            background:${isEarned ? "#00c853" : "#999"};
+            background:${unlocked ? "#00c853" : "#999"};
             border-radius:6px;
+            transition:width 0.4s;
           "></div>
         </div>
 
         <p style="font-size:0.85rem;margin-top:0.4rem;color:#666;">
-          ${isEarned ? "Medalla obtenida 🎉" : `Progreso: ${pct}%`}
+          ${unlocked ? `Ganada ${count} vez(es)` : `Progreso: ${pct}%`}
         </p>
       </div>
     `;
@@ -2335,28 +2357,35 @@ document.head.appendChild(style);
 
 function calculateMedals() {
   const last30 = [];
-  for (let i=0;i<30;i++){
+  for (let i = 0; i < 30; i++) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const key = d.toISOString().slice(0,10);
     last30.push({ date: key, data: loadHabitData(key) });
   }
 
-  const earned = JSON.parse(localStorage.getItem("earned-medals") || "{}");
+  let earned = JSON.parse(localStorage.getItem("earned-medals") || "{}");
   const progress = {};
 
   MEDALS.forEach(m => {
+    if (!earned[m.key]) earned[m.key] = 0; // contador inicial
 
     if (m.type === "daily-score") {
       const todayScore = calculateDailyPoints(last30[0].data);
       progress[m.key] = todayScore / m.required;
-      if (todayScore >= m.required) earned[m.key] = true;
+
+      if (todayScore >= m.required) {
+        earned[m.key] += 1;
+      }
     }
 
     if (m.type === "weekly-score") {
       const weekly = calculateWeeklyPoints();
       progress[m.key] = weekly / m.required;
-      if (weekly >= m.required) earned[m.key] = true;
+
+      if (weekly >= m.required) {
+        earned[m.key] += 1;
+      }
     }
 
     if (m.type === "streak") {
@@ -2365,8 +2394,12 @@ function calculateMedals() {
         if (day.data[m.habit] === 1) streak++;
         else streak = 0;
       });
+
       progress[m.key] = streak / m.required;
-      if (streak >= m.required) earned[m.key] = true;
+
+      if (streak >= m.required) {
+        earned[m.key] += 1;
+      }
     }
 
     if (m.type === "count") {
@@ -2374,8 +2407,12 @@ function calculateMedals() {
       last30.forEach(day => {
         if (day.data[m.habit] === 1) count++;
       });
+
       progress[m.key] = count / m.required;
-      if (count >= m.required) earned[m.key] = true;
+
+      if (count >= m.required) {
+        earned[m.key] += 1;
+      }
     }
 
     if (m.type === "streak-nonegative") {
@@ -2385,13 +2422,29 @@ function calculateMedals() {
         if (p >= 0) streak++;
         else streak = 0;
       });
-      progress[m.key] = streak / m.required;
-      if (streak >= m.required) earned[m.key] = true;
-    }
 
+      progress[m.key] = streak / m.required;
+
+      if (streak >= m.required) {
+        earned[m.key] += 1;
+      }
+    }
   });
 
+// MEDALLAS DE ACUMULACIÓN
+const totalWon = Object.values(earned).reduce((a,b) => a + b, 0);
+
+ACCUMULATION_MEDALS.forEach(m => {
+  if (!earned[m.key]) earned[m.key] = 0;
+
+  if (totalWon >= m.required) {
+    earned[m.key] = 1; // solo 1 vez
+  }
+});
+
+  // Guardar cambios
   localStorage.setItem("earned-medals", JSON.stringify(earned));
+
   return { earned, progress };
 }
 
