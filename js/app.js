@@ -312,25 +312,24 @@ view.appendChild(content);
 const bottomBar = document.createElement("div");
 bottomBar.setAttribute("data-bottombar", "true");
 
-    Object.assign(bottomBar.style, {
-      position: "fixed",
-      bottom: "1rem",
-      left: "0",
-      right: "0",
-      width: "90%",
-      margin: "0 auto",
-      height: "4.5rem",
-      background: "rgba(255,255,255,0.6)",
-      backdropFilter: "blur(12px)",
-      WebkitBackdropFilter: "blur(12px)",
-      display: "flex",
-      justifyContent: "space-around",
-      alignItems: "center",
-      borderRadius: "20px",
-      boxShadow: "0 -2px 20px rgba(0,0,0,0.15)",
-      border: "1px solid rgba(255,255,255,0.4)",
-      zIndex: "50",
-    });
+Object.assign(bottomBar.style, {
+  position: "fixed",
+  bottom: "1rem",
+  left: "50%",
+  transform: "translateX(-50%)",
+  width: "90%",
+  height: "4.5rem",
+  background: "rgba(255,255,255,0.6)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  display: "flex",
+  justifyContent: "space-around",
+  alignItems: "center",
+  borderRadius: "20px",
+  boxShadow: "0 -2px 20px rgba(0,0,0,0.15)",
+  border: "1px solid rgba(255,255,255,0.4)",
+  zIndex: "50",
+});
 bottomBar.innerHTML = `
   <button class="tab-item" data-id="home">🏠</button>
   <button class="tab-item" data-id="calendario">📅</button>
@@ -359,12 +358,17 @@ const indicator = bottomBar.querySelector("#indicator");
 
     const items = bottomBar.querySelectorAll(".tab-item");
 
-    function moveIndicatorTo(el) {
-      const barRect = bottomBar.getBoundingClientRect();
-      const btnRect = el.getBoundingClientRect();
-      const center = btnRect.left - barRect.left + btnRect.width / 2;
-      indicator.style.left = `${center - 23}px`; // 23 = mitad de 46px
-    }
+function moveIndicatorTo(el) {
+  const barRect = bottomBar.getBoundingClientRect();
+  const btnRect = el.getBoundingClientRect();
+
+  // Centro real del botón dentro del bottom bar
+  const centerX = btnRect.left - barRect.left + (btnRect.width / 2);
+
+  // 23px es la mitad del indicador (45px/2)
+  indicator.style.left = `${centerX - 23}px`;
+}
+
 
     /* ---------------------------------
        CAMBIAR DE SECCIÓN / TABS / HOME
