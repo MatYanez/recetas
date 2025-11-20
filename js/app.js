@@ -1453,6 +1453,23 @@ function renderHabitsScreen() {
       </p>
     </div>
 
+
+<button id="viewAchievements" style="
+  margin-top:1rem;
+  width:100%;
+  background:#f5f5f5;
+  border:1px solid #ddd;
+  border-radius:12px;
+  padding:0.9rem;
+  font-weight:600;
+  font-size:1rem;
+  cursor:pointer;
+">
+  ⭐ Ver logros
+</button>
+
+
+
     <!-- NAV BUTTONS -->
     <div style="display:flex; flex-direction:column; gap:1rem;">
 
@@ -1483,6 +1500,126 @@ function renderHabitsScreen() {
     </div>
   `;
 }
+
+function analyzeHabitProgress() {
+  const today = new Date();
+
+  const getDateKey = (d) => d.toISOString().slice(0,10);
+
+  // === Semana actual (0–6 días)
+  const currentWeek = [];
+  for (let i=0;i<7;i++){
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    currentWeek.push(loadHabitData(getDateKey(d)));
+  }
+
+  // === Semana pasada (7–13 días atrás)
+  const prevWeek = [];
+  for (let i=7;i<14;i++){
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    prevWeek.push(loadHabitData(getDateKey(d)));
+  }
+
+  // === Últimos 30 días
+  const last30 = [];
+  for (let i=0;i<30;i++){
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    last30.push(loadHabitData(getDateKey(d)));
+  }
+
+  const avg = (arr, key) => {
+    const vals = arr.map(v => v[key]).filter(v => v !== undefined && v !== null);
+    return vals.length ? vals.reduce((a,b)=>a+b,0) / vals.length : 0;
+  };
+
+  const result = {};
+
+  HABITS.forEach(h => {
+    const cw = avg(currentWeek, h.key);   // semana actual
+    const pw = avg(prevWeek, h.key);      // semana pasada
+    const m  = avg(last30, h.key);        // mes
+
+    let trendWeek = "";
+    let trendMonth = "";
+
+    // — Semana
+    if (cw > pw) trendWeek = "Mejoraste respecto a la semana pasada 👏";
+    else if (cw < pw) trendWeek = "Disminuiste respecto a la semana pasada 👀";
+    else trendWeek = "Te mantuviste igual que la semana pasada.";
+
+    // — Mes
+    if (cw > m) trendMonth = "Tu promedio mensual va en alza 🔥";
+    else if (cw < m) trendMonth = "Estás por debajo de tu nivel mensual 😬";
+    else trendMonth = "Mantienes tu promedio mensual.";
+
+    result[h.key] = {
+      label: h.label,
+      week: trendWeek,
+      month: trendMonth,
+      current: cw,
+      previous: pw,
+      monthly: m
+    };
+  });
+
+  return result;
+}
+
+function renderAchievements() {
+  const analysis = analyzeHabitProgress();
+
+  let html = `
+    <div class="habit-header">
+      <button id="backAchievements" class="habit-back">← Volver</button>
+      <h2 class="habit-title">Tus logros</h2>
+    </div>
+
+    <p style="color:#555; margin-bottom:1rem; text-align:center;">
+      Comparativo semanal y mensual
+    </p>
+  `;
+
+  Object.values(analysis).forEach(a => {
+    html += `
+      <div style="
+        background:#fafafa;
+        padding:1rem;
+        margin-bottom:1rem;
+        border-radius:14px;
+        border:1px solid #eee;
+      ">
+        <strong style="font-size:1.1rem; display:block; margin-bottom:0.5rem;">
+          ${a.label}
+        </strong>
+
+        <p style="margin:0.3rem 0;">
+          <strong>Esta semana:</strong> ${a.week}
+        </p>
+
+        <p style="margin:0.3rem 0;">
+          <strong>Últimos 30 días:</strong> ${a.month}
+        </p>
+      </div>
+    `;
+  });
+
+  return html;
+}
+
+function attachAchievementEvents(content) {
+  const back = document.getElementById("backAchievements");
+  if (back) {
+    back.addEventListener("click", () => {
+      showNavigationBars();
+      content.innerHTML = renderHabitsScreen();
+      attachHabitEvents(content);
+    });
+  }
+}
+
 
 
 
@@ -1543,6 +1680,14 @@ function attachHabitEvents(content) {
   document.querySelectorAll(".habit-nav").forEach(btn => {
     btn.addEventListener("click", () => {
       const go = btn.dataset.go;
+      const btnAchievements = document.getElementById("viewAchievements");
+if (btnAchievements) {
+  btnAchievements.addEventListener("click", () => {
+    hideNavigationBars();
+    content.innerHTML = renderAchievements();
+    attachAchievementEvents(content);
+  });
+}
 
       if (go === "daily") {
         hideNavigationBars();
