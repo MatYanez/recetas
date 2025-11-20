@@ -1677,17 +1677,21 @@ function renderGoals() {
 
 
 function attachHabitEvents(content) {
+
+  // === evento para VER LOGROS ===
+  const btnAchievements = document.getElementById("viewAchievements");
+  if (btnAchievements) {
+    btnAchievements.addEventListener("click", () => {
+      hideNavigationBars();
+      content.innerHTML = renderAchievements();
+      attachAchievementEvents(content);
+    });
+  }
+
+  // === eventos de navegación ===
   document.querySelectorAll(".habit-nav").forEach(btn => {
     btn.addEventListener("click", () => {
       const go = btn.dataset.go;
-      const btnAchievements = document.getElementById("viewAchievements");
-if (btnAchievements) {
-  btnAchievements.addEventListener("click", () => {
-    hideNavigationBars();
-    content.innerHTML = renderAchievements();
-    attachAchievementEvents(content);
-  });
-}
 
       if (go === "daily") {
         hideNavigationBars();
@@ -1719,6 +1723,7 @@ if (btnAchievements) {
     });
   });
 
+  // === botón volver a hábitos ===
   const backBtn = document.getElementById("backHabits");
   if (backBtn) {
     backBtn.addEventListener("click", () => {
