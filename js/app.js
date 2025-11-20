@@ -1,6 +1,95 @@
 import { animate, stagger } from "https://cdn.jsdelivr.net/npm/@motionone/dom/+esm";
 
 const header = document.querySelector(".header");
+const MEDALS = [
+  {
+    key: "firstGoodDay",
+    title: "Primer día bueno",
+    emoji: "🥉",
+    description: "Obtén 700 puntos en un día.",
+    required: 700,
+    type: "daily-score"
+  },
+  {
+    key: "weekDisciplined",
+    title: "Semana disciplinada",
+    emoji: "🥈",
+    description: "Promedio semanal mayor a 700 puntos.",
+    required: 700,
+    type: "weekly-score"
+  },
+  {
+    key: "weekPerfect",
+    title: "Semana perfecta",
+    emoji: "🥇",
+    description: "Promedio semanal mayor a 900 puntos.",
+    required: 900,
+    type: "weekly-score"
+  },
+  {
+    key: "waterStreak",
+    title: "Hidratado",
+    emoji: "💧",
+    description: "Toma agua 5 días seguidos.",
+    required: 5,
+    type: "streak",
+    habit: "water"
+  },
+  {
+    key: "noSweets",
+    title: "Anti-dulces",
+    emoji: "🍬",
+    description: "Evita dulces 5 días seguidos.",
+    required: 5,
+    type: "streak",
+    habit: "sweets"
+  },
+  {
+    key: "noSugarDrinks",
+    title: "Cero azúcar líquida",
+    emoji: "🥤",
+    description: "Evita bebidas azucaradas 5 días seguidos.",
+    required: 5,
+    type: "streak",
+    habit: "sugarDrinks"
+  },
+  {
+    key: "stepsMaster",
+    title: "Caminante",
+    emoji: "🚶",
+    description: "7 días completando 8000 pasos.",
+    required: 7,
+    type: "streak",
+    habit: "steps8000"
+  },
+  {
+    key: "trainer",
+    title: "Entrenador",
+    emoji: "🏋️",
+    description: "7 días entrenando.",
+    required: 7,
+    type: "streak",
+    habit: "exercise20"
+  },
+  {
+    key: "veggie",
+    title: "Veggie Master",
+    emoji: "🥦",
+    description: "Come ensalada 7 veces.",
+    required: 7,
+    type: "count",
+    habit: "salad"
+  },
+  {
+    key: "noNegative10",
+    title: "Racha 10",
+    emoji: "🔥",
+    description: "10 días sin puntos negativos.",
+    required: 10,
+    type: "streak-nonegative"
+  }
+];
+
 const cards = [
   {
     id: "calendario",
@@ -1469,6 +1558,21 @@ function renderHabitsScreen() {
 </button>
 
 
+<button id="viewMedals" style="
+  margin-top:0.7rem;
+  width:100%;
+  background:#fff7d4;
+  border:1px solid #eedc9a;
+  border-radius:12px;
+  padding:0.9rem;
+  font-weight:600;
+  font-size:1rem;
+  cursor:pointer;
+">
+  🏅 Ver medallas
+</button>
+
+
 
     <!-- NAV BUTTONS -->
     <div style="display:flex; flex-direction:column; gap:1rem;">
@@ -1688,6 +1792,17 @@ function attachHabitEvents(content) {
     });
   }
 
+  // === Botón VER MEDALLAS ===  ⬅⬅ AQUI VA TU CÓDIGO
+  const btnMedals = document.getElementById("viewMedals");
+  if (btnMedals) {
+    btnMedals.addEventListener("click", () => {
+      hideNavigationBars();
+      content.innerHTML = renderMedalsScreen();
+      attachAchievementEvents(content);
+    });
+  }
+
+
   // === eventos de navegación ===
   document.querySelectorAll(".habit-nav").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -1735,6 +1850,62 @@ function attachHabitEvents(content) {
 }
 
 
+function renderMedalsScreen() {
+  const { earned, progress } = calculateMedals();
+
+  let html = `
+  <div class="habit-header">
+    <button id="backAchievements" class="habit-back">← Volver</button>
+    <h2 class="habit-title">Mis Medallas</h2>
+  </div>
+
+  <p style="text-align:center;color:#555;margin-bottom:1rem;">
+    Tu progreso de logros
+  </p>
+  `;
+
+  MEDALS.forEach(m => {
+    const isEarned = earned[m.key];
+    const pct = Math.min(100, Math.round(progress[m.key] * 100));
+
+    html += `
+      <div style="
+        background:#fff;
+        padding:1rem;
+        border-radius:16px;
+        margin-bottom:1rem;
+        border:1px solid #eee;
+        opacity:${isEarned ? "1" : "0.5"};
+      ">
+        <div style="display:flex; gap:1rem; align-items:center;">
+          <div style="font-size:2rem;">
+            ${isEarned ? m.emoji : "🔒"}
+          </div>
+
+          <div style="flex:1;">
+            <strong>${m.title}</strong><br>
+            <small>${m.description}</small>
+          </div>
+        </div>
+
+        <div style="margin-top:0.6rem;width:100%;background:#eee;height:6px;border-radius:6px;">
+          <div style="
+            width:${pct}%;
+            height:6px;
+            background:${isEarned ? "#00c853" : "#999"};
+            border-radius:6px;
+          "></div>
+        </div>
+
+        <p style="font-size:0.85rem;margin-top:0.4rem;color:#666;">
+          ${isEarned ? "Medalla obtenida 🎉" : `Progreso: ${pct}%`}
+        </p>
+      </div>
+    `;
+  });
+
+  return html;
+}
 
 
 // ---------- SMALL ALERT ----------
@@ -2144,6 +2315,68 @@ document.head.appendChild(style);
 
 
 
+
+function calculateMedals() {
+  const last30 = [];
+  for (let i=0;i<30;i++){
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    last30.push({ date: key, data: loadHabitData(key) });
+  }
+
+  const earned = JSON.parse(localStorage.getItem("earned-medals") || "{}");
+  const progress = {};
+
+  MEDALS.forEach(m => {
+
+    if (m.type === "daily-score") {
+      const todayScore = calculateDailyPoints(last30[0].data);
+      progress[m.key] = todayScore / m.required;
+      if (todayScore >= m.required) earned[m.key] = true;
+    }
+
+    if (m.type === "weekly-score") {
+      const weekly = calculateWeeklyPoints();
+      progress[m.key] = weekly / m.required;
+      if (weekly >= m.required) earned[m.key] = true;
+    }
+
+    if (m.type === "streak") {
+      let streak = 0;
+      last30.forEach(day => {
+        if (day.data[m.habit] === 1) streak++;
+        else streak = 0;
+      });
+      progress[m.key] = streak / m.required;
+      if (streak >= m.required) earned[m.key] = true;
+    }
+
+    if (m.type === "count") {
+      let count = 0;
+      last30.forEach(day => {
+        if (day.data[m.habit] === 1) count++;
+      });
+      progress[m.key] = count / m.required;
+      if (count >= m.required) earned[m.key] = true;
+    }
+
+    if (m.type === "streak-nonegative") {
+      let streak = 0;
+      last30.forEach(day => {
+        const p = calculateDailyPoints(day.data);
+        if (p >= 0) streak++;
+        else streak = 0;
+      });
+      progress[m.key] = streak / m.required;
+      if (streak >= m.required) earned[m.key] = true;
+    }
+
+  });
+
+  localStorage.setItem("earned-medals", JSON.stringify(earned));
+  return { earned, progress };
+}
 
 
 
