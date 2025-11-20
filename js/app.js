@@ -2060,6 +2060,23 @@ saveHabitData(currentHabitDate, data);
   updateDailyScore(data);
 }
 
+
+
+function calculateDailyPoints(data) {
+  let total = 0;
+
+  HABITS.forEach(h => {
+    const val = data[h.key];
+    if (val === 1) total += h.yes;
+    if (val === 0) total += h.no;
+  });
+
+  // Limitar entre 0 y 1000
+  return Math.max(0, Math.min(1000, total));
+}
+
+
+
 // ===============================================
 // SCORE CALCULATION FOR TODAY
 // ===============================================
