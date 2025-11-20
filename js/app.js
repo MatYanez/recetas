@@ -1459,6 +1459,55 @@ let currentHabitDate = getToday();
 function getToday() {
   return new Date().toISOString().slice(0,10);
 }
+function getAllWeeks() {
+  const weeks = [];
+  const today = new Date();
+
+  // Encontrar el lunes de esta semana
+  const currentMonday = new Date(today);
+  const day = today.getDay() === 0 ? 7 : today.getDay(); // Sunday fix
+  currentMonday.setDate(today.getDate() - (day - 1));
+
+  // Generar semanas hacia atrás hasta no tener datos
+  for (let w = 0; w < 20; w++) {
+    const start = new Date(currentMonday);
+    start.setDate(currentMonday.getDate() - (7 * w));
+
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+
+    // Recolectar la data de cada día de la semana
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const key = d.toISOString().slice(0,10);
+      days.push({
+        date: key,
+        data: loadHabitData(key),
+        score: calculateDailyPoints(loadHabitData(key))
+      });
+    }
+
+    weeks.push({
+      id: w,
+      start,
+      end,
+      days
+    });
+  }
+
+  return weeks;
+}
+
+function calculateWeekScore(week) {
+  let sum = 0;
+  week.days.forEach(d => {
+    sum += d.score;
+  });
+  return sum;
+}
+
 
 // ---------- LOAD & SAVE ----------
 function loadHabitData(date) {
@@ -1736,33 +1785,52 @@ function attachAchievementEvents(content) {
 
 // ---------- WEEKLY SUMMARY ----------
 function renderWeeklySummary() {
-  const week = getLast7Days();
+  const weeks = getAllWeeks();
 
-  return `
-<div class="habit-header">
-  <button id="backHabits" class="habit-back">← Volver</button>
-  <h2 class="habit-title">Resumen semanal</h2>
-</div>
-
-
-    ${week
-      .map(day => `
-        <div style="
-          background:#fafafa; padding:1rem;
-          border-radius:14px; margin-bottom:0.8rem;
-          border:1px solid #eee;
-        ">
-          <strong>${day.date}</strong><br>
-          Agua: ${day.data.water ?? 0} L<br>
-          Dulces: ${day.data.sweets ?? 0}<br>
-          Bebidas: ${day.data.sugarDrinks ?? 0}<br>
-          Energía: ${day.data.energy ?? 0}<br>
-          Ejercicio: ${day.data.exercise ?? 0} min
-        </div>
-      `)
-      .join("")}
+  let html = `
+  <div class="habit-header">
+    <button id="backHabits" class="habit-back">← Volver</button>
+    <h2 class="habit-title">Resumen semanal</h2>
+  </div>
   `;
+
+  weeks.forEach((week, i) => {
+    const total = calculateWeekScore(week);
+
+    let arrow = "";
+    if (i === 0) {
+      arrow = ""; // no hay semana previa
+    } else {
+      const prevTotal = calculateWeekScore(weeks[i-1]);
+      arrow = total > prevTotal
+        ? `<span style="color:#00c853;font-weight:700;">↑</span>`
+        : `<span style="color:#ff5252;font-weight:700;">↓</span>`;
+    }
+
+    const range = `${week.start.toLocaleDateString("es-ES")} - ${week.end.toLocaleDateString("es-ES")}`;
+
+    html += `
+      <div class="week-card" data-week="${week.id}" style="
+        background:#fff;
+        padding:1rem;
+        border-radius:16px;
+        border:1px solid #eee;
+        margin-bottom:1rem;
+        cursor:pointer;
+      ">
+        <strong>Semana ${i+1}</strong><br>
+        <small>${range}</small>
+
+        <div style="margin-top:8px;font-size:1.1rem;font-weight:700;">
+          ${total} / 7000 ${arrow}
+        </div>
+      </div>
+    `;
+  });
+
+  return html;
 }
+
 
 // ---------- PLACEHOLDERS ----------
 function renderTrends() {
@@ -1787,6 +1855,16 @@ function renderGoals() {
 
 
 function attachHabitEvents(content) {
+
+  document.querySelectorAll(".week-card").forEach(card => {
+  card.addEventListener("click", () => {
+    const id = Number(card.dataset.week);
+    hideNavigationBars();
+    content.innerHTML = renderWeeklyDetail(id);
+    attachWeeklyDetailEvents(content);
+  });
+});
+
 
   // === evento para VER LOGROS ===
   const btnAchievements = document.getElementById("viewAchievements");
@@ -2449,7 +2527,109 @@ ACCUMULATION_MEDALS.forEach(m => {
 }
 
 
+function renderWeeklyDetail(weekId) {
+  const weeks = getAllWeeks();
+  const week = weeks.find(w => w.id === weekId);
 
+  const total = calculateWeekScore(week);
+  const avg = Math.round(total / 7);
+
+  // Mejor día
+  const bestDay = week.days.reduce((a,b) => a.score > b.score ? a : b);
+  const bestDayName = new Date(bestDay.date).toLocaleDateString("es-ES", { weekday:"long" });
+
+  // Mejoras / empeoras (vs semana anterior)
+  let improved = [];
+  let worsened = [];
+
+  if (weekId < weeks.length - 1) {
+    const prev = weeks[weekId+1];
+
+    HABITS.forEach(h => {
+      let currentCount = 0;
+      let prevCount = 0;
+
+      week.days.forEach(d => {
+        if (d.data[h.key] === 1) currentCount++;
+      });
+      prev.days.forEach(d => {
+        if (d.data[h.key] === 1) prevCount++;
+      });
+
+      if (currentCount > prevCount) improved.push(h.label);
+      else if (currentCount < prevCount) worsened.push(h.label);
+    });
+  }
+
+  // ================= TABLE =================
+  let table = `
+    <table style="width:100%;margin-top:1rem;border-collapse:collapse;">
+      <tr>
+        <th style="padding:6px;"></th>
+        ${week.days.map(d => `
+          <th style="padding:6px;font-size:0.85rem;">${new Date(d.date).toLocaleDateString("es-ES",{weekday:"short"})}</th>
+        `).join("")}
+      </tr>
+  `;
+
+  HABITS.forEach(h => {
+    table += `
+      <tr>
+        <td style="padding:6px;font-weight:600;font-size:0.9rem;">${h.label}</td>
+        ${week.days.map(d => {
+          const v = d.data[h.key];
+          if (v === 1)
+            return `<td style="padding:6px;background:#c8ffc8;">✔</td>`;
+          if (v === 0)
+            return `<td style="padding:6px;background:#ffc8c8;">✖</td>`;
+          return `<td style="padding:6px;background:#e0e0e0;">—</td>`;
+        }).join("")}
+      </tr>
+    `;
+  });
+
+  table += `</table>`;
+
+  // ================= HTML FINAL =================
+  return `
+  <div class="habit-header">
+    <button id="backWeekList" class="habit-back">← Volver</button>
+    <h2 class="habit-title">Semana ${weekId + 1}</h2>
+  </div>
+
+  <div style="background:#fff;padding:1rem;border-radius:16px;margin-bottom:1rem;border:1px solid #eee;">
+    <p>Puntos totales: <strong>${total} / 7000</strong></p>
+    <p>Promedio diario: <strong>${avg} pts</strong></p>
+    <p>Racha positiva: <strong>${countPositiveStreak(week)} días</strong></p>
+    <p>Mejor día: <strong>${bestDayName} (${bestDay.score} pts)</strong></p>
+
+    <p style="margin-top:1rem;"><strong>Mejoraste:</strong> ${improved.length ? improved.join(", ") : "—"}</p>
+    <p><strong>Empeoraste:</strong> ${worsened.length ? worsened.join(", ") : "—"}</p>
+  </div>
+
+  ${table}
+  `;
+}
+
+
+function countPositiveStreak(week) {
+  let streak = 0;
+  week.days.forEach(d => {
+    if (d.score > 0) streak++;
+  });
+  return streak;
+}
+
+function attachWeeklyDetailEvents(content) {
+  const back = document.getElementById("backWeekList");
+  if (back) {
+    back.addEventListener("click", () => {
+      showNavigationBars();
+      content.innerHTML = renderWeeklySummary();
+      attachHabitEvents(content);
+    });
+  }
+}
 
 
 
