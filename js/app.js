@@ -304,11 +304,20 @@ animate(content, { opacity: [1, 0], x: [0, -40 * direction] }, { duration: 0.25 
     // ====== HABITOS ==========
     // =========================
 if (sectionId === "habitos") {
-  content.innerHTML = renderHabitsScreen();
+
+  // 🧹 LIMPIAR CUALQUIER HTML PREVIO QUE SE QUEDÓ PEGADO
+  content.innerHTML = "";
+  content.replaceChildren(); // <= limpia todo completamente
+
+  // 🔥 RENDER REAL (tu versión sin círculo)
+  const html = renderHabitsScreen();
+  content.innerHTML = html;
+
+  // 🔌 Re-activar eventos
   attachHabitEvents(content);
   showNavigationBars();
 
-  // 💥 REPARA EL PROBLEMA DE OPACIDAD
+  // 🎬 Animación de entrada
   animate(
     content,
     { opacity: [0, 1], x: [40, 0] },
@@ -317,6 +326,7 @@ if (sectionId === "habitos") {
 
   return;
 }
+
 
 
         // =========================
