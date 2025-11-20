@@ -1,5 +1,5 @@
 import { animate, stagger } from "https://cdn.jsdelivr.net/npm/@motionone/dom/+esm";
-
+const USER_HEIGHT = 1.65; 
 const header = document.querySelector(".header");
 const MEDALS = [
   {
@@ -2648,24 +2648,32 @@ function getWeekKey(date = new Date()) {
 function saveWeeklyWeight(weight) {
   const monday = getWeekKey();
   const logs = loadWeightLog();
-  
-  // Si ya existe registro de esa semana → reemplaza
+
+  const imc = calculateIMC(weight);
+
   const existing = logs.findIndex(l => l.week === monday);
-  if (existing >= 0) {
-    logs[existing].weight = weight;
-  } else {
-    logs.unshift({ week: monday, weight });
-  }
+  const entry = { week: monday, weight, imc };
+
+  if (existing >= 0) logs[existing] = entry;
+  else logs.unshift(entry);
 
   localStorage.setItem("weightLog", JSON.stringify(logs));
 }
+
 
 function loadWeightLog() {
   return JSON.parse(localStorage.getItem("weightLog") || "[]");
 }
 
-function calculateIMC(weight, height) {
-  return (weight / (height * height)).toFixed(2);
+function calculateIMC(weight) {
+  return (weight / (USER_HEIGHT * USER_HEIGHT)).toFixed(1);
+}
+
+function classifyIMC(imc) {
+  if (imc < 18.5) return { label: "Bajo peso", color: "#4fc3f7" };
+  if (imc < 25)   return { label: "Normal", color: "#81c784" };
+  if (imc < 30)   return { label: "Sobrepeso", color: "#ffb74d" };
+  return { label: "Obesidad", color: "#e57373" };
 }
 
 
@@ -2680,17 +2688,33 @@ function renderRegistro() {
   </div>
 
   <!-- Tarjeta último peso -->
-  <div style="
-    background:#fff;
-    padding:1rem;
-    border-radius:16px;
-    border:1px solid #eee;
-    margin-bottom:1rem;
-    text-align:center;
-  ">
-    <h3 style="margin:0;font-size:1.3rem;">Último peso registrado</h3>
-    <p style="font-size:2rem;font-weight:700;margin:0.4rem 0;">${last} kg</p>
-  </div>
+const logs = loadWeightLog();
+const last = logs.length ? logs[0] : null;
+const imcInfo = last ? classifyIMC(last.imc) : null;
+<div style="
+  background:#fff;padding:1rem;border-radius:16px;
+  border:1px solid #eee;margin-bottom:1rem;text-align:center;
+">
+  <h3 style="margin:0;font-size:1.3rem;">Último registro</h3>
+
+  <p style="font-size:2rem;font-weight:700;margin:0.4rem 0;">
+    ${last ? last.weight : "—"} kg
+  </p>
+
+  ${
+    last
+      ? `<p style="
+          margin:0.5rem 0;
+          font-size:1.1rem;
+          font-weight:600;
+          color:${imcInfo.color};
+        ">
+        IMC: ${last.imc} — ${imcInfo.label}
+        </p>`
+      : ""
+  }
+</div>
+
 
   <!-- Registrar peso semanal -->
   <div style="
