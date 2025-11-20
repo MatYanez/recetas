@@ -98,6 +98,12 @@ const ACCUMULATION_MEDALS = [
 
 const cards = [
   {
+  id: "registro",
+  color: "#fef3c7",
+  title: "Registro personal",
+  content: "Control semanal de peso + IMC"
+},
+  {
     id: "calendario",
     color: "#fce7f3",
     title: "Calendario",
@@ -1650,11 +1656,11 @@ function renderHabitsScreen() {
         background:#f3f4f6; border:none; font-weight:600;
       ">📈 Tendencias →</button>
 
-      <button class="habit-nav" data-go="goals" style="
+      <button class="habit-nav" data-go="registro" style="
         width:100%; text-align:left;
         padding:1rem; border-radius:14px;
         background:#f3f4f6; border:none; font-weight:600;
-      ">🎯 Metas personales →</button>
+      ">⚖️ Registro personal →</button>
 
     </div>
   `;
@@ -1913,12 +1919,12 @@ function attachHabitEvents(content) {
         return;
       }
 
-      if (go === "goals") {
-        hideNavigationBars();
-        content.innerHTML = renderGoals();
-        attachHabitEvents(content);
-        return;
-      }
+if (go === "registro") {
+  hideNavigationBars();
+  content.innerHTML = renderRegistro();
+  attachRegistroEvents(content);
+  return;
+}
     });
   });
 
@@ -2630,6 +2636,123 @@ function attachWeeklyDetailEvents(content) {
     });
   }
 }
+
+
+function getWeekKey(date = new Date()) {
+  const d = new Date(date);
+  const day = d.getDay() || 7;
+  if (day !== 1) d.setDate(d.getDate() - (day - 1));
+  return d.toISOString().slice(0,10); // lunes
+}
+
+function saveWeeklyWeight(weight) {
+  const monday = getWeekKey();
+  const logs = loadWeightLog();
+  
+  // Si ya existe registro de esa semana → reemplaza
+  const existing = logs.findIndex(l => l.week === monday);
+  if (existing >= 0) {
+    logs[existing].weight = weight;
+  } else {
+    logs.unshift({ week: monday, weight });
+  }
+
+  localStorage.setItem("weightLog", JSON.stringify(logs));
+}
+
+function loadWeightLog() {
+  return JSON.parse(localStorage.getItem("weightLog") || "[]");
+}
+
+function calculateIMC(weight, height) {
+  return (weight / (height * height)).toFixed(2);
+}
+
+
+function renderRegistro() {
+  const logs = loadWeightLog();
+  const last = logs.length ? logs[0].weight : "—";
+
+  return `
+  <div class="habit-header">
+    <button id="backHabits" class="habit-back">← Volver</button>
+    <h2 class="habit-title">Registro personal</h2>
+  </div>
+
+  <!-- Tarjeta último peso -->
+  <div style="
+    background:#fff;
+    padding:1rem;
+    border-radius:16px;
+    border:1px solid #eee;
+    margin-bottom:1rem;
+    text-align:center;
+  ">
+    <h3 style="margin:0;font-size:1.3rem;">Último peso registrado</h3>
+    <p style="font-size:2rem;font-weight:700;margin:0.4rem 0;">${last} kg</p>
+  </div>
+
+  <!-- Registrar peso semanal -->
+  <div style="
+    background:#fafafa;
+    padding:1rem;
+    border-radius:16px;
+    border:1px solid #eee;
+    margin-bottom:1.5rem;
+  ">
+    <label style="font-weight:600;">Peso de esta semana (kg):</label>
+    <input id="weightInput" type="number" step="0.1" style="
+      width:100%;padding:0.8rem;border-radius:12px;
+      border:1px solid #ddd;margin-top:0.5rem;
+    ">
+    <button id="saveWeight" style="
+      width:100%;margin-top:1rem;padding:1rem;
+      background:#111;color:#fff;border-radius:12px;font-weight:600;
+    ">Guardar</button>
+  </div>
+
+  <h3 style="font-weight:700;margin-bottom:0.5rem;">Historial semanal</h3>
+  <div>
+    ${logs.map(l => `
+      <div style="padding:0.8rem;border-bottom:1px solid #eee;">
+        <strong>${l.week}</strong> — ${l.weight} kg
+      </div>
+    `).join("")}
+  </div>
+  `;
+}
+
+function attachRegistroEvents(content) {
+  const saveBtn = document.getElementById("saveWeight");
+  const input = document.getElementById("weightInput");
+
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      const weight = Number(input.value);
+      if (!weight) return alert("Ingresa un peso válido");
+
+      saveWeeklyWeight(weight);
+      animateAlert("Peso guardado");
+
+      // Recargar pantalla
+      content.innerHTML = renderRegistro();
+      attachRegistroEvents(content);
+    });
+  }
+
+  const backBtn = document.getElementById("backHabits");
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      showNavigationBars();
+      content.innerHTML = renderHabitsScreen();
+      attachHabitEvents(content);
+    });
+  }
+}
+
+
+
+
 
 
 
