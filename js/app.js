@@ -1396,21 +1396,22 @@ function calculateWeeklyPoints() {
   let total = 0;
 
   week.forEach(day => {
-    const d = day.data;
-    let pts = 0;
-
-    if (d.water >= 1.5) pts += 10;
-    if (d.sweets === 0) pts += 10;
-    if (d.sugarDrinks === 0) pts += 10;
-    if (d.energy >= 7) pts += 10;
-    if (d.exercise >= 20) pts += 10;
-
-    total += pts;
+    const data = day.data;
+    HABITS.forEach(h => {
+      const val = data[h.key];
+      if (val === 1) total += h.yes;
+      if (val === 0) total += h.no;
+    });
   });
 
-  const avg = Math.round((total / (7 * 50)) * 100);
-  return isNaN(avg) ? 0 : avg;
+  // Total máximo 7000 puntos
+  total = Math.max(0, Math.min(7000, total));
+
+  // Convertimos a porcentaje (0–100)
+  const percent = Math.round((total / 7000) * 100);
+  return percent;
 }
+
 
 function getScoreColor(score) {
   if (score < 40) return { color: "#ff7676", label: "Deficiente" };
@@ -1619,16 +1620,17 @@ function animateAlert() {
 // ===============================================
 
 const HABITS = [
-  { key: "water", label: "💧 Tomé 1.5 L de agua", yes: 10, no: 0 },
-  { key: "sweets", label: "🍬 Comí dulces", yes: 0,  no: 10 },
-  { key: "sugarDrinks", label: "🥤 Bebida azucarada", yes: 0, no: 10 },
-  { key: "energy7", label: "⚡ Energía ≥ 7", yes: 10, no: 0 },
-  { key: "exercise20", label: "🏃 Ejercicio ≥ 20 min", yes: 10, no: 0 }
+  { key: "water",        label: "💧 Tomé 1.5 L de agua",         yes: 100, no: -20 },
+  { key: "sweets",       label: "🍬 Evité dulces",               yes: 250, no: -50 },
+  { key: "sugarDrinks",  label: "🥤 Evité bebidas azucaradas",   yes: 250, no: -50 },
+  { key: "steps8000",    label: "🚶 Hice 8000 pasos",            yes: 200, no: -40 },
+  { key: "exercise20",   label: "🏋️ Entrené 20 min",            yes: 150, no: -30 },
+  { key: "salad",        label: "🥦 Comí ensalada",              yes: 50,  no: -10 },
 ];
 
+
 function renderDailyHabits() {
-// usamos la fecha seleccionada, no siempre hoy
-const saved = loadHabitData(currentHabitDate);
+  const saved = loadHabitData(currentHabitDate);
 
   const rows = HABITS.map(h => {
     const val = saved[h.key] ?? null;
@@ -1654,31 +1656,29 @@ const saved = loadHabitData(currentHabitDate);
   <h2 class="habit-title">Registrar hábitos de hoy</h2>
 </div>
 
-<!-- CALENDARIO PRO -->
 <div id="habitCalendarContainer" style="width:100%; margin-bottom:1.5rem;"></div>
 
+<div id="dailyTable" style="display:flex;flex-direction:column;gap:1rem;">
+  ${rows}
+</div>
 
+<div id="dailyScore" style="
+  margin-top:1.5rem;
+  font-size:1.2rem;
+  font-weight:700;
+  text-align:center;
+">
+  Puntaje de hoy: 0 / 1000
+</div>
 
-    <div id="dailyTable" style="display:flex;flex-direction:column;gap:1rem;">
-      ${rows}
-    </div>
-
-    <div id="dailyScore" style="
-      margin-top:1.5rem;
-      font-size:1.2rem;
-      font-weight:700;
-      text-align:center;
-    ">
-      Puntaje de hoy: 0 / 50
-    </div>
-
-    <button id="saveHabits" style="
-      width:100%; padding:1rem; background:#111;
-      color:white; border:none; border-radius:12px; font-weight:600;
-      margin-top:1.5rem;
-    ">Guardar</button>
-  `;
+<button id="saveHabits" style="
+  width:100%; padding:1rem; background:#111;
+  color:white; border:none; border-radius:12px; font-weight:600;
+  margin-top:1.5rem;
+">Guardar</button>
+`;
 }
+
 
 // ===============================================
 // EVENTS FOR DAILY INTERACTIONS
@@ -1747,13 +1747,19 @@ function updateDailyScore(data) {
 
   HABITS.forEach(h => {
     const val = data[h.key];
+
     if (val === 1) total += h.yes;
     if (val === 0) total += h.no;
   });
 
+  // Limites
+  total = Math.max(0, Math.min(1000, total));
+
   const el = document.getElementById("dailyScore");
-  if (el) el.textContent = `Puntaje de hoy: ${total} / 50`;
+  if (el) el.textContent = `Puntaje de hoy: ${total} / 1000`;
 }
+
+
 
 // === CALENDARIO PRO PARA HABITOS ===
 function setupHabitCalendar(container, onDateSelected) {
