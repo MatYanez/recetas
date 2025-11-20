@@ -1935,25 +1935,30 @@ function renderTrends() {
     </div>
   `;
 
-  // PESO
+  // Tarjeta de PESO
   html += `
-    <h3 style="margin-top:1rem;">⚖️ Peso</h3>
-    <canvas id="chartWeight" width="300" height="140" style="width:100%;"></canvas>
-    <p style="color:#555;margin:0.5rem 0;">${analyzeTrend(weightTrend)}</p>
+    <div class="trend-card">
+      <h3 class="trend-title">⚖️ Peso</h3>
+      <canvas id="chartWeight" width="300" height="90" class="trend-chart"></canvas>
+      <p class="trend-desc">${analyzeTrend(weightTrend)}</p>
+    </div>
   `;
 
-  // HÁBITOS
+  // Tarjetas de HÁBITOS
   HABITS.forEach(h => {
     const values = habitTrends[h.key];
     html += `
-      <h3 style="margin-top:1.5rem;">${h.label}</h3>
-      <canvas id="chart_${h.key}" width="300" height="140" style="width:100%;"></canvas>
-      <p style="color:#555;margin:0.5rem 0;">${analyzeTrend(values)}</p>
+      <div class="trend-card">
+        <h3 class="trend-title">${h.label}</h3>
+        <canvas id="chart_${h.key}" width="300" height="90" class="trend-chart"></canvas>
+        <p class="trend-desc">${analyzeTrend(values)}</p>
+      </div>
     `;
   });
 
   return html;
 }
+
 
 
 function renderGoals() {
@@ -2561,6 +2566,34 @@ style.textContent = `
     transform:scale(0.95);
     opacity:0.7;
   }
+    .trend-card {
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1.2rem;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.trend-title {
+  margin: 0 0 0.6rem 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.trend-chart {
+  width: 100%;
+  display: block;
+  margin-bottom: 0.6rem;
+}
+
+.trend-desc {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 0;
+}
+
 `;
 document.head.appendChild(style);
 
