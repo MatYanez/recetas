@@ -714,29 +714,39 @@ function openOrganizeScreen() {
   let currentMonth = new Date().getMonth();
   let currentYear = new Date().getFullYear();
 
-  function getWeeksOfMonth(year, month) {
-    const weeks = [];
-    const date = new Date(year, month, 1);
+  
+function getWeeksOfMonth(year, month) {
+  const weeks = [];
 
-    while (date.getDay() !== 1) date.setDate(date.getDate() - 1);
+  const date = new Date(year, month, 1);
+  while (date.getDay() !== 1) date.setDate(date.getDate() - 1);
 
-    while (true) {
-      const start = new Date(date);
-      date.setDate(date.getDate() + 4);
-      const end = new Date(date);
+  while (true) {
+    const start = new Date(date);
+    date.setDate(date.getDate() + 4);
+    const end = new Date(date);
 
-      weeks.push({ start, end });
+    weeks.push({ start, end });
 
-      date.setDate(date.getDate() + 3);
-
-      if (date.getMonth() !== month) break;
-    }
-
-    return weeks;
+    date.setDate(date.getDate() + 3);
+    if (date.getMonth() !== month) break;
   }
 
-  let weeks = getWeeksOfMonth(currentYear, currentMonth);
+  return weeks;
+}
 
+
+
+  let weeks = getWeeksOfMonth(currentYear, currentMonth);
+// Detectar semana actual
+const today = new Date();
+let currentWeekIndex = 0;
+
+weeks.forEach((w, i) => {
+  if (w.start <= today && today <= w.end) {
+    currentWeekIndex = i;
+  }
+});
   const weekCarousel = document.createElement("div");
   weekCarousel.id = "weekSelector";
   Object.assign(weekCarousel.style, {
@@ -761,7 +771,12 @@ function openOrganizeScreen() {
       borderRadius: "16px",
       scrollSnapAlign: "center",
       boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-    });
+    })
+    if (i === currentWeekIndex) {
+  card.style.background = "#000";
+  card.style.color = "#fff";
+}
+    ;
 
     card.innerHTML = `
       <h3 style="font-size:1.7rem;font-weight:600;">Semana ${i + 1}</h3>
@@ -782,6 +797,25 @@ function openOrganizeScreen() {
   mealsContainer.style.display = "flex";
   mealsContainer.style.flexDirection = "column";
   mealsContainer.style.gap = "1rem";
+let selectedMeals = {
+  weekKey: "",
+  meal1: "",
+  meal2: "",
+  meal3: ""
+};
+
+
+function loadWeekMeals(index) {
+  const weekKey = `${currentYear}-${currentMonth}-${index}`;
+  screen.dataset.weekKey = weekKey;
+
+  const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
+
+  mealBox1.textContent = saved.meal1 || "Seleccionar comida";
+  mealBox2.textContent = saved.meal2 || "Seleccionar comida";
+  mealBox3.textContent = saved.meal3 || "Seleccionar comida";
+}
+
 
   function createMealBlock() {
     const box = document.createElement("div");
@@ -806,15 +840,47 @@ function openOrganizeScreen() {
     return box;
   }
 
-  const mealBox1 = createMealBlock();
-  const mealBox2 = createMealBlock();
-  const mealBox3 = createMealBlock();
+const mealBox1 = createMealBlock();
+const mealBox2 = createMealBlock();
+const mealBox3 = createMealBlock();
 
-  mealsContainer.appendChild(mealBox1);
-  mealsContainer.appendChild(mealBox2);
-  mealsContainer.appendChild(mealBox3);
+mealsContainer.appendChild(mealBox1);
+mealsContainer.appendChild(mealBox2);
+mealsContainer.appendChild(mealBox3);
 
-  screen.appendChild(mealsContainer);
+screen.appendChild(mealsContainer);
+
+// === BOTÓN GUARDAR SEMANA ===
+const saveBtn = document.createElement("button");
+saveBtn.textContent = "Guardar semana";
+
+Object.assign(saveBtn.style, {
+  marginTop: "1.3rem",
+  width: "100%",
+  background: "#000",
+  color: "#fff",
+  padding: "1rem",
+  borderRadius: "14px",
+  fontWeight: "600",
+  border: "none",
+  cursor: "pointer"
+});
+
+saveBtn.addEventListener("click", () => {
+  const weekKey = screen.dataset.weekKey;
+
+  const data = {
+    meal1: mealBox1.textContent !== "Seleccionar comida" ? mealBox1.textContent : "",
+    meal2: mealBox2.textContent !== "Seleccionar comida" ? mealBox2.textContent : "",
+    meal3: mealBox3.textContent !== "Seleccionar comida" ? mealBox3.textContent : ""
+  };
+
+  localStorage.setItem("meals-" + weekKey, JSON.stringify(data));
+  animateAlert("Semana guardada");
+});
+
+screen.appendChild(saveBtn);
+
 
 
   // =====================================================
@@ -1064,6 +1130,9 @@ else if (sectionId === "almuerzos") {
   function attachCardEvents(list) {
     const cards = content.querySelectorAll(".recipe-card");
     cards.forEach((card, i) => {
+      card.addEventListener("click", () => {
+  loadWeekMeals(i);
+});
       card.addEventListener("click", () => {
         showRecipeDetail(list[i]);
       });
