@@ -345,7 +345,6 @@ bottomBar.innerHTML = `
     border-radius:12px;
     background-color:rgb(237 237 237);
     left:50%;
-    margin-left:-23px;
     transition:left 0.25s ease, transform 0.3s ease;
     z-index:-1;
   "></div>
