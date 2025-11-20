@@ -98,12 +98,6 @@ const ACCUMULATION_MEDALS = [
 
 const cards = [
   {
-  id: "registro",
-  color: "#fef3c7",
-  title: "Registro personal",
-  content: "Control semanal de peso + IMC"
-},
-  {
     id: "calendario",
     color: "#fce7f3",
     title: "Calendario",
