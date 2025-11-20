@@ -2679,72 +2679,109 @@ function classifyIMC(imc) {
 
 function renderRegistro() {
   const logs = loadWeightLog();
-  const last = logs.length ? logs[0].weight : "—";
+  const last = logs.length ? logs[0] : null;
+  const imcInfo = last ? classifyIMC(last.imc) : null;
+
+  // Calcular variación respecto a semana pasada
+  let diffHTML = "";
+  if (logs.length >= 2) {
+    const prev = logs[1].weight;
+    const curr = logs[0].weight;
+    const diff = (curr - prev).toFixed(1);
+
+    diffHTML = `
+      <p style="margin-top:0.3rem;font-weight:600;">
+        ${
+          diff < 0
+            ? `<span style="color:#00c853;">↓ ${Math.abs(diff)} kg (bajaste)</span>`
+            : diff > 0
+              ? `<span style="color:#d32f2f;">↑ ${diff} kg (subiste)</span>`
+              : `<span style="color:#616161;">= te mantuviste</span>`
+        }
+      </p>
+    `;
+  }
 
   return `
-  <div class="habit-header">
-    <button id="backHabits" class="habit-back">← Volver</button>
-    <h2 class="habit-title">Registro personal</h2>
-  </div>
+    <div class="habit-header">
+      <button id="backHabits" class="habit-back">← Volver</button>
+      <h2 class="habit-title">Registro personal</h2>
+    </div>
 
-  <!-- Tarjeta último peso -->
-const logs = loadWeightLog();
-const last = logs.length ? logs[0] : null;
-const imcInfo = last ? classifyIMC(last.imc) : null;
-<div style="
-  background:#fff;padding:1rem;border-radius:16px;
-  border:1px solid #eee;margin-bottom:1rem;text-align:center;
-">
-  <h3 style="margin:0;font-size:1.3rem;">Último registro</h3>
-
-  <p style="font-size:2rem;font-weight:700;margin:0.4rem 0;">
-    ${last ? last.weight : "—"} kg
-  </p>
-
-  ${
-    last
-      ? `<p style="
-          margin:0.5rem 0;
-          font-size:1.1rem;
-          font-weight:600;
-          color:${imcInfo.color};
-        ">
-        IMC: ${last.imc} — ${imcInfo.label}
-        </p>`
-      : ""
-  }
-</div>
-
-
-  <!-- Registrar peso semanal -->
-  <div style="
-    background:#fafafa;
-    padding:1rem;
-    border-radius:16px;
-    border:1px solid #eee;
-    margin-bottom:1.5rem;
-  ">
-    <label style="font-weight:600;">Peso de esta semana (kg):</label>
-    <input id="weightInput" type="number" step="0.1" style="
-      width:100%;padding:0.8rem;border-radius:12px;
-      border:1px solid #ddd;margin-top:0.5rem;
+    <!-- Último registro -->
+    <div style="
+      background:#fff;padding:1rem;border-radius:16px;
+      border:1px solid #eee;margin-bottom:1rem;text-align:center;
     ">
-    <button id="saveWeight" style="
-      width:100%;margin-top:1rem;padding:1rem;
-      background:#111;color:#fff;border-radius:12px;font-weight:600;
-    ">Guardar</button>
-  </div>
+      <h3 style="margin:0;font-size:1.3rem;">Último registro</h3>
 
-  <h3 style="font-weight:700;margin-bottom:0.5rem;">Historial semanal</h3>
-  <div>
-    ${logs.map(l => `
-      <div style="padding:0.8rem;border-bottom:1px solid #eee;">
-        <strong>${l.week}</strong> — ${l.weight} kg
-      </div>
-    `).join("")}
-  </div>
+      <p style="font-size:2rem;font-weight:700;margin:0.4rem 0;">
+        ${last ? last.weight : "—"} kg
+      </p>
+
+      ${
+        last
+          ? `<p style="
+              margin:0.5rem 0;
+              font-size:1.1rem;
+              font-weight:600;
+              color:${imcInfo.color};
+            ">
+              IMC: ${last.imc} — ${imcInfo.label}
+            </p>`
+          : ""
+      }
+
+      ${diffHTML}
+    </div>
+
+    <!-- Registrar peso semanal -->
+    <div style="
+      background:#fafafa;
+      padding:1rem;
+      border-radius:16px;
+      border:1px solid #eee;
+      margin-bottom:1.5rem;
+    ">
+      <label style="font-weight:600;">Peso de esta semana (kg):</label>
+      <input id="weightInput" type="number" step="0.1" style="
+        width:100%;padding:0.8rem;border-radius:12px;
+        border:1px solid #ddd;margin-top:0.5rem;
+      ">
+      <button id="saveWeight" style="
+        width:100%;margin-top:1rem;padding:1rem;
+        background:#111;color:#fff;border-radius:12px;font-weight:600;
+      ">Guardar</button>
+    </div>
+
+    <h3 style="font-weight:700;margin-bottom:0.5rem;">Historial semanal</h3>
+
+    <div>
+      ${logs.map(l => {
+        const imcI = classifyIMC(l.imc);
+        return `
+          <div style="
+            padding:0.8rem;
+            border-bottom:1px solid #eee;
+            display:flex;
+            justify-content:space-between;
+          ">
+            <div>
+              <strong>${l.week}</strong><br>
+              <span style="color:#666;">${l.weight} kg</span>
+            </div>
+
+            <div style="color:${imcI.color}; font-weight:600;">
+              IMC ${l.imc}
+            </div>
+          </div>
+        `;
+      }).join("")}
+    </div>
   `;
 }
+
+
 
 function attachRegistroEvents(content) {
   const saveBtn = document.getElementById("saveWeight");
@@ -2758,7 +2795,6 @@ function attachRegistroEvents(content) {
       saveWeeklyWeight(weight);
       animateAlert("Peso guardado");
 
-      // Recargar pantalla
       content.innerHTML = renderRegistro();
       attachRegistroEvents(content);
     });
@@ -2773,6 +2809,7 @@ function attachRegistroEvents(content) {
     });
   }
 }
+
 
 
 
