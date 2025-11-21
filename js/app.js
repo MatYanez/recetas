@@ -786,34 +786,54 @@ currentWeekIndex = weeks.findIndex(w => today >= w.start && today <= w.end);
     marginBottom: "2rem",
     WebkitOverflowScrolling: "touch",
   });
+weeks.forEach((w, i) => {
+  const start = w.start.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
+  const end = w.end.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
 
-  weeks.forEach((w, i) => {
-    const start = w.start.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
-    const end = w.end.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
+  const card = document.createElement("div");
+  Object.assign(card.style, {
+    minWidth: "60%",
+    background: "#ededed",
+    padding: "1rem",
+    borderRadius: "16px",
+    scrollSnapAlign: "center",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    transition: "0.25s",
+  });
 
-    const card = document.createElement("div");
-    Object.assign(card.style, {
-      minWidth: "60%",
-      background: "#ededed",
-      padding: "1rem",
-      borderRadius: "16px",
-      scrollSnapAlign: "center",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-      transition: "0.2s",
+  if (i === currentWeekIndex) {
+    card.style.background = "#000";
+    card.style.color = "#fff";
+    card.style.transform = "scale(1.05)";
+  }
+
+  card.innerHTML = `
+    <h3 style="font-size:1.7rem;font-weight:600;">Semana ${i + 1}</h3>
+    <p style="font-size:1rem; color:#555;">${start} – ${end}</p>
+  `;
+
+  // Evento seleccionar semana
+  card.addEventListener("click", () => {
+    // resetear todas las cards
+    Array.from(organizeCarousel.children).forEach(c => {
+      c.style.background = "#ededed";
+      c.style.color = "#000";
+      c.style.transform = "scale(1)";
     });
 
-    if (i === currentWeekIndex) {
-      card.style.background = "#000";
-      card.style.color = "#fff";
-    }
+    // marcar card seleccionada
+    card.style.background = "#000";
+    card.style.color = "#fff";
+    card.style.transform = "scale(1.05)";
 
-    card.innerHTML = `
-      <h3 style="font-size:1.7rem;font-weight:600;">Semana ${i + 1}</h3>
-      <p style="font-size:1rem; color:#555;">${start} – ${end}</p>
-    `;
-
-    organizeCarousel.appendChild(card);
+    // cargar comidas de esa semana
+    loadWeekMeals(w.weekKey);
   });
+
+  organizeCarousel.appendChild(card);
+});
+
+ 
 
   screen.appendChild(organizeCarousel);
 
@@ -846,8 +866,7 @@ let selectedMeals = {
 };
 
 
-function loadWeekMeals(index) {
-  const weekKey = `${currentYear}-${currentMonth}-${index}`;
+function loadWeekMeals(weekKey) {
   screen.dataset.weekKey = weekKey;
 
   const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
@@ -855,6 +874,11 @@ function loadWeekMeals(index) {
   mealBox1.textContent = saved.meal1 || "Seleccionar comida";
   mealBox2.textContent = saved.meal2 || "Seleccionar comida";
   mealBox3.textContent = saved.meal3 || "Seleccionar comida";
+
+  // restaurar color
+  mealBox1.style.color = saved.meal1 ? "#000" : "#777";
+  mealBox2.style.color = saved.meal2 ? "#000" : "#777";
+  mealBox3.style.color = saved.meal3 ? "#000" : "#777";
 }
 
 
