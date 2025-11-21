@@ -3124,14 +3124,19 @@ function refreshCalendarDayStyles() {
 
 
 function showRecipeDetail(recipe) {
+  // SIEMPRE renderizamos dentro del content real del view
+  const content = document.querySelector("[data-content]");
+  if (!content) return alert("ERROR: No se encuentra el contenedor de contenido.");
+
+  // Guardamos el render anterior para volver exactamente ahí
+  const previousHTML = content.innerHTML;
+
   hideNavigationBars();
 
-  const content =
-    document.querySelector("[data-content]") || document.querySelector("#app");
-
+  // Limpia SOLO el contenido, NO destruye la pantalla
   content.innerHTML = "";
 
-  // ------- Botón VOLVER -------
+  // ------- BOTON VOLVER -------
   const back = document.createElement("button");
   back.textContent = "← Volver";
   Object.assign(back.style, {
@@ -3141,21 +3146,25 @@ function showRecipeDetail(recipe) {
     fontWeight: "600",
     fontSize: "1rem",
     cursor: "pointer",
-    marginBottom: "0.7rem"
+    marginBottom: "0.8rem"
   });
 
   back.addEventListener("click", () => {
-    if (window.lastRecipeListRender) {
-      content.innerHTML = window.lastRecipeListRender();
-      const searchInput = content.querySelector("#searchInput");
-      if (searchInput) searchInput.dispatchEvent(new Event("input"));
-    }
+    content.innerHTML = previousHTML;
     showNavigationBars();
+
+    // Reactivar eventos del listado
+    const searchInput = content.querySelector("#searchInput");
+    if (searchInput) searchInput.dispatchEvent(new Event("input"));
+
+    if (window.lastRecipeListRender) {
+      window.lastRecipeListRender(); 
+    }
   });
 
   content.appendChild(back);
 
-  // ------- Imagen -------
+  // ------- IMAGEN -------
   const img = document.createElement("img");
   img.src = recipe.img;
   Object.assign(img.style, {
@@ -3164,38 +3173,37 @@ function showRecipeDetail(recipe) {
     objectFit: "cover",
     borderRadius: "18px",
     marginBottom: "1rem",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
   });
   content.appendChild(img);
 
-  // ------- Título -------
+  // ------- TITULO -------
   const title = document.createElement("h2");
   title.textContent = recipe.name;
   Object.assign(title.style, {
     fontSize: "1.8rem",
     fontWeight: "700",
-    marginBottom: "0.3rem"
+    marginBottom: "0.3rem",
   });
   content.appendChild(title);
 
-  // ------- Info -------
+  // ------- INFO -------
   const info = document.createElement("p");
   info.textContent = `${recipe.difficulty} • ${recipe.time}`;
   Object.assign(info.style, {
     color: "#777",
-    marginBottom: "1.4rem"
+    marginBottom: "1.4rem",
   });
   content.appendChild(info);
 
-  // ------- Ingredientes -------
+  // ------- INGREDIENTES -------
   if (recipe.ingredients?.length) {
-    const h3 = document.createElement("h3");
-    h3.textContent = "Ingredientes";
-    h3.style = "font-weight:700;margin-bottom:0.5rem;font-size:1.2rem;";
-    content.appendChild(h3);
+    const ing = document.createElement("h3");
+    ing.textContent = "Ingredientes";
+    ing.style = "font-weight:700;font-size:1.2rem;margin-bottom:0.5rem;";
+    content.appendChild(ing);
 
     const ul = document.createElement("ul");
-    ul.style.marginBottom = "1.5rem";
+    ul.style.marginBottom = "1rem";
 
     recipe.ingredients.forEach(i => {
       const li = document.createElement("li");
@@ -3207,26 +3215,25 @@ function showRecipeDetail(recipe) {
     content.appendChild(ul);
   }
 
-  // ------- Pasos -------
+  // ------- PASOS -------
   if (recipe.steps?.length) {
-    const h3 = document.createElement("h3");
-    h3.textContent = "Preparación";
-    h3.style = "font-weight:700;margin-top:1rem;margin-bottom:0.5rem;font-size:1.2rem;";
-    content.appendChild(h3);
+    const prep = document.createElement("h3");
+    prep.textContent = "Preparación";
+    prep.style = "font-weight:700;font-size:1.2rem;margin-top:1rem;margin-bottom:0.5rem;";
+    content.appendChild(prep);
 
-    recipe.steps.forEach((step, index) => {
+    recipe.steps.forEach((s, i) => {
       const div = document.createElement("div");
-      div.innerHTML = `<strong>Paso ${index + 1}:</strong> ${step}`;
+      div.innerHTML = `<strong>Paso ${i + 1}</strong>: ${s}`;
       div.style.cssText = `
-        padding:0.6rem 0;
-        border-bottom:1px solid #eee;
-        line-height:1.5;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #eee;
+        line-height: 1.5;
       `;
       content.appendChild(div);
     });
   }
 }
-
 
 
 
