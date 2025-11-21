@@ -3125,7 +3125,8 @@ function refreshCalendarDayStyles() {
 //    FUNCIÓN GLOBAL showRecipeDetail()
 // --------------------------------------------
 function showRecipeDetail(recipe) {
-    const content = document.querySelector("[data-content]");
+window.currentRecipeContent = document.querySelector("[data-content]");
+const content = window.currentRecipeContent;
     if (!content) return alert("ERROR: No se encontró el contenedor.");
 
     content.innerHTML = "";
