@@ -769,6 +769,9 @@ function getWeeksOfMonth(year, month) {
 const today = new Date();
 let weeks = getWeeksOfMonth(currentYear, currentMonth);
 
+// Encontrar la semana actual dentro de semanas extendidas
+currentWeekIndex = weeks.findIndex(w => today >= w.start && today <= w.end);
+
  
     // Crear carrusel nuevo para ORGANIZAR (NO usar weekCarousel)
   const organizeCarousel = document.createElement("div");
