@@ -837,6 +837,15 @@ weeks.forEach((w, i) => {
  
 
   screen.appendChild(organizeCarousel);
+  // ===========================
+// Cargar comidas de la semana actual al entrar
+// ===========================
+const week = weeks[currentWeekIndex];
+const weekKey = week.start.toISOString().slice(0, 10);
+screen.dataset.weekKey = weekKey;
+
+loadWeekMeals(weekKey);
+
 
   // AUTO-SCROLL hacia la semana actual
 setTimeout(() => {
@@ -872,7 +881,7 @@ function loadWeekMeals(weekKey) {
 
   const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
 
-  // 1
+  // meal 1
   if (saved.meal1) {
     mealBox1._label.textContent = saved.meal1;
     mealBox1._image.src = saved.meal1Img;
@@ -882,7 +891,7 @@ function loadWeekMeals(weekKey) {
     mealBox1._image.style.display = "none";
   }
 
-  // 2
+  // meal 2
   if (saved.meal2) {
     mealBox2._label.textContent = saved.meal2;
     mealBox2._image.src = saved.meal2Img;
@@ -892,7 +901,7 @@ function loadWeekMeals(weekKey) {
     mealBox2._image.style.display = "none";
   }
 
-  // 3
+  // meal 3
   if (saved.meal3) {
     mealBox3._label.textContent = saved.meal3;
     mealBox3._image.src = saved.meal3Img;
@@ -902,6 +911,7 @@ function loadWeekMeals(weekKey) {
     mealBox3._image.style.display = "none";
   }
 }
+
 
 
 
