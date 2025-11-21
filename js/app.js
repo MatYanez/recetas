@@ -3353,6 +3353,8 @@ const content = window.currentRecipeContent;
 
 
   function showSteps(recipe) {
+    const content = window.currentRecipeContent;
+if (!content) return alert("Error: no existe content para mostrar pasos.");
     content.innerHTML = "";
     const back = document.createElement("button");
     back.textContent = "← Atrás";
