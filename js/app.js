@@ -3145,9 +3145,17 @@ const content = window.currentRecipeContent;
 
     // 🔥 VOLVER AL LISTADO CORRECTO (almuerzos o búsqueda)
     backBtn.addEventListener("click", () => {
-        if (window.lastRecipeListRender) {
-            window.lastRecipeListRender();
-        }
+ // Si vienes del listado de recetas
+    if (window.lastRecipeListRender) {
+        window.lastRecipeListRender();
+        return;
+    }
+
+    // Si vienes del calendario
+    if (window.returnToCalendarView) {
+        window.returnToCalendarView();
+        return;
+    }
     });
 
     content.appendChild(backBtn);
