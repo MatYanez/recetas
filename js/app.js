@@ -738,6 +738,9 @@ content.querySelectorAll(".calendar-day").forEach(day => {
 window.returnToCalendarView = () => updateView("calendario");
 showRecipeDetail(found);
 window.cameFromCalendar = true;
+// Ocultar el botón Organizar
+const organizeBtn = document.querySelector("#organizeBtn");
+if (organizeBtn) organizeBtn.style.display = "none";
         });
     });
   });
@@ -3160,6 +3163,10 @@ function showRecipeDetail(recipe) {
     });
 
     backBtn.addEventListener("click", () => {
+
+  // MOSTRAR de nuevo el botón
+    const organizeBtn = document.querySelector("#organizeBtn");
+    if (organizeBtn) organizeBtn.style.display = "";
 
         // 🟦 Restaurar topbar
         const topBar = document.querySelector('[data-topbar]');
