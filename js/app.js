@@ -600,20 +600,6 @@ content.innerHTML = `
                   ">
                   <div>${d.getDate()}</div>
 
-                  ${mealImg ? `
-                    <img src="${mealImg}" style="
-                      width:35px;height:35px;border-radius:8px;object-fit:cover;
-                    ">
-                  ` : ``}
-
-                  <div style="
-                    font-size:0.7rem;
-                    max-width:90%;
-                    overflow:hidden;
-                    text-overflow:ellipsis;
-                    white-space:nowrap;
-                  ">
-                    ${mealText}
                   </div>
                 </div>
               `;
