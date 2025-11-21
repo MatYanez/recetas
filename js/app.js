@@ -3128,71 +3128,100 @@ function refreshCalendarDayStyles() {
 //    FUNCIÓN GLOBAL showRecipeDetail()
 // --------------------------------------------
 function showRecipeDetail(recipe) {
-window.currentRecipeContent = document.querySelector("[data-content]");
-const content = window.currentRecipeContent;
-if (!content) return;
-content.innerHTML = "";
-if (window.cameFromCalendar) {
-const organizeBtn = document.querySelector("#organizeBtn");
-    if (organizeBtn) organizeBtn.style.display = "none";
-}
+    // Obtener correctamente el contenedor
+    const content = document.querySelector("[data-content]");
+    if (!content) return alert("ERROR: No se encontró el contenedor de contenido.");
 
+    // Guardar referencia global para showSteps()
+    window.currentRecipeContent = content;
+
+    // 🟦 OCULTAR TOPBAR CUANDO VIENE DEL CALENDARIO
+    if (window.cameFromCalendar) {
+        const topBar = document.querySelector('[data-topbar]');
+        if (topBar) topBar.style.display = "none";
+    }
+
+    // Limpiar contenido (NO destruye topbar, ni bottom)
+    content.innerHTML = "";
+
+    // -------------------
+    //  BOTÓN VOLVER
+    // -------------------
     const backBtn = document.createElement("button");
     backBtn.textContent = "← Volver";
     Object.assign(backBtn.style, {
-      background: "none",
-      border: "none",
-      color: "#007AFF",
-      fontWeight: "600",
-      fontSize: "1rem",
-      cursor: "pointer",
-      marginBottom: "0.5rem"
+        background: "none",
+        border: "none",
+        color: "#007AFF",
+        fontWeight: "600",
+        fontSize: "1rem",
+        cursor: "pointer",
+        marginBottom: "0.5rem"
     });
 
-    // 🔥 VOLVER AL LISTADO CORRECTO (almuerzos o búsqueda)
     backBtn.addEventListener("click", () => {
 
-  // Reseteamos el flag
-    window.cameFromCalendar = false;
+        // 🟦 Restaurar topbar
+        const topBar = document.querySelector('[data-topbar]');
+        if (topBar) topBar.style.display = "";
 
-    // Restaurar botón organizar si existe
-const organizeBtn = document.querySelector("#organizeBtn");
-    if (organizeBtn) organizeBtn.style.display = "";
+        // 🟦 RESTAURAR ESTADO
+        window.cameFromCalendar = false;
 
+        // Volver al listado de recetas si existe
+        if (window.lastRecipeListRender) {
+            window.lastRecipeListRender();
+            return;
+        }
 
- // Si vienes del listado de recetas
-    if (window.lastRecipeListRender) {
-        window.lastRecipeListRender();
-        return;
-    }
-
-    // Si vienes del calendario
-    if (window.returnToCalendarView) {
-        window.returnToCalendarView();
-        return;
-    }
+        // Volver al calendario si existe
+        if (window.returnToCalendarView) {
+            window.returnToCalendarView();
+            return;
+        }
     });
 
     content.appendChild(backBtn);
 
+    // -------------------
+    //  IMAGEN
+    // -------------------
     const img = document.createElement("img");
     img.src = recipe.img;
-    Object.assign(img.style, { width: "100%", borderRadius: "18px", marginBottom: "1rem" });
+    Object.assign(img.style, {
+        width: "100%",
+        borderRadius: "18px",
+        marginBottom: "1rem"
+    });
     content.appendChild(img);
 
+    // -------------------
+    //  TITULO
+    // -------------------
     const title = document.createElement("h2");
     title.textContent = recipe.name;
-    Object.assign(title.style, { fontSize: "1.8rem", fontWeight: "700", lineHeight: "1.4" });
+    Object.assign(title.style, {
+        fontSize: "1.8rem",
+        fontWeight: "700",
+        lineHeight: "1.4"
+    });
     content.appendChild(title);
 
+    // -------------------
+    //  INFO
+    // -------------------
     const info = document.createElement("p");
     info.textContent = `${recipe.difficulty} - ${recipe.time}`;
-    Object.assign(info.style, { color: "#555", marginBottom: "1.5rem", marginTop: "0.5rem" });
+    Object.assign(info.style, {
+        color: "#555",
+        marginBottom: "1.5rem",
+        marginTop: "0.5rem"
+    });
     content.appendChild(info);
 
-    // ======================
-    //   createExpandable()
-    // ======================
+    // ================================================
+    //   TARJETAS EXPANDIBLES — SIN CAMBIAR NADA TUYO
+    // ================================================
     function createExpandable(title, innerHTML) {
         const container = document.createElement("div");
         container.className = "expandable-card";
@@ -3215,7 +3244,6 @@ const organizeBtn = document.querySelector("#organizeBtn");
             fontSize: "1.1rem",
             cursor: "pointer",
             userSelect: "none",
-            WebkitTapHighlightColor: "transparent"
         });
 
         const label = document.createElement("span");
@@ -3227,8 +3255,7 @@ const organizeBtn = document.querySelector("#organizeBtn");
         Object.assign(arrow.style, {
             fontSize: "1rem",
             color: "#555",
-            transition: "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
-            transformOrigin: "center center"
+            transition: "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)"
         });
         header.appendChild(arrow);
 
@@ -3264,7 +3291,7 @@ const organizeBtn = document.querySelector("#organizeBtn");
                     {
                         maxHeight: [`0px`, `${fullHeight}px`],
                         opacity: [0, 1],
-                        transform: ["scaleY(0.6)", "scaleY(1)"],
+                        transform: ["scaleY(0.6)", "scaleY(1)"]
                     },
                     { duration: 0.28, easing: "cubic-bezier(0.2, 0.8, 0.3, 1)" }
                 ).finished.then(() => {
@@ -3275,8 +3302,10 @@ const organizeBtn = document.querySelector("#organizeBtn");
 
                 arrow.style.transform = "rotate(180deg)";
                 body.style.paddingBottom = "1rem";
+
             } else {
                 const currentHeight = innerWrapper.scrollHeight;
+
                 innerWrapper.style.maxHeight = `${currentHeight}px`;
                 innerWrapper.style.opacity = "1";
                 innerWrapper.style.transform = "scaleY(1)";
@@ -3286,7 +3315,7 @@ const organizeBtn = document.querySelector("#organizeBtn");
                     {
                         maxHeight: [`${currentHeight}px`, `0px`],
                         opacity: [1, 0],
-                        transform: ["scaleY(1)", "scaleY(0.6)"],
+                        transform: ["scaleY(1)", "scaleY(0.6)"]
                     },
                     { duration: 0.22, easing: "cubic-bezier(0.4, 0, 0.6, 1)" }
                 ).finished.then(() => {
@@ -3305,74 +3334,70 @@ const organizeBtn = document.querySelector("#organizeBtn");
         return container;
     }
 
-    // --- Ingredientes ---
+    // ------------------------
+    //   INGREDIENTES
+    // ------------------------
     const ingredientsCardHTML = `
-      <div style="
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.25rem;
-      ">
-        ${recipe.ingredients
-          .map(el => `
+        <div style="
+            display:grid;
+            grid-template-columns:repeat(2,1fr);
+            gap:0.25rem;
+        ">
+        ${recipe.ingredients.map(el => `
             <div style="
-              background: #fafafa;
-              border-radius: 14px;
-              padding: 0.25rem;
-              box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-              display: flex;
-              align-items: center;
-              gap: 0.75rem;
+                background:#fafafa;
+                border-radius:14px;
+                padding:0.25rem;
+                box-shadow:0 1px 4px rgba(0,0,0,0.05);
+                display:flex;
+                gap:0.75rem;
             ">
-              <img src="${el.img}" style="
-                width: 30px;
-                height: 30px;
-                border-radius: 10px;
-                object-fit: contain;
-                background: white;
-                padding: 6px;
-              ">
-              <div style="text-align:left;">
-                <span style="font-weight:600;font-size:1rem;">${el.name}</span>
-                <span style="font-size:0.85rem;color:#555;">${el.qty} ${el.unit}</span>
-              </div>
+                <img src="${el.img}" style="
+                    width:30px;height:30px;border-radius:10px;padding:6px;
+                    background:white;object-fit:contain;
+                ">
+                <div><strong>${el.name}</strong><br><span>${el.qty} ${el.unit}</span></div>
             </div>
-          `).join("")}
-      </div>
+        `).join("")}
+        </div>
     `;
     content.appendChild(createExpandable("🧂 Ingredientes", ingredientsCardHTML));
 
-    // --- Nutrición ---
+    // ------------------------
+    //   NUTRICIÓN
+    // ------------------------
     const nutritionCardHTML = Object.entries(recipe.nutrition || {})
-      .map(([k, v]) => `
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          padding:0.4rem 0;
-          font-size:1rem;
-          border-bottom:1px solid #f2f2f2;">
-          <span>${k}</span>
-          <strong>${v}</strong>
-        </div>
-      `).join("");
+        .map(([k,v]) => `
+            <div style="
+                display:flex;justify-content:space-between;
+                padding:0.4rem 0;border-bottom:1px solid #eee;
+            ">
+                <span>${k}</span><strong>${v}</strong>
+            </div>
+        `).join("");
     content.appendChild(createExpandable("⚡ Valores nutricionales", nutritionCardHTML));
 
-    // --- Pasos ---
+    // ------------------------
+    //   BOTÓN PASOS
+    // ------------------------
     const btn = document.createElement("button");
     btn.textContent = "👨‍🍳 Ver preparación paso a paso";
     Object.assign(btn.style, {
-      width: "100%",
-      backgroundColor: "#111",
-      color: "#fff",
-      border: "none",
-      borderRadius: "12px",
-      padding: "1rem",
-      marginTop: "1rem",
-      cursor: "pointer",
-      fontWeight: "600"
+        width: "100%",
+        backgroundColor: "#111",
+        color: "#fff",
+        border: "none",
+        borderRadius: "12px",
+        padding: "1rem",
+        marginTop: "1rem",
+        cursor: "pointer",
+        fontWeight: "600"
     });
+
     btn.addEventListener("click", () => showSteps(recipe));
     content.appendChild(btn);
 }
+
 
 
   function showSteps(recipe) {
