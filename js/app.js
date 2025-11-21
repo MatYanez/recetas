@@ -717,33 +717,46 @@ let currentYear = new Date().getFullYear();
 let currentWeekIndex = 0;
 let selectedWeekKey = "";
   
+
 function getWeeksOfMonth(year, month) {
   const weeks = [];
-  const today = new Date();
-  let foundCurrent = false;
 
-  const date = new Date(year, month, 1);
+  function collectWeeks(y, m) {
+    const arr = [];
+    const date = new Date(y, m, 1);
 
-  // retroceder al lunes anterior
-  while (date.getDay() !== 1) date.setDate(date.getDate() - 1);
+    // mover hasta el lunes previo
+    while (date.getDay() !== 1) date.setDate(date.getDate() - 1);
 
-  while (true) {
-    const start = new Date(date);
-    const end = new Date(date);
-    end.setDate(start.getDate() + 6);
+    while (true) {
+      const start = new Date(date);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
 
-    const weekKey = start.toISOString().slice(0, 10);
-    weeks.push({ start, end, weekKey });
+      arr.push({
+        start,
+        end,
+        weekKey: start.toISOString().slice(0,10)
+      });
 
-    if (!foundCurrent && today >= start && today <= end) {
-      currentWeekIndex = weeks.length - 1;
-      selectedWeekKey = weekKey;
-      foundCurrent = true;
+      date.setDate(date.getDate() + 7);
+      if (date.getMonth() !== m) break;
     }
 
-    date.setDate(date.getDate() + 7);
-    if (date.getMonth() !== month) break;
+    return arr;
   }
+
+  // mes anterior
+  const prevM = month === 0 ? 11 : month - 1;
+  const prevY = month === 0 ? year - 1 : year;
+
+  // mes siguiente
+  const nextM = month === 11 ? 0 : month + 1;
+  const nextY = month === 11 ? year + 1 : year;
+
+  weeks.push(...collectWeeks(prevY, prevM));
+  weeks.push(...collectWeeks(year, month));
+  weeks.push(...collectWeeks(nextY, nextM));
 
   return weeks;
 }
@@ -751,17 +764,12 @@ function getWeeksOfMonth(year, month) {
 
 
 
-  let weeks = getWeeksOfMonth(currentYear, currentMonth);
+
 // Detectar semana actual
 const today = new Date();
+let weeks = getWeeksOfMonth(currentYear, currentMonth);
 
-
-weeks.forEach((w, i) => {
-  if (w.start <= today && today <= w.end) {
-    currentWeekIndex = i;
-  }
-});
-  
+ 
     // Crear carrusel nuevo para ORGANIZAR (NO usar weekCarousel)
   const organizeCarousel = document.createElement("div");
   organizeCarousel.id = "organizeWeekSelector";
@@ -805,6 +813,17 @@ weeks.forEach((w, i) => {
   });
 
   screen.appendChild(organizeCarousel);
+
+  // AUTO-SCROLL hacia la semana actual
+setTimeout(() => {
+  const cards = organizeCarousel.children;
+  if (cards[currentWeekIndex]) {
+    cards[currentWeekIndex].scrollIntoView({
+      behavior: "instant",
+      inline: "center"
+    });
+  }
+}, 150);
 
 
 
@@ -2564,24 +2583,52 @@ setTimeout(() => {
   }
 
   // ---- Generar semanas del mes ----
-  function getWeeksOfMonth(year, month) {
-    const days = [];
-    let d = new Date(year, month, 1);
+function getWeeksOfMonthExtended(year, month) {
+  const weeks = [];
 
-    while (d.getMonth() === month) {
-      const dow = d.getDay();
-      if (dow >= 1 && dow <= 5) days.push(new Date(d));
-      d.setDate(d.getDate() + 1);
+  function collectWeeks(y, m) {
+    const monthWeeks = [];
+    const date = new Date(y, m, 1);
+
+    // retroceder al lunes anterior
+    while (date.getDay() !== 1) date.setDate(date.getDate() - 1);
+
+    while (true) {
+      const start = new Date(date);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+
+      monthWeeks.push({
+        start,
+        end,
+        weekKey: start.toISOString().slice(0, 10)
+      });
+
+      date.setDate(date.getDate() + 7);
+      if (date.getMonth() !== m) break;
     }
 
-    const weeks = [];
-    for (let i = 0; i < days.length; i += 5) {
-      const slice = days.slice(i, i + 5);
-      while (slice.length < 5) slice.push(null);
-      weeks.push(slice);
-    }
-    return weeks;
+    return monthWeeks;
   }
+
+  // Mes anterior
+  const prevMonth = month === 0 ? 11 : month - 1;
+  const prevYear = month === 0 ? year - 1 : year;
+
+  // Mes siguiente
+  const nextMonth = month === 11 ? 0 : month + 1;
+  const nextYear = month === 11 ? year + 1 : year;
+
+  weeks.push(...collectWeeks(prevYear, prevMonth));
+  weeks.push(...collectWeeks(year, month));
+  weeks.push(...collectWeeks(nextYear, nextMonth));
+
+  return weeks;
+}
+
+
+
+
 
   // ---- Swipe vertical para cambiar mes ----
   let startY = 0;
