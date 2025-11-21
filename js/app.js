@@ -1417,56 +1417,6 @@ showRecipeDetail(list[i]);
     });
   }
 
-function showRecipeDetail(recipe) {
-  const content = document.querySelector("[data-content]") || document.querySelector("#app"); 
-
-  content.innerHTML = "";
-
-  const backBtn = document.createElement("button");
-  backBtn.textContent = "← Volver";
-  Object.assign(backBtn.style, {
-    background: "none",
-    border: "none",
-    color: "#007AFF",
-    fontWeight: "600",
-    fontSize: "1rem",
-    cursor: "pointer",
-    marginBottom: "0.5rem"
-  });
-
-  backBtn.addEventListener("click", () => {
-    // Si vienes de almuerzos → recargar lista
-    if (window.lastRecipeListRender) {
-      window.lastRecipeListRender();
-      return;
-    }
-
-    // Si vienes del calendario → simplemente volver
-    history.back();
-  });
-
-  content.appendChild(backBtn);
-
-  const img = document.createElement("img");
-  img.src = recipe.img;
-  Object.assign(img.style, { width: "100%", borderRadius: "18px", marginBottom: "1rem" });
-  content.appendChild(img);
-
-  const title = document.createElement("h2");
-  title.textContent = recipe.name;
-  Object.assign(title.style, { fontSize: "1.8rem", fontWeight: "700", lineHeight: "1.4" });
-  content.appendChild(title);
-
-  const info = document.createElement("p");
-  info.textContent = `${recipe.difficulty} - ${recipe.time}`;
-  Object.assign(info.style, { color: "#555", marginBottom: "1.5rem", marginTop: "0.5rem" });
-  content.appendChild(info);
-
-  // Ingredientes, nutrición y pasos
-  // Puedes copiar el bloque expandible que ya tenías
-  // (si quieres, te lo armo aquí enseguida)
-}
-
 
   // --- Pasos ---
   function showSteps(recipe) {
@@ -3174,6 +3124,55 @@ function refreshCalendarDayStyles() {
 
 
 
+function showRecipeDetail(recipe) {
+  const content = document.querySelector("[data-content]") || document.querySelector("#app");
+  content.innerHTML = "";
+
+  // Botón volver
+  const back = document.createElement("button");
+  back.textContent = "← Volver";
+  Object.assign(back.style, {
+    background: "none",
+    border: "none",
+    color: "#007AFF",
+    fontWeight: "600",
+    fontSize: "1rem",
+    cursor: "pointer",
+    marginBottom: "0.5rem"
+  });
+  back.addEventListener("click", () => history.back());
+  content.appendChild(back);
+
+  // Imagen
+  const img = document.createElement("img");
+  img.src = recipe.img;
+  Object.assign(img.style, {
+    width: "100%",
+    borderRadius: "18px",
+    marginBottom: "1rem"
+  });
+  content.appendChild(img);
+
+  // Título
+  const title = document.createElement("h2");
+  title.textContent = recipe.name;
+  Object.assign(title.style, {
+    fontSize: "1.8rem",
+    fontWeight: "700",
+    lineHeight: "1.4"
+  });
+  content.appendChild(title);
+
+  // Info
+  const info = document.createElement("p");
+  info.textContent = `${recipe.difficulty} - ${recipe.time}`;
+  Object.assign(info.style, {
+    color: "#555",
+    marginBottom: "1.5rem",
+    marginTop: "0.5rem"
+  });
+  content.appendChild(info);
+}
 
 
 
