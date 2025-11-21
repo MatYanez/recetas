@@ -683,13 +683,13 @@ if (todayIndex !== -1) {
 content.querySelectorAll(".calendar-day").forEach(day => {
   day.addEventListener("click", () => {
 
-    // Guardar como día seleccionado
+    // Guardar selección
     selectedDate = new Date(day.dataset.date);
 
-    // 🔄 REPINTAR para aplicar estilos de selección
-    updateView("calendario");
+    // Solo actualizar colores, NO reconstruir pantalla
+    refreshCalendarDayStyles();
 
-    // --- Tu lógica existente ---
+    // >>> TU LÓGICA EXISTENTE PARA MOSTRAR PREVIEW <<<
     const date = new Date(day.dataset.date);
     const weekKey = day.dataset.weekkey;
     const slot = day.dataset.slot;
@@ -738,6 +738,7 @@ content.querySelectorAll(".calendar-day").forEach(day => {
     });
   });
 });
+
 
 /*  BLOQUE 2 TERMINA AQUÍ  */
 
@@ -3357,6 +3358,24 @@ function attachRegistroEvents(content) {
 }
 
 
+function refreshCalendarDayStyles() {
+  document.querySelectorAll(".calendar-day").forEach(div => {
+    const d = new Date(div.dataset.date);
+
+    const isToday = d.toDateString() === new Date().toDateString();
+    const isSelected =
+      selectedDate && d.toDateString() === selectedDate.toDateString();
+
+    let bg = "#f3f4f6";
+    let color = "#333";
+
+    if (isToday) bg = "#ccc";
+    if (isSelected) { bg = "#000"; color = "#fff"; }
+
+    div.style.background = bg;
+    div.style.color = color;
+  });
+}
 
 
 
