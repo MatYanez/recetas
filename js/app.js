@@ -475,9 +475,9 @@ if (sectionId === "habitos") {
 
 
 
-        // =========================
+
         // ====== CALENDARIO =======
-        // =========================
+
         if (sectionId === "calendario") {
           const today = new Date();
            const year = today.getFullYear();
@@ -507,11 +507,9 @@ for (let i = 0; i < days.length; i += 5) {
   weeks.push(slice);
 }
 
-
-          
 content.innerHTML = `
   <div style="width:100%;">
-    
+
     <h2 style="
       font-size:1.4rem;
       font-weight:700;
@@ -522,131 +520,119 @@ content.innerHTML = `
     </h2>
 
     <!-- Carrusel -->
- <div id="weekCarousel" style="
-  display:flex;
-  overflow-x:auto;
-  scroll-snap-type:x mandatory;
-  gap:1rem;
-  padding-bottom:1rem;
-  -webkit-overflow-scrolling:touch;
-">
-  ${weeks
-    .map(
-      (week) => `
-      <div class="week-slide" style="
-        min-width:100%;
-        scroll-snap-align:center;
-        padding:0 0.5rem;
-        display:flex;
-        flex-direction:column;
-        gap:0.5rem;
-      ">
-        
-        <!-- ENCABEZADO Y DÍAS TODO EN EL MISMO BLOQUE -->
-        <div style="
-          display:grid;
-          grid-template-columns:repeat(5, 1fr);
-          text-align:center;
-          font-weight:600;
-          gap:1rem;
-        ">
-          <span>L</span>
-          <span>M</span>
-          <span>X</span>
-          <span>J</span>
-          <span>V</span>
-        </div>
-
-<!-- NÚMEROS + COMIDA -->
-<div style="
-  display:grid;
-  grid-template-columns:repeat(5, 1fr);
-  text-align:center;
-  gap:1rem;
-">
-  ${week
-    .map((d, index) => {
-      
-      if (!d) return `<div></div>`;
-
-      const isToday = d.toDateString() === new Date().toDateString();
-
-      // === Calcular weekKey (lunes de esa semana) ===
-      const weekStart = new Date(d);
-      const dow = weekStart.getDay() || 7;
-      if (dow !== 1) weekStart.setDate(weekStart.getDate() - (dow - 1));
-      const weekKey = weekStart.toISOString().slice(0,10);
-
-      // === Cargar comidas guardadas de esa semana ===
-      const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
-      const dist = saved.distribution || {
-        lunes: "meal1",
-        martes: "meal2",
-        miercoles: "meal1",
-        jueves: "meal2",
-        viernes: "meal3"
-      };
-
-      const dayNames = ["lunes","martes","miercoles","jueves","viernes"];
-      const dayKey = dayNames[index];  // index = 0..4
-
-      const assignedSlot = dist[dayKey]; // ej: "meal2"
-
-      const mealText = saved[assignedSlot] || "";
-      const mealImg  = saved[assignedSlot + "Img"] || "";
-
-      return `
-        <div style="
-          width:100%;
-          min-height:70px;
-          background:${isToday ? "#000" : "#f3f4f6"};
-          color:${isToday ? "#fff" : "#333"};
-          border-radius:12px;
-          font-weight:600;
-          padding:6px;
+    <div id="weekCarousel" style="
+      display:flex;
+      overflow-x:auto;
+      scroll-snap-type:x mandatory;
+      gap:1rem;
+      padding-bottom:1rem;
+      -webkit-overflow-scrolling:touch;
+    ">
+      ${weeks.map(week => `
+        <div class="week-slide" style="
+          min-width:100%;
+          scroll-snap-align:center;
+          padding:0 0.5rem;
           display:flex;
           flex-direction:column;
-          align-items:center;
-          justify-content:flex-start;
-          gap:4px;
+          gap:0.5rem;
         ">
 
-          <div>${d.getDate()}</div>
-
-          ${
-            mealText
-              ? `<img src="${mealImg}" style="
-                    width:35px;
-                    height:35px;
-                    border-radius:8px;
-                    object-fit:cover;
-                  ">`
-              : ``
-          }
-
           <div style="
-            font-size:0.7rem;
+            display:grid;
+            grid-template-columns:repeat(5,1fr);
+            text-align:center;
             font-weight:600;
-            max-width:90%;
-            overflow:hidden;
-            text-overflow:ellipsis;
-            white-space:nowrap;
+            gap:1rem;
           ">
-            ${mealText || ""}
+            <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span>
+          </div>
+
+          <div class="daysRow" style="
+            display:grid;
+            grid-template-columns:repeat(5,1fr);
+            text-align:center;
+            gap:1rem;
+          ">
+            ${week.map((d, index) => {
+
+              if (!d) return `<div></div>`;
+
+              const isToday = d.toDateString() === new Date().toDateString();
+
+              // weekKey para obtener comidas
+              const weekStart = new Date(d);
+              const dow = weekStart.getDay() || 7;
+              if (dow !== 1) weekStart.setDate(weekStart.getDate() - (dow - 1));
+              const weekKey = weekStart.toISOString().slice(0,10);
+
+              const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
+
+              const dist = saved.distribution || {
+                lunes:"meal1", martes:"meal2", miercoles:"meal1",
+                jueves:"meal2", viernes:"meal3"
+              };
+
+              const names = ["lunes","martes","miercoles","jueves","viernes"];
+              const dayKey = names[index];
+
+              const slot = dist[dayKey];
+              const mealText = saved[slot] || "";
+              const mealImg = saved[slot+"Img"] || "";
+
+              return `
+                <div class="calendar-day" data-date="${d.toISOString()}" data-weekkey="${weekKey}" data-slot="${slot}"
+                  style="
+                    width:100%;
+                    min-height:80px;
+                    background:${isToday ? "#000" : "#f3f4f6"};
+                    color:${isToday ? "#fff" : "#333"};
+                    border-radius:12px;
+                    font-weight:600;
+                    padding:6px;
+                    display:flex;
+                    flex-direction:column;
+                    align-items:center;
+                    justify-content:flex-start;
+                    gap:4px;
+                    cursor:pointer;
+                    transition:0.25s;
+                  ">
+                  <div>${d.getDate()}</div>
+
+                  ${mealImg ? `
+                    <img src="${mealImg}" style="
+                      width:35px;height:35px;border-radius:8px;object-fit:cover;
+                    ">
+                  ` : ``}
+
+                  <div style="
+                    font-size:0.7rem;
+                    max-width:90%;
+                    overflow:hidden;
+                    text-overflow:ellipsis;
+                    white-space:nowrap;
+                  ">
+                    ${mealText}
+                  </div>
+                </div>
+              `;
+            }).join("")}
           </div>
 
         </div>
-      `;
-    })
-    .join("")}
-</div>
+      `).join("")}
+    </div>
 
+    <!-- CONTENEDOR NUEVO PARA CARD DE COMIDA -->
+    <div id="dayMealPreview" style="
+      margin-top:1rem;
+      width:100%;
+      display:none;
+      flex-direction:column;
+      gap:1rem;
+    "></div>
 
-      </div>
-    `
-    )
-    .join("")}
-</div>
   </div>
 `;
 
@@ -678,6 +664,77 @@ if (todayIndex !== -1) {
     behavior: "instant"
   });
 }
+
+if (todayIndex !== -1) {
+  const weekNumber = Math.floor(todayIndex / 5);
+  weekCarousel.scrollTo({
+    left: weekNumber * weekCarousel.clientWidth,
+    behavior: "instant"
+  });
+}
+
+// ====================================================
+// ⬇️ AQUI PEGAS EL BLOQUE 2 ENTERO  (EVENTO CLICK EN DÍA)
+// ====================================================
+
+/*  BLOQUE 2 COMIENZA AQUÍ  */
+
+content.querySelectorAll(".calendar-day").forEach(day => {
+  day.addEventListener("click", () => {
+    const date = new Date(day.dataset.date);
+    const weekKey = day.dataset.weekkey;
+    const slot = day.dataset.slot;
+
+    const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
+    const name = saved[slot] || "";
+    const img = saved[slot+"Img"] || "";
+
+    const preview = content.querySelector("#dayMealPreview");
+
+    if (!name) {
+      preview.style.display = "none";
+      preview.innerHTML = "";
+      return;
+    }
+
+    preview.style.display = "flex";
+    preview.innerHTML = `
+      <div class="meal-preview-card" style="
+        background:#fff;
+        border-radius:16px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.08);
+        padding:1rem;
+        display:flex;
+        align-items:center;
+        gap:1rem;
+        cursor:pointer;
+      ">
+        <img src="${img}" style="
+          width:75px;height:75px;border-radius:16px;object-fit:cover;
+        ">
+        <div style="flex:1;">
+          <h3 style="font-weight:700;font-size:1.1rem;margin:0;">${name}</h3>
+          <p style="font-size:0.8rem;color:#666;margin:0;">Toque para ver receta</p>
+        </div>
+      </div>
+    `;
+
+    preview.querySelector(".meal-preview-card").addEventListener("click", () => {
+      fetch("./data/recetas.json")
+        .then(r => r.json())
+        .then(list => {
+          const found = list.find(x => x.name === name);
+          if (found) showRecipeDetail(found);
+        });
+    });
+  });
+});
+
+/*  BLOQUE 2 TERMINA AQUÍ  */
+
+// ====================================================
+// BOTÓN "ORGANIZAR" SOLO EN LA PANTALLA DEL CALENDARIO
+// ====================================================
 
 // ====================================================
 // BOTÓN "ORGANIZAR" SOLO EN LA PANTALLA DEL CALENDARIO
@@ -1204,9 +1261,10 @@ organizeBtn.addEventListener("click", openOrganizeScreen);
 
 
         }
-        // =========================
+
+
         // ====== ALMUERZOS ========
-        // =========================
+
 else if (sectionId === "almuerzos") {
 
   let recipes = [];
