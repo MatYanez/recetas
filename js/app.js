@@ -665,6 +665,7 @@ document.body.appendChild(organizeBtn);
 // PANTALLA ORGANIZAR
 // ====================================================
 function openOrganizeScreen() {
+  
   const screen = document.createElement("div");
   screen.id = "organizeScreen";
 
@@ -717,23 +718,35 @@ function openOrganizeScreen() {
   
 function getWeeksOfMonth(year, month) {
   const weeks = [];
+  const today = new Date();
+  let foundCurrent = false;
 
   const date = new Date(year, month, 1);
+
+  // retroceder al lunes anterior
   while (date.getDay() !== 1) date.setDate(date.getDate() - 1);
 
   while (true) {
     const start = new Date(date);
-    date.setDate(date.getDate() + 4);
     const end = new Date(date);
+    end.setDate(start.getDate() + 6);
 
-    weeks.push({ start, end });
+    const weekKey = start.toISOString().slice(0, 10);
+    weeks.push({ start, end, weekKey });
 
-    date.setDate(date.getDate() + 3);
+    if (!foundCurrent && today >= start && today <= end) {
+      currentWeekIndex = weeks.length - 1;
+      selectedWeekKey = weekKey;
+      foundCurrent = true;
+    }
+
+    date.setDate(date.getDate() + 7);
     if (date.getMonth() !== month) break;
   }
 
   return weeks;
 }
+
 
 
 
@@ -747,7 +760,7 @@ weeks.forEach((w, i) => {
     currentWeekIndex = i;
   }
 });
-  const weekCarousel = document.createElement("div");
+  
   weekCarousel.id = "weekSelector";
   Object.assign(weekCarousel.style, {
     display: "flex",
