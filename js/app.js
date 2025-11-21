@@ -558,9 +558,22 @@ content.innerHTML = `
 
               if (!d) return `<div></div>`;
 
+              // detectar si es hoy
               const isToday = d.toDateString() === new Date().toDateString();
 
-              // weekKey para obtener comidas
+              // detectar si es seleccionado
+              const isSelected =
+                selectedDate &&
+                selectedDate.toDateString() === d.toDateString();
+
+              // PRIORIDAD DE COLORES
+              let bg = "#f3f4f6";   // normal
+              if (isToday) bg = "#ccc";  // hoy
+              if (isSelected) bg = "#000"; // seleccionado gana siempre
+
+              let textColor = isSelected ? "#fff" : "#333";
+
+              // weekKey para comidas
               const weekStart = new Date(d);
               const dow = weekStart.getDay() || 7;
               if (dow !== 1) weekStart.setDate(weekStart.getDate() - (dow - 1));
@@ -577,31 +590,31 @@ content.innerHTML = `
               const dayKey = names[index];
 
               const slot = dist[dayKey];
-              const mealText = saved[slot] || "";
-              const mealImg = saved[slot+"Img"] || "";
 
-           return `
-  <div class="calendar-day" data-date="${d.toISOString()}" data-weekkey="${weekKey}" data-slot="${slot}"
-    style="
-      width:100%;
-          min-height: 50px;
-      background:${isToday ? "#000" : "#f3f4f6"};
-      color:${isToday ? "#fff" : "#333"};
-      border-radius:12px;
-      font-weight:600;
-      padding:6px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      cursor:pointer;
-      transition:0.25s;
-    ">
-    <div>${d.getDate()}</div>
-  </div>
-`;
-
+              return `
+                <div class="calendar-day"
+                  data-date="${d.toISOString()}"
+                  data-weekkey="${weekKey}"
+                  data-slot="${slot}"
+                  style="
+                    width:100%;
+                    min-height:50px;
+                    background:${bg};
+                    color:${textColor};
+                    border-radius:12px;
+                    font-weight:600;
+                    padding:6px;
+                    display:flex;
+                    flex-direction:column;
+                    align-items:center;
+                    justify-content:center;
+                    gap:4px;
+                    cursor:pointer;
+                    transition:0.25s;
+                  ">
+                  <div>${d.getDate()}</div>
+                </div>
+              `;
             }).join("")}
           </div>
 
@@ -620,6 +633,7 @@ content.innerHTML = `
 
   </div>
 `;
+
 
 // Animación iOS del carrusel
 const weekCarousel = content.querySelector("#weekCarousel");
