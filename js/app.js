@@ -734,7 +734,9 @@ content.querySelectorAll(".calendar-day").forEach(day => {
         .then(r => r.json())
         .then(list => {
           const found = list.find(x => x.name === name);
-          if (found) showRecipeDetail(found);
+          if (found) window.lastRecipeListRender = null;
+window.returnToCalendarView = () => updateView("calendario");
+showRecipeDetail(found);
         });
     });
   });
@@ -3127,9 +3129,8 @@ function refreshCalendarDayStyles() {
 function showRecipeDetail(recipe) {
 window.currentRecipeContent = document.querySelector("[data-content]");
 const content = window.currentRecipeContent;
-    if (!content) return alert("ERROR: No se encontró el contenedor.");
-
-    content.innerHTML = "";
+if (!content) return;
+content.innerHTML = "";
 
     const backBtn = document.createElement("button");
     backBtn.textContent = "← Volver";
