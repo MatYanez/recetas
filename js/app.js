@@ -584,7 +584,6 @@ content.innerHTML = `
   <div class="calendar-day" data-date="${d.toISOString()}" data-weekkey="${weekKey}" data-slot="${slot}"
     style="
       width:100%;
-      min-height:80px;
       background:${isToday ? "#000" : "#f3f4f6"};
       color:${isToday ? "#fff" : "#333"};
       border-radius:12px;
