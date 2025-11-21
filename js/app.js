@@ -762,8 +762,11 @@ weeks.forEach((w, i) => {
   }
 });
   
-  weekCarousel.id = "weekSelector";
-  Object.assign(weekCarousel.style, {
+    // Crear carrusel nuevo para ORGANIZAR (NO usar weekCarousel)
+  const organizeCarousel = document.createElement("div");
+  organizeCarousel.id = "organizeWeekSelector";
+
+  Object.assign(organizeCarousel.style, {
     display: "flex",
     overflowX: "auto",
     scrollSnapType: "x mandatory",
@@ -785,22 +788,24 @@ weeks.forEach((w, i) => {
       borderRadius: "16px",
       scrollSnapAlign: "center",
       boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-    })
+      transition: "0.2s",
+    });
+
     if (i === currentWeekIndex) {
-  card.style.background = "#000";
-  card.style.color = "#fff";
-}
-    ;
+      card.style.background = "#000";
+      card.style.color = "#fff";
+    }
 
     card.innerHTML = `
       <h3 style="font-size:1.7rem;font-weight:600;">Semana ${i + 1}</h3>
       <p style="font-size:1rem; color:#555;">${start} – ${end}</p>
     `;
 
-    weekCarousel.appendChild(card);
+    organizeCarousel.appendChild(card);
   });
 
-  screen.appendChild(weekCarousel);
+  screen.appendChild(organizeCarousel);
+
 
 
   // =====================================================
