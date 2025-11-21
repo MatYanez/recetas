@@ -557,35 +557,90 @@ content.innerHTML = `
           <span>V</span>
         </div>
 
-        <!-- NÚMEROS ALINEADOS PERFECTAMENTE A LO MISMO -->
+<!-- NÚMEROS + COMIDA -->
+<div style="
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  text-align:center;
+  gap:1rem;
+">
+  ${week
+    .map((d, index) => {
+      
+      if (!d) return `<div></div>`;
+
+      const isToday = d.toDateString() === new Date().toDateString();
+
+      // === Calcular weekKey (lunes de esa semana) ===
+      const weekStart = new Date(d);
+      const dow = weekStart.getDay() || 7;
+      if (dow !== 1) weekStart.setDate(weekStart.getDate() - (dow - 1));
+      const weekKey = weekStart.toISOString().slice(0,10);
+
+      // === Cargar comidas guardadas de esa semana ===
+      const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
+      const dist = saved.distribution || {
+        lunes: "meal1",
+        martes: "meal2",
+        miercoles: "meal1",
+        jueves: "meal2",
+        viernes: "meal3"
+      };
+
+      const dayNames = ["lunes","martes","miercoles","jueves","viernes"];
+      const dayKey = dayNames[index];  // index = 0..4
+
+      const assignedSlot = dist[dayKey]; // ej: "meal2"
+
+      const mealText = saved[assignedSlot] || "";
+      const mealImg  = saved[assignedSlot + "Img"] || "";
+
+      return `
         <div style="
-          display:grid;
-          grid-template-columns:repeat(5, 1fr);
-          text-align:center;
-                    gap:1rem;
+          width:100%;
+          min-height:70px;
+          background:${isToday ? "#000" : "#f3f4f6"};
+          color:${isToday ? "#fff" : "#333"};
+          border-radius:12px;
+          font-weight:600;
+          padding:6px;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          justify-content:flex-start;
+          gap:4px;
         ">
-          ${week
-            .map((d) => {
-              const isToday =
-                d && d.toDateString() === new Date().toDateString();
-              return `
-                <div style="
-                  width:100%;
-                  height:50px;
-                  display:flex;
-                  align-items:center;
-                  justify-content:center;
-                  background:${isToday ? "#000" : "#f3f4f6"};
-                  color:${isToday ? "#fff" : "#333"};
-                  border-radius:12px;
-                  font-weight:600;
-                ">
-                  ${d ? d.getDate() : ""}
-                </div>
-              `;
-            })
-            .join("")}
+
+          <div>${d.getDate()}</div>
+
+          ${
+            mealText
+              ? `<img src="${mealImg}" style="
+                    width:35px;
+                    height:35px;
+                    border-radius:8px;
+                    object-fit:cover;
+                  ">`
+              : ``
+          }
+
+          <div style="
+            font-size:0.7rem;
+            font-weight:600;
+            max-width:90%;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+          ">
+            ${mealText || ""}
+          </div>
+
         </div>
+      `;
+    })
+    .join("")}
+</div>
+
 
       </div>
     `
@@ -870,38 +925,53 @@ let selectedMeals = {
 function loadWeekMeals(weekKey) {
   screen.dataset.weekKey = weekKey;
 
-  const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
+  let saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
 
-  // meal 1
+  // Si NO existe distribución, generarla automáticamente
+  if (!saved.distribution) {
+    saved.distribution = {
+      lunes: "meal1",
+      martes: "meal2",
+      miercoles: "meal1",
+      jueves: "meal2",
+      viernes: "meal3"
+    };
+  }
+
+  // ---------- MEAL 1 ----------
   if (saved.meal1) {
     mealBox1._label.textContent = saved.meal1;
-    mealBox1._image.src = saved.meal1Img;
-    mealBox1._image.style.display = "block";
+    mealBox1._image.src = saved.meal1Img || "";
+    mealBox1._image.style.display = saved.meal1Img ? "block" : "none";
   } else {
     mealBox1._label.textContent = "Seleccionar comida";
     mealBox1._image.style.display = "none";
   }
 
-  // meal 2
+  // ---------- MEAL 2 ----------
   if (saved.meal2) {
     mealBox2._label.textContent = saved.meal2;
-    mealBox2._image.src = saved.meal2Img;
-    mealBox2._image.style.display = "block";
+    mealBox2._image.src = saved.meal2Img || "";
+    mealBox2._image.style.display = saved.meal2Img ? "block" : "none";
   } else {
     mealBox2._label.textContent = "Seleccionar comida";
     mealBox2._image.style.display = "none";
   }
 
-  // meal 3
+  // ---------- MEAL 3 ----------
   if (saved.meal3) {
     mealBox3._label.textContent = saved.meal3;
-    mealBox3._image.src = saved.meal3Img;
-    mealBox3._image.style.display = "block";
+    mealBox3._image.src = saved.meal3Img || "";
+    mealBox3._image.style.display = saved.meal3Img ? "block" : "none";
   } else {
     mealBox3._label.textContent = "Seleccionar comida";
     mealBox3._image.style.display = "none";
   }
+
+  // Guardar de nuevo (por si agregamos distribución)
+  localStorage.setItem("meals-" + weekKey, JSON.stringify(saved));
 }
+
 
 
 
@@ -950,10 +1020,15 @@ function createMealBlock() {
   return box;
 }
 
-
+// Crear los 3 bloques con etiquetas para distribuir
 const mealBox1 = createMealBlock();
+mealBox1.dataset.slot = "meal1";
+
 const mealBox2 = createMealBlock();
+mealBox2.dataset.slot = "meal2";
+
 const mealBox3 = createMealBlock();
+mealBox3.dataset.slot = "meal3";
 
 mealsContainer.appendChild(mealBox1);
 mealsContainer.appendChild(mealBox2);
@@ -961,16 +1036,11 @@ mealsContainer.appendChild(mealBox3);
 
 screen.appendChild(mealsContainer);
 
-
-
-
-
 // ===========================
 // Cargar comidas de la semana actual
 // ===========================
 const week = weeks[currentWeekIndex];
 const weekKey = week.start.toISOString().slice(0, 10);
-screen.dataset.weekKey = weekKey;
 loadWeekMeals(weekKey);
 
 
