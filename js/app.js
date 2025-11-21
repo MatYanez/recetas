@@ -737,6 +737,7 @@ content.querySelectorAll(".calendar-day").forEach(day => {
           if (found) window.lastRecipeListRender = null;
 window.returnToCalendarView = () => updateView("calendario");
 showRecipeDetail(found);
+window.cameFromCalendar = true;
         });
     });
   });
@@ -3131,6 +3132,10 @@ window.currentRecipeContent = document.querySelector("[data-content]");
 const content = window.currentRecipeContent;
 if (!content) return;
 content.innerHTML = "";
+if (window.cameFromCalendar) {
+    const organizeBtn = document.querySelector("#organizeMealsBtn");
+    if (organizeBtn) organizeBtn.style.display = "none";
+}
 
     const backBtn = document.createElement("button");
     backBtn.textContent = "← Volver";
@@ -3146,6 +3151,15 @@ content.innerHTML = "";
 
     // 🔥 VOLVER AL LISTADO CORRECTO (almuerzos o búsqueda)
     backBtn.addEventListener("click", () => {
+
+  // Reseteamos el flag
+    window.cameFromCalendar = false;
+
+    // Restaurar botón organizar si existe
+    const organizeBtn = document.querySelector("#organizeMealsBtn");
+    if (organizeBtn) organizeBtn.style.display = "";
+
+
  // Si vienes del listado de recetas
     if (window.lastRecipeListRender) {
         window.lastRecipeListRender();
