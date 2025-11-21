@@ -872,39 +872,83 @@ function loadWeekMeals(weekKey) {
 
   const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
 
-  mealBox1.textContent = saved.meal1 || "Seleccionar comida";
-  mealBox2.textContent = saved.meal2 || "Seleccionar comida";
-  mealBox3.textContent = saved.meal3 || "Seleccionar comida";
+  // 1
+  if (saved.meal1) {
+    mealBox1._label.textContent = saved.meal1;
+    mealBox1._image.src = saved.meal1Img;
+    mealBox1._image.style.display = "block";
+  } else {
+    mealBox1._label.textContent = "Seleccionar comida";
+    mealBox1._image.style.display = "none";
+  }
 
-  // restaurar color
-  mealBox1.style.color = saved.meal1 ? "#000" : "#777";
-  mealBox2.style.color = saved.meal2 ? "#000" : "#777";
-  mealBox3.style.color = saved.meal3 ? "#000" : "#777";
+  // 2
+  if (saved.meal2) {
+    mealBox2._label.textContent = saved.meal2;
+    mealBox2._image.src = saved.meal2Img;
+    mealBox2._image.style.display = "block";
+  } else {
+    mealBox2._label.textContent = "Seleccionar comida";
+    mealBox2._image.style.display = "none";
+  }
+
+  // 3
+  if (saved.meal3) {
+    mealBox3._label.textContent = saved.meal3;
+    mealBox3._image.src = saved.meal3Img;
+    mealBox3._image.style.display = "block";
+  } else {
+    mealBox3._label.textContent = "Seleccionar comida";
+    mealBox3._image.style.display = "none";
+  }
 }
 
 
-  function createMealBlock() {
-    const box = document.createElement("div");
-    Object.assign(box.style, {
-      border: "2px dashed #ccc",
-      borderRadius: "14px",
-      padding: "1rem",
-      height: "70px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      fontSize: "1rem",
-      fontWeight: "600",
-      color: "#777",
-    });
 
-    box.textContent = "Seleccionar comida";
+function createMealBlock() {
+  const box = document.createElement("div");
+  Object.assign(box.style, {
+    border: "2px dashed #ccc",
+    borderRadius: "14px",
+    padding: "1rem",
+    height: "70px",
+    display: "flex",
+    alignItems: "center",
+    gap: "1rem",
+    cursor: "pointer",
+    fontSize: "1rem",
+    fontWeight: "600",
+    color: "#777",
+    overflow: "hidden",
+  });
 
-    box.addEventListener("click", () => openMealSelector(box));
+  // Imagen (oculta por defecto)
+  const img = document.createElement("img");
+  Object.assign(img.style, {
+    width: "55px",
+    height: "55px",
+    borderRadius: "12px",
+    objectFit: "cover",
+    display: "none",
+  });
 
-    return box;
-  }
+  // Texto
+  const label = document.createElement("span");
+  label.textContent = "Seleccionar comida";
+
+  // Insertar en el bloque
+  box.appendChild(img);
+  box.appendChild(label);
+
+  // Guardar referencia interna
+  box._image = img;
+  box._label = label;
+
+  box.addEventListener("click", () => openMealSelector(box));
+
+  return box;
+}
+
 
 const mealBox1 = createMealBlock();
 const mealBox2 = createMealBlock();
@@ -935,11 +979,17 @@ Object.assign(saveBtn.style, {
 saveBtn.addEventListener("click", () => {
   const weekKey = screen.dataset.weekKey;
 
-  const data = {
-    meal1: mealBox1.textContent !== "Seleccionar comida" ? mealBox1.textContent : "",
-    meal2: mealBox2.textContent !== "Seleccionar comida" ? mealBox2.textContent : "",
-    meal3: mealBox3.textContent !== "Seleccionar comida" ? mealBox3.textContent : ""
-  };
+const data = {
+  meal1: mealBox1._label.textContent !== "Seleccionar comida" ? mealBox1._label.textContent : "",
+  meal1Img: mealBox1._image.src || "",
+
+  meal2: mealBox2._label.textContent !== "Seleccionar comida" ? mealBox2._label.textContent : "",
+  meal2Img: mealBox2._image.src || "",
+
+  meal3: mealBox3._label.textContent !== "Seleccionar comida" ? mealBox3._label.textContent : "",
+  meal3Img: mealBox3._image.src || ""
+};
+
 
   localStorage.setItem("meals-" + weekKey, JSON.stringify(data));
   animateAlert("Semana guardada");
@@ -1018,14 +1068,23 @@ screen.appendChild(saveBtn);
                 <span style="font-size:1rem;font-weight:600;">${r.name}</span>
               `;
 
-              item.addEventListener("click", () => {
-                targetBox.textContent = r.name;
-                targetBox.style.color = "#000";
-                targetBox.style.border = "2px solid #000";
+            item.addEventListener("click", () => {
+  // Mostrar texto
+  targetBox._label.textContent = r.name;
+  targetBox._label.style.color = "#000";
 
-                animate(modal, { y: ["0%", "100%"] }, { duration: 0.35 })
-                  .finished.then(() => modal.remove());
-              });
+  // Mostrar imagen
+  targetBox._image.src = r.img;
+  targetBox._image.style.display = "block";
+
+  // Estilo seleccionado
+  targetBox.style.border = "2px solid #000";
+
+  // Cerrar modal
+  animate(modal, { y: ["0%", "100%"] }, { duration: 0.35 })
+    .finished.then(() => modal.remove());
+});
+
 
               list.appendChild(item);
             });
