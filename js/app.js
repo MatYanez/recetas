@@ -740,7 +740,8 @@ showRecipeDetail(found);
 window.cameFromCalendar = true;
 // Ocultar el botón Organizar
 const organizeBtn = document.querySelector("#organizeBtn");
-if (organizeBtn) organizeBtn.style.display = "none";
+if (organizeBtn) organizeBtn.style.visibility = "hidden";
+organizeBtn.style.pointerEvents = "none";
         });
     });
   });
