@@ -3351,6 +3351,34 @@ function showRecipeDetail(recipe) {
 }
 
 
+  function showSteps(recipe) {
+    content.innerHTML = "";
+    const back = document.createElement("button");
+    back.textContent = "← Atrás";
+    Object.assign(back.style, {
+      background: "none",
+      border: "none",
+      color: "#007AFF",
+      fontWeight: "600",
+      fontSize: "1rem",
+      cursor: "pointer",
+      marginBottom: "0.5rem"
+    });
+    back.addEventListener("click", () => showRecipeDetail(recipe));
+    content.appendChild(back);
+
+    (recipe.steps || []).forEach((step, i) => {
+      const div = document.createElement("div");
+      div.innerHTML = `<h3>Paso ${i + 1}</h3><p>${step}</p>`;
+      Object.assign(div.style, {
+        marginBottom: "1rem",
+        padding: "0.5rem",
+        borderBottom: "1px solid #eee"
+      });
+      content.appendChild(div);
+    });
+  }
+
 
 
 
