@@ -2500,7 +2500,7 @@ function setupHabitCalendar(container, onDateSelected) {
     overflow-x:auto;
     scroll-snap-type:x mandatory;
     gap:1rem;
-    padding-bottom:1rem;
+    padding:1rem 0rem;
     -webkit-overflow-scrolling:touch;
   `;
   container.appendChild(weekCarousel);
