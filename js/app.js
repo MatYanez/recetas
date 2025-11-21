@@ -783,6 +783,7 @@ currentWeekIndex = weeks.findIndex(w => today >= w.start && today <= w.end);
     scrollSnapType: "x mandatory",
     gap: "1rem",
     paddingBottom: "1rem",
+    paddingTop: "1rem",
     marginBottom: "2rem",
     WebkitOverflowScrolling: "touch",
   });
@@ -2500,7 +2501,7 @@ function setupHabitCalendar(container, onDateSelected) {
     overflow-x:auto;
     scroll-snap-type:x mandatory;
     gap:1rem;
-    padding:1rem 0rem;
+    padding-bottom:1rem;
     -webkit-overflow-scrolling:touch;
   `;
   container.appendChild(weekCarousel);
