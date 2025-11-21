@@ -580,29 +580,28 @@ content.innerHTML = `
               const mealText = saved[slot] || "";
               const mealImg = saved[slot+"Img"] || "";
 
-              return `
-                <div class="calendar-day" data-date="${d.toISOString()}" data-weekkey="${weekKey}" data-slot="${slot}"
-                  style="
-                    width:100%;
-                    min-height:80px;
-                    background:${isToday ? "#000" : "#f3f4f6"};
-                    color:${isToday ? "#fff" : "#333"};
-                    border-radius:12px;
-                    font-weight:600;
-                    padding:6px;
-                    display:flex;
-                    flex-direction:column;
-                    align-items:center;
-                    justify-content:flex-start;
-                    gap:4px;
-                    cursor:pointer;
-                    transition:0.25s;
-                  ">
-                  <div>${d.getDate()}</div>
+           return `
+  <div class="calendar-day" data-date="${d.toISOString()}" data-weekkey="${weekKey}" data-slot="${slot}"
+    style="
+      width:100%;
+      min-height:80px;
+      background:${isToday ? "#000" : "#f3f4f6"};
+      color:${isToday ? "#fff" : "#333"};
+      border-radius:12px;
+      font-weight:600;
+      padding:6px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      cursor:pointer;
+      transition:0.25s;
+    ">
+    <div>${d.getDate()}</div>
+  </div>
+`;
 
-                  </div>
-                </div>
-              `;
             }).join("")}
           </div>
 
