@@ -3121,119 +3121,235 @@ function refreshCalendarDayStyles() {
 
 
 
-
-
+// --------------------------------------------
+//    FUNCIÓN GLOBAL showRecipeDetail()
+// --------------------------------------------
 function showRecipeDetail(recipe) {
-  // SIEMPRE renderizamos dentro del content real del view
-  const content = document.querySelector("[data-content]");
-  if (!content) return alert("ERROR: No se encuentra el contenedor de contenido.");
+    const content = document.querySelector("[data-content]");
+    if (!content) return alert("ERROR: No se encontró el contenedor.");
 
-  // Guardamos el render anterior para volver exactamente ahí
-  const previousHTML = content.innerHTML;
+    content.innerHTML = "";
 
-  hideNavigationBars();
+    const backBtn = document.createElement("button");
+    backBtn.textContent = "← Volver";
+    Object.assign(backBtn.style, {
+      background: "none",
+      border: "none",
+      color: "#007AFF",
+      fontWeight: "600",
+      fontSize: "1rem",
+      cursor: "pointer",
+      marginBottom: "0.5rem"
+    });
 
-  // Limpia SOLO el contenido, NO destruye la pantalla
-  content.innerHTML = "";
+    // 🔥 VOLVER AL LISTADO CORRECTO (almuerzos o búsqueda)
+    backBtn.addEventListener("click", () => {
+        if (window.lastRecipeListRender) {
+            window.lastRecipeListRender();
+        }
+    });
 
-  // ------- BOTON VOLVER -------
-  const back = document.createElement("button");
-  back.textContent = "← Volver";
-  Object.assign(back.style, {
-    background: "none",
-    border: "none",
-    color: "#007AFF",
-    fontWeight: "600",
-    fontSize: "1rem",
-    cursor: "pointer",
-    marginBottom: "0.8rem"
-  });
+    content.appendChild(backBtn);
 
-  back.addEventListener("click", () => {
-    content.innerHTML = previousHTML;
-    showNavigationBars();
+    const img = document.createElement("img");
+    img.src = recipe.img;
+    Object.assign(img.style, { width: "100%", borderRadius: "18px", marginBottom: "1rem" });
+    content.appendChild(img);
 
-    // Reactivar eventos del listado
-    const searchInput = content.querySelector("#searchInput");
-    if (searchInput) searchInput.dispatchEvent(new Event("input"));
+    const title = document.createElement("h2");
+    title.textContent = recipe.name;
+    Object.assign(title.style, { fontSize: "1.8rem", fontWeight: "700", lineHeight: "1.4" });
+    content.appendChild(title);
 
-    if (window.lastRecipeListRender) {
-      window.lastRecipeListRender(); 
+    const info = document.createElement("p");
+    info.textContent = `${recipe.difficulty} - ${recipe.time}`;
+    Object.assign(info.style, { color: "#555", marginBottom: "1.5rem", marginTop: "0.5rem" });
+    content.appendChild(info);
+
+    // ======================
+    //   createExpandable()
+    // ======================
+    function createExpandable(title, innerHTML) {
+        const container = document.createElement("div");
+        container.className = "expandable-card";
+        Object.assign(container.style, {
+            background: "#fff",
+            borderRadius: "16px",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
+            overflow: "hidden",
+            marginBottom: "1rem",
+            transition: "background 0.3s ease",
+        });
+
+        const header = document.createElement("div");
+        Object.assign(header.style, {
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "1rem 1.25rem",
+            fontWeight: "600",
+            fontSize: "1.1rem",
+            cursor: "pointer",
+            userSelect: "none",
+            WebkitTapHighlightColor: "transparent"
+        });
+
+        const label = document.createElement("span");
+        label.textContent = title;
+        header.appendChild(label);
+
+        const arrow = document.createElement("i");
+        arrow.className = "fa-solid fa-chevron-down";
+        Object.assign(arrow.style, {
+            fontSize: "1rem",
+            color: "#555",
+            transition: "transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+            transformOrigin: "center center"
+        });
+        header.appendChild(arrow);
+
+        const body = document.createElement("div");
+        Object.assign(body.style, {
+            overflow: "hidden",
+            padding: "10px 0px",
+        });
+
+        const innerWrapper = document.createElement("div");
+        innerWrapper.innerHTML = innerHTML;
+        Object.assign(innerWrapper.style, {
+            transformOrigin: "top center",
+            transform: "scaleY(0.6)",
+            opacity: "0",
+            maxHeight: "0px",
+        });
+        body.appendChild(innerWrapper);
+
+        header.addEventListener("click", () => {
+            const expanded = container.classList.toggle("expanded");
+
+            if (expanded) {
+                innerWrapper.style.maxHeight = "none";
+                const fullHeight = innerWrapper.scrollHeight;
+
+                innerWrapper.style.maxHeight = "0px";
+                innerWrapper.style.opacity = "0";
+                innerWrapper.style.transform = "scaleY(0.6)";
+                void innerWrapper.offsetHeight;
+
+                animate(innerWrapper,
+                    {
+                        maxHeight: [`0px`, `${fullHeight}px`],
+                        opacity: [0, 1],
+                        transform: ["scaleY(0.6)", "scaleY(1)"],
+                    },
+                    { duration: 0.28, easing: "cubic-bezier(0.2, 0.8, 0.3, 1)" }
+                ).finished.then(() => {
+                    innerWrapper.style.maxHeight = "none";
+                    innerWrapper.style.opacity = "1";
+                    innerWrapper.style.transform = "scaleY(1)";
+                });
+
+                arrow.style.transform = "rotate(180deg)";
+                body.style.paddingBottom = "1rem";
+            } else {
+                const currentHeight = innerWrapper.scrollHeight;
+                innerWrapper.style.maxHeight = `${currentHeight}px`;
+                innerWrapper.style.opacity = "1";
+                innerWrapper.style.transform = "scaleY(1)";
+                void innerWrapper.offsetHeight;
+
+                animate(innerWrapper,
+                    {
+                        maxHeight: [`${currentHeight}px`, `0px`],
+                        opacity: [1, 0],
+                        transform: ["scaleY(1)", "scaleY(0.6)"],
+                    },
+                    { duration: 0.22, easing: "cubic-bezier(0.4, 0, 0.6, 1)" }
+                ).finished.then(() => {
+                    innerWrapper.style.maxHeight = "0px";
+                    innerWrapper.style.opacity = "0";
+                    innerWrapper.style.transform = "scaleY(0.6)";
+                });
+
+                arrow.style.transform = "rotate(0deg)";
+                body.style.paddingBottom = "0";
+            }
+        });
+
+        container.appendChild(header);
+        container.appendChild(body);
+        return container;
     }
-  });
 
-  content.appendChild(back);
+    // --- Ingredientes ---
+    const ingredientsCardHTML = `
+      <div style="
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.25rem;
+      ">
+        ${recipe.ingredients
+          .map(el => `
+            <div style="
+              background: #fafafa;
+              border-radius: 14px;
+              padding: 0.25rem;
+              box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+              display: flex;
+              align-items: center;
+              gap: 0.75rem;
+            ">
+              <img src="${el.img}" style="
+                width: 30px;
+                height: 30px;
+                border-radius: 10px;
+                object-fit: contain;
+                background: white;
+                padding: 6px;
+              ">
+              <div style="text-align:left;">
+                <span style="font-weight:600;font-size:1rem;">${el.name}</span>
+                <span style="font-size:0.85rem;color:#555;">${el.qty} ${el.unit}</span>
+              </div>
+            </div>
+          `).join("")}
+      </div>
+    `;
+    content.appendChild(createExpandable("🧂 Ingredientes", ingredientsCardHTML));
 
-  // ------- IMAGEN -------
-  const img = document.createElement("img");
-  img.src = recipe.img;
-  Object.assign(img.style, {
-    width: "100%",
-    height: "240px",
-    objectFit: "cover",
-    borderRadius: "18px",
-    marginBottom: "1rem",
-  });
-  content.appendChild(img);
+    // --- Nutrición ---
+    const nutritionCardHTML = Object.entries(recipe.nutrition || {})
+      .map(([k, v]) => `
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          padding:0.4rem 0;
+          font-size:1rem;
+          border-bottom:1px solid #f2f2f2;">
+          <span>${k}</span>
+          <strong>${v}</strong>
+        </div>
+      `).join("");
+    content.appendChild(createExpandable("⚡ Valores nutricionales", nutritionCardHTML));
 
-  // ------- TITULO -------
-  const title = document.createElement("h2");
-  title.textContent = recipe.name;
-  Object.assign(title.style, {
-    fontSize: "1.8rem",
-    fontWeight: "700",
-    marginBottom: "0.3rem",
-  });
-  content.appendChild(title);
-
-  // ------- INFO -------
-  const info = document.createElement("p");
-  info.textContent = `${recipe.difficulty} • ${recipe.time}`;
-  Object.assign(info.style, {
-    color: "#777",
-    marginBottom: "1.4rem",
-  });
-  content.appendChild(info);
-
-  // ------- INGREDIENTES -------
-  if (recipe.ingredients?.length) {
-    const ing = document.createElement("h3");
-    ing.textContent = "Ingredientes";
-    ing.style = "font-weight:700;font-size:1.2rem;margin-bottom:0.5rem;";
-    content.appendChild(ing);
-
-    const ul = document.createElement("ul");
-    ul.style.marginBottom = "1rem";
-
-    recipe.ingredients.forEach(i => {
-      const li = document.createElement("li");
-      li.textContent = i;
-      li.style.marginBottom = "4px";
-      ul.appendChild(li);
+    // --- Pasos ---
+    const btn = document.createElement("button");
+    btn.textContent = "👨‍🍳 Ver preparación paso a paso";
+    Object.assign(btn.style, {
+      width: "100%",
+      backgroundColor: "#111",
+      color: "#fff",
+      border: "none",
+      borderRadius: "12px",
+      padding: "1rem",
+      marginTop: "1rem",
+      cursor: "pointer",
+      fontWeight: "600"
     });
-
-    content.appendChild(ul);
-  }
-
-  // ------- PASOS -------
-  if (recipe.steps?.length) {
-    const prep = document.createElement("h3");
-    prep.textContent = "Preparación";
-    prep.style = "font-weight:700;font-size:1.2rem;margin-top:1rem;margin-bottom:0.5rem;";
-    content.appendChild(prep);
-
-    recipe.steps.forEach((s, i) => {
-      const div = document.createElement("div");
-      div.innerHTML = `<strong>Paso ${i + 1}</strong>: ${s}`;
-      div.style.cssText = `
-        padding: 0.6rem 0;
-        border-bottom: 1px solid #eee;
-        line-height: 1.5;
-      `;
-      content.appendChild(div);
-    });
-  }
+    btn.addEventListener("click", () => showSteps(recipe));
+    content.appendChild(btn);
 }
+
 
 
 
