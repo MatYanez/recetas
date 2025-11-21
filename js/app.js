@@ -712,9 +712,10 @@ function openOrganizeScreen() {
   // =============== CARRUSEL DE SEMANAS ==================
   // =====================================================
 
-  let currentMonth = new Date().getMonth();
-  let currentYear = new Date().getFullYear();
-
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+let currentWeekIndex = 0;
+let selectedWeekKey = "";
   
 function getWeeksOfMonth(year, month) {
   const weeks = [];
@@ -753,7 +754,7 @@ function getWeeksOfMonth(year, month) {
   let weeks = getWeeksOfMonth(currentYear, currentMonth);
 // Detectar semana actual
 const today = new Date();
-let currentWeekIndex = 0;
+
 
 weeks.forEach((w, i) => {
   if (w.start <= today && today <= w.end) {
