@@ -837,15 +837,6 @@ weeks.forEach((w, i) => {
  
 
   screen.appendChild(organizeCarousel);
-  // ===========================
-// Cargar comidas de la semana actual al entrar
-// ===========================
-const week = weeks[currentWeekIndex];
-const weekKey = week.start.toISOString().slice(0, 10);
-screen.dataset.weekKey = weekKey;
-
-loadWeekMeals(weekKey);
-
 
   // AUTO-SCROLL hacia la semana actual
 setTimeout(() => {
@@ -969,6 +960,19 @@ mealsContainer.appendChild(mealBox2);
 mealsContainer.appendChild(mealBox3);
 
 screen.appendChild(mealsContainer);
+
+
+
+
+
+// ===========================
+// Cargar comidas de la semana actual
+// ===========================
+const week = weeks[currentWeekIndex];
+const weekKey = week.start.toISOString().slice(0, 10);
+screen.dataset.weekKey = weekKey;
+loadWeekMeals(weekKey);
+
 
 // === BOTÓN GUARDAR SEMANA ===
 const saveBtn = document.createElement("button");
