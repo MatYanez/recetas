@@ -3133,7 +3133,7 @@ const content = window.currentRecipeContent;
 if (!content) return;
 content.innerHTML = "";
 if (window.cameFromCalendar) {
-    const organizeBtn = document.querySelector("#organizeMealsBtn");
+const organizeBtn = document.querySelector("#organizeBtn");
     if (organizeBtn) organizeBtn.style.display = "none";
 }
 
@@ -3156,7 +3156,7 @@ if (window.cameFromCalendar) {
     window.cameFromCalendar = false;
 
     // Restaurar botón organizar si existe
-    const organizeBtn = document.querySelector("#organizeMealsBtn");
+const organizeBtn = document.querySelector("#organizeBtn");
     if (organizeBtn) organizeBtn.style.display = "";
 
 
