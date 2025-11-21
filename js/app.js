@@ -3121,14 +3121,13 @@ function refreshCalendarDayStyles() {
 
 
 
-
-
-
 function showRecipeDetail(recipe) {
+  hideNavigationBars();   // Oculta barras como el resto de pantallas
+
   const content = document.querySelector("[data-content]") || document.querySelector("#app");
   content.innerHTML = "";
 
-  // Botón volver
+  // --- Botón Volver ---
   const back = document.createElement("button");
   back.textContent = "← Volver";
   Object.assign(back.style, {
@@ -3140,39 +3139,105 @@ function showRecipeDetail(recipe) {
     cursor: "pointer",
     marginBottom: "0.5rem"
   });
-  back.addEventListener("click", () => history.back());
+
+  back.addEventListener("click", () => {
+    // Regresa al listado anterior de recetas
+    if (window.lastRecipeListRender) {
+      content.innerHTML = window.lastRecipeListRender();
+      // Volver a activar eventos del grid
+      const searchInput = content.querySelector("#searchInput");
+      if (searchInput) {
+        searchInput.dispatchEvent(new Event("input"));
+      }
+    }
+    showNavigationBars();
+  });
+
   content.appendChild(back);
 
-  // Imagen
+  // --- Imagen ---
   const img = document.createElement("img");
   img.src = recipe.img;
   Object.assign(img.style, {
     width: "100%",
+    height: "260px",
+    objectFit: "cover",
     borderRadius: "18px",
-    marginBottom: "1rem"
+    marginBottom: "1rem",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
   });
   content.appendChild(img);
 
-  // Título
+  // --- Título ---
   const title = document.createElement("h2");
   title.textContent = recipe.name;
   Object.assign(title.style, {
     fontSize: "1.8rem",
     fontWeight: "700",
-    lineHeight: "1.4"
+    lineHeight: "1.4",
+    margin: "0 0 0.3rem 0"
   });
   content.appendChild(title);
 
-  // Info
+  // --- Info breve ---
   const info = document.createElement("p");
-  info.textContent = `${recipe.difficulty} - ${recipe.time}`;
+  info.textContent = `${recipe.difficulty} • ${recipe.time}`;
   Object.assign(info.style, {
-    color: "#555",
+    color: "#666",
     marginBottom: "1.5rem",
-    marginTop: "0.5rem"
+    fontSize: "1rem"
   });
   content.appendChild(info);
+
+  // --- Ingredientes ---
+  if (recipe.ingredients) {
+    const ingTitle = document.createElement("h3");
+    ingTitle.textContent = "Ingredientes";
+    Object.assign(ingTitle.style, {
+      fontSize: "1.3rem",
+      fontWeight: "700",
+      marginBottom: "0.5rem"
+    });
+    content.appendChild(ingTitle);
+
+    const ul = document.createElement("ul");
+    ul.style.marginBottom = "1.6rem";
+
+    recipe.ingredients.forEach(i => {
+      const li = document.createElement("li");
+      li.textContent = i;
+      li.style.marginBottom = "4px";
+      ul.appendChild(li);
+    });
+
+    content.appendChild(ul);
+  }
+
+  // --- Pasos ---
+  if (recipe.steps) {
+    const stepsTitle = document.createElement("h3");
+    stepsTitle.textContent = "Preparación";
+    Object.assign(stepsTitle.style, {
+      fontSize: "1.3rem",
+      fontWeight: "700",
+      marginBottom: "0.5rem",
+      marginTop: "1rem"
+    });
+    content.appendChild(stepsTitle);
+
+    recipe.steps.forEach((s, i) => {
+      const div = document.createElement("div");
+      div.innerHTML = `<strong>Paso ${i + 1}:</strong> ${s}`;
+      Object.assign(div.style, {
+        padding: "0.6rem 0",
+        borderBottom: "1px solid #eee",
+        lineHeight: "1.5"
+      });
+      content.appendChild(div);
+    });
+  }
 }
+
 
 
 
