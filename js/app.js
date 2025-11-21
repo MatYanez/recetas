@@ -126,6 +126,7 @@ const cards = [
 const app = document.getElementById("app");
 const saludo = document.getElementById("saludo");
 let selected = null;
+let selectedDate = null;
 
 function drawLineChart(canvas, data, options = {}) {
   const ctx = canvas.getContext("2d");
@@ -554,68 +555,70 @@ content.innerHTML = `
             text-align:center;
             gap:1rem;
           ">
-            ${week.map((d, index) => {
+${week.map((d, index) => {
 
-              if (!d) return `<div></div>`;
+  if (!d) return `<div></div>`;
 
-              // detectar si es hoy
-              const isToday = d.toDateString() === new Date().toDateString();
+  // Detectar si es hoy
+  const isToday = d.toDateString() === new Date().toDateString();
 
-              // detectar si es seleccionado
-              const isSelected =
-                selectedDate &&
-                selectedDate.toDateString() === d.toDateString();
+  // Detectar si es el día seleccionado
+  const isSelected =
+    selectedDate && selectedDate.toDateString() === d.toDateString();
 
-              // PRIORIDAD DE COLORES
-              let bg = "#f3f4f6";   // normal
-              if (isToday) bg = "#ccc";  // hoy
-              if (isSelected) bg = "#000"; // seleccionado gana siempre
+  // Colores según prioridad
+  let bg = "#f3f4f6";    // normal
+  let color = "#333";     // normal
 
-              let textColor = isSelected ? "#fff" : "#333";
+  if (isToday) bg = "#ccc";           // hoy
+  if (isSelected) {                   // seleccionado (manda)
+    bg = "#000";
+    color = "#fff";
+  }
 
-              // weekKey para comidas
-              const weekStart = new Date(d);
-              const dow = weekStart.getDay() || 7;
-              if (dow !== 1) weekStart.setDate(weekStart.getDate() - (dow - 1));
-              const weekKey = weekStart.toISOString().slice(0,10);
+  // Obtener datos del almuerzo
+  const weekStart = new Date(d);
+  const dow = weekStart.getDay() || 7;
+  if (dow !== 1) weekStart.setDate(weekStart.getDate() - (dow - 1));
+  const weekKey = weekStart.toISOString().slice(0,10);
 
-              const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
+  const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
 
-              const dist = saved.distribution || {
-                lunes:"meal1", martes:"meal2", miercoles:"meal1",
-                jueves:"meal2", viernes:"meal3"
-              };
+  const dist = saved.distribution || {
+    lunes:"meal1", martes:"meal2", miercoles:"meal1",
+    jueves:"meal2", viernes:"meal3"
+  };
 
-              const names = ["lunes","martes","miercoles","jueves","viernes"];
-              const dayKey = names[index];
+  const names = ["lunes","martes","miercoles","jueves","viernes"];
+  const dayKey = names[index];
+  const slot = dist[dayKey];
 
-              const slot = dist[dayKey];
+  return `
+    <div class="calendar-day"
+      data-date="${d.toISOString()}"
+      data-weekkey="${weekKey}"
+      data-slot="${slot}"
+      style="
+        width:100%;
+        min-height:50px;
+        background:${bg};
+        color:${color};
+        border-radius:12px;
+        font-weight:600;
+        padding:6px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:4px;
+        cursor:pointer;
+        transition:0.25s;
+      ">
+      <div>${d.getDate()}</div>
+    </div>
+  `;
+}).join("")}
 
-              return `
-                <div class="calendar-day"
-                  data-date="${d.toISOString()}"
-                  data-weekkey="${weekKey}"
-                  data-slot="${slot}"
-                  style="
-                    width:100%;
-                    min-height:50px;
-                    background:${bg};
-                    color:${textColor};
-                    border-radius:12px;
-                    font-weight:600;
-                    padding:6px;
-                    display:flex;
-                    flex-direction:column;
-                    align-items:center;
-                    justify-content:center;
-                    gap:4px;
-                    cursor:pointer;
-                    transition:0.25s;
-                  ">
-                  <div>${d.getDate()}</div>
-                </div>
-              `;
-            }).join("")}
           </div>
 
         </div>
@@ -677,9 +680,16 @@ if (todayIndex !== -1) {
 // ====================================================
 
 /*  BLOQUE 2 COMIENZA AQUÍ  */
-
 content.querySelectorAll(".calendar-day").forEach(day => {
   day.addEventListener("click", () => {
+
+    // Guardar como día seleccionado
+    selectedDate = new Date(day.dataset.date);
+
+    // 🔄 REPINTAR para aplicar estilos de selección
+    updateView("calendario");
+
+    // --- Tu lógica existente ---
     const date = new Date(day.dataset.date);
     const weekKey = day.dataset.weekkey;
     const slot = day.dataset.slot;
