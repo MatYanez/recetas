@@ -719,9 +719,8 @@ if (sectionId === "habitos") {
               </div>
             `;
 
-            preview.querySelector(".meal-preview-card").addEventListener("click", () => {
-              fetch("./data/recetas.json")
-                .then(r => r.json())
+preview.querySelector(".meal-preview-card").addEventListener("click", () => {
+              getRecetasData()
                 .then(list => {
                   const found = list.find(x => x.name === name);
                   if (!found) return;
@@ -1295,13 +1294,14 @@ organizeBtn.addEventListener("click", openOrganizeScreen);
 
 else if (sectionId === "almuerzos") {
 
-  let recipes = [];
+let recipes = [];
 
   // --- Cargar recetas desde JSON ---
-preview.querySelector(".meal-preview-card").addEventListener("click", () => {
-              getRecetasData()
-                .then(list => {
-                  const found = list.find(x => x.name === name);
+  getRecetasData()
+    .then(data => {
+      recipes = data;
+      renderRecipes();
+    })
     .catch(err => {
       console.error("Error al cargar recetas:", err);
       content.innerHTML = "<p>Error al cargar recetas.</p>";
