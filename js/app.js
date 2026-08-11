@@ -1564,26 +1564,10 @@ content.ontouchend = () => {
   // Gesto válido = movimiento lateral rápido y corto
   if (distance < 60 || holdTime > 400) return;
 
-const tabsOrder = ["calendario", "almuerzos", "gimnasio", "habitos"];
-  const current = tabsOrder.indexOf(sectionId);
 
-  // Swipe izquierda → siguiente tab
-  if (deltaX < 0 && current < tabsOrder.length - 1) {
-    const next = tabsOrder[current + 1];
-    const nextBtn = [...items].find(b => b.dataset.id === next);
-    moveIndicatorTo(nextBtn);
-    updateView(next);
-    return;
-  }
 
-  // Swipe derecha → tab anterior
-  if (deltaX > 0 && current > 0) {
-    const prev = tabsOrder[current - 1];
-    const prevBtn = [...items].find(b => b.dataset.id === prev);
-    moveIndicatorTo(prevBtn);
-    updateView(prev);
-    return;
-  }
+// Cualquier swipe lateral válido = volver atrás (al home)
+  updateView("home");
 };
 
       }); // fin .finished.then() del animate(content)
