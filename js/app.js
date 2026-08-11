@@ -5,6 +5,107 @@ function icon(name, size = "1.2rem") {
   return `<span class="material-symbols-outlined" style="font-size:${size};">${name}</span>`;
 }
 
+function dateKeyOf(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+/* ---------- Calendario unificado: comprimido (L-V) / expandido (mes completo) ---------- */
+function buildUnifiedCalendar(container, config) {
+  let current = config.initialDate ? new Date(config.initialDate) : new Date();
+  let expanded = !!config.expanded;
+
+  function weekStartOf(date) {
+    const d = new Date(date);
+    const dow = d.getDay() || 7;
+    if (dow !== 1) d.setDate(d.getDate() - (dow - 1));
+    return d;
+  }
+
+  function render() {
+    const monthName = current.toLocaleString("es-ES", { month: "long", year: "numeric" });
+
+    let cells = [];
+    if (expanded) {
+      const year = current.getFullYear();
+      const month = current.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const offset = (firstDay.getDay() + 6) % 7;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      for (let i = 0; i < offset; i++) cells.push(null);
+      for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
+    } else {
+      const ws = weekStartOf(current);
+      for (let i = 0; i < 5; i++) {
+        const d = new Date(ws);
+        d.setDate(ws.getDate() + i);
+        cells.push(d);
+      }
+    }
+
+    const cols = expanded ? 7 : 5;
+    const headerDays = expanded
+      ? `<span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>`
+      : `<span>L</span><span>M</span><span>X</span><span>J</span><span>V</span>`;
+
+    container.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+        <button type="button" class="cal-prev" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#333;padding:0.3rem;">‹</button>
+        <button type="button" class="cal-toggle" style="background:none;border:none;font-weight:700;font-size:1.05rem;text-transform:capitalize;display:flex;align-items:center;gap:2px;cursor:pointer;color:#111;">
+          ${monthName} ${icon(expanded ? "expand_less" : "expand_more", "1.2rem")}
+        </button>
+        <button type="button" class="cal-next" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#333;padding:0.3rem;">›</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;text-align:center;font-weight:600;font-size:0.72rem;color:#999;margin-bottom:0.4rem;">
+        ${headerDays}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;">
+        ${cells.map(date => {
+          if (!date) return `<div></div>`;
+          const info = (config.getCellInfo && config.getCellInfo(date)) || {};
+          const isWeekend = expanded && (date.getDay() === 0 || date.getDay() === 6);
+          const isToday = date.toDateString() === new Date().toDateString();
+          return `
+            <button type="button" class="cal-day" data-date="${dateKeyOf(date)}" style="
+              aspect-ratio:1;border-radius:10px;border:none;cursor:pointer;
+              display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+              font-size:0.78rem;font-weight:600;
+              background:${info.bg || (isWeekend ? "#fafafa" : "#f3f4f6")};
+              color:${info.color || (isWeekend ? "#ccc" : "#333")};
+              ${isToday && !info.selected ? "border:2px solid #111;" : "border:2px solid transparent;"}
+            ">
+              <span>${date.getDate()}</span>
+              ${info.icons ? `<span style="font-size:0.6rem;">${info.icons}</span>` : ""}
+            </button>
+          `;
+        }).join("")}
+      </div>
+    `;
+
+    container.querySelector(".cal-toggle").addEventListener("click", () => {
+      expanded = !expanded;
+      render();
+    });
+    container.querySelector(".cal-prev").addEventListener("click", () => {
+      if (expanded) current.setMonth(current.getMonth() - 1);
+      else current.setDate(current.getDate() - 7);
+      render();
+    });
+    container.querySelector(".cal-next").addEventListener("click", () => {
+      if (expanded) current.setMonth(current.getMonth() + 1);
+      else current.setDate(current.getDate() + 7);
+      render();
+    });
+    container.querySelectorAll(".cal-day").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (config.onSelectDate) config.onSelectDate(btn.dataset.date);
+      });
+    });
+  }
+
+  render();
+  return { rerender: render };
+}
+
 function safeParse(raw, fallback) {
   try {
     return raw ? JSON.parse(raw) : fallback;
@@ -497,279 +598,100 @@ if (sectionId === "habitos") {
 
         // ====== CALENDARIO =======
 
-        if (sectionId === "calendario") {
-          const today = new Date();
-           const year = today.getFullYear();
-           const month = today.getMonth();
-          const monthName = today.toLocaleString("es-ES", {
-            month: "long",
-            year: "numeric",
-          });
-// Generar todos los días laborales del mes
-const days = [];
-let d = new Date(year, month, 1);
-while (d.getMonth() === month) {
-  const day = d.getDay();
-  if (day >= 1 && day <= 5) {
-    days.push(new Date(d));
-  }
-  d.setDate(d.getDate() + 1);
-}
+    if (sectionId === "calendario") {
+          content.innerHTML = `
+            <div style="width:100%;">
+              <div id="mealCalendar"></div>
+              <div id="dayMealPreview" style="
+                margin-top:1rem;
+                width:100%;
+                display:none;
+                flex-direction:column;
+                gap:1rem;
+              "></div>
+            </div>
+          `;
 
-// Dividir en semanas de 5 días
-const weeks = [];
-for (let i = 0; i < days.length; i += 5) {
-  const slice = days.slice(i, i + 5);
+          const mealCalendarContainer = content.querySelector("#mealCalendar");
 
-  while (slice.length < 5) slice.push(null);
+          function showMealPreviewFor(date) {
+            const weekStart = new Date(date);
+            const dow = weekStart.getDay() || 7;
+            if (dow !== 1) weekStart.setDate(weekStart.getDate() - (dow - 1));
+            const weekKey = weekStart.toISOString().slice(0, 10);
 
-  weeks.push(slice);
-}
+            const saved = safeParse(localStorage.getItem("meals-" + weekKey), {});
+            const dist = saved.distribution || {
+              lunes: "meal1", martes: "meal2", miercoles: "meal1",
+              jueves: "meal2", viernes: "meal3"
+            };
+            const dayNames = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
+            const dayKey = dayNames[date.getDay()];
+            const slot = dist[dayKey];
+            const name = saved[slot] || "";
+            const img = saved[slot + "Img"] || "";
 
-content.innerHTML = `
-  <div style="width:100%;">
+            const preview = content.querySelector("#dayMealPreview");
 
-    <h2 style="
-      font-size:1.4rem;
-      font-weight:700;
-      margin:1rem;
-      text-transform:capitalize;
-    ">
-      ${monthName}
-    </h2>
+            if (!name) {
+              preview.style.display = "none";
+              preview.innerHTML = "";
+              return;
+            }
 
-    <!-- Carrusel -->
-    <div id="weekCarousel" style="
-      display:flex;
-      overflow-x:auto;
-      scroll-snap-type:x mandatory;
-      gap:1rem;
-      padding-bottom:1rem;
-      -webkit-overflow-scrolling:touch;
-    ">
-      ${weeks.map(week => `
-        <div class="week-slide" style="
-          min-width:100%;
-          scroll-snap-align:center;
-          padding:0 0.5rem;
-          display:flex;
-          flex-direction:column;
-          gap:0.5rem;
-        ">
+            preview.style.display = "flex";
+            preview.innerHTML = `
+              <div class="meal-preview-card" style="
+                background:#fff;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,0.08);
+                padding:1rem;display:flex;align-items:center;gap:1rem;cursor:pointer;
+              ">
+                <img src="${img}" style="width:75px;height:75px;border-radius:16px;object-fit:cover;">
+                <div style="flex:1;">
+                  <h3 style="font-weight:700;font-size:1.1rem;margin:0;">${name}</h3>
+                  <p style="font-size:0.8rem;color:#666;margin:0;">Toque para ver receta</p>
+                </div>
+              </div>
+            `;
 
-          <div style="
-            display:grid;
-            grid-template-columns:repeat(5,1fr);
-            text-align:center;
-            font-weight:600;
-            gap:1rem;
-          ">
-            <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span>
-          </div>
+            preview.querySelector(".meal-preview-card").addEventListener("click", () => {
+              fetch("./data/recetas.json")
+                .then(r => r.json())
+                .then(list => {
+                  const found = list.find(x => x.name === name);
+                  if (!found) return;
 
-          <div class="daysRow" style="
-            display:grid;
-            grid-template-columns:repeat(5,1fr);
-            text-align:center;
-            gap:1rem;
-          ">
-${week.map((d, index) => {
+                  window.lastRecipeListRender = null;
+                  window.returnToCalendarView = () => updateView("calendario");
+                  showRecipeDetail(found);
+                  window.cameFromCalendar = true;
 
-  if (!d) return `<div></div>`;
-
-  // Detectar si es hoy
-  const isToday = d.toDateString() === new Date().toDateString();
-
-  // Detectar si es el día seleccionado
-  const isSelected =
-    selectedDate && selectedDate.toDateString() === d.toDateString();
-
-  // Colores según prioridad
-  let bg = "#f3f4f6";    // normal
-  let color = "#333";     // normal
-
-  if (isToday) bg = "#ccc";           // hoy
-  if (isSelected) {                   // seleccionado (manda)
-    bg = "#000";
-    color = "#fff";
-  }
-
-  // Obtener datos del almuerzo
-  const weekStart = new Date(d);
-  const dow = weekStart.getDay() || 7;
-  if (dow !== 1) weekStart.setDate(weekStart.getDate() - (dow - 1));
-  const weekKey = weekStart.toISOString().slice(0,10);
-
-const saved = safeParse(localStorage.getItem("meals-" + weekKey), {});
-
-  const dist = saved.distribution || {
-    lunes:"meal1", martes:"meal2", miercoles:"meal1",
-    jueves:"meal2", viernes:"meal3"
-  };
-
-  const names = ["lunes","martes","miercoles","jueves","viernes"];
-  const dayKey = names[index];
-  const slot = dist[dayKey];
-
-  return `
-    <div class="calendar-day"
-      data-date="${d.toISOString()}"
-      data-weekkey="${weekKey}"
-      data-slot="${slot}"
-      style="
-        width:100%;
-        min-height:50px;
-        background:${bg};
-        color:${color};
-        border-radius:12px;
-        font-weight:600;
-        padding:6px;
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
-        gap:4px;
-        cursor:pointer;
-        transition:0.25s;
-      ">
-      <div>${d.getDate()}</div>
-    </div>
-  `;
-}).join("")}
-
-          </div>
-
-        </div>
-      `).join("")}
-    </div>
-
-    <!-- CONTENEDOR NUEVO PARA CARD DE COMIDA -->
-    <div id="dayMealPreview" style="
-      margin-top:1rem;
-      width:100%;
-      display:none;
-      flex-direction:column;
-      gap:1rem;
-    "></div>
-
-  </div>
-`;
-
-
-// Animación iOS del carrusel
-const weekCarousel = content.querySelector("#weekCarousel");
-weekCarousel.addEventListener("touchstart", () => {
-  swipeEnabled = false;
-});
-
-weekCarousel.addEventListener("touchend", () => {
-  setTimeout(() => (swipeEnabled = true), 120);
-});
-
-
-animate(
-  weekCarousel,
-  { opacity: [0, 1], x: [40, 0] },
-  { duration: 0.45, easing: "ease-out" }
-);
-
-const todayIndex = days.findIndex(
-  d => d && d.toDateString() === new Date().toDateString()
-);
-
-if (todayIndex !== -1) {
-  const weekNumber = Math.floor(todayIndex / 5);
-  weekCarousel.scrollTo({
-    left: weekNumber * weekCarousel.clientWidth,
-    behavior: "instant"
-  });
-}
-
-if (todayIndex !== -1) {
-  const weekNumber = Math.floor(todayIndex / 5);
-  weekCarousel.scrollTo({
-    left: weekNumber * weekCarousel.clientWidth,
-    behavior: "instant"
-  });
-}
-
-// ====================================================
-// ⬇️ AQUI PEGAS EL BLOQUE 2 ENTERO  (EVENTO CLICK EN DÍA)
-// ====================================================
-
-/*  BLOQUE 2 COMIENZA AQUÍ  */
-content.querySelectorAll(".calendar-day").forEach(day => {
-  day.addEventListener("click", () => {
-
-    // Guardar selección
-    selectedDate = new Date(day.dataset.date);
-
-    // Solo actualizar colores, NO reconstruir pantalla
-    refreshCalendarDayStyles();
-
-    // >>> TU LÓGICA EXISTENTE PARA MOSTRAR PREVIEW <<<
-    const date = new Date(day.dataset.date);
-    const weekKey = day.dataset.weekkey;
-    const slot = day.dataset.slot;
-
-    const saved = safeParse(localStorage.getItem("meals-" + weekKey), {});
-    const name = saved[slot] || "";
-    const img = saved[slot+"Img"] || "";
-
-    const preview = content.querySelector("#dayMealPreview");
-
-    if (!name) {
-      preview.style.display = "none";
-      preview.innerHTML = "";
-      return;
-    }
-
-    preview.style.display = "flex";
-    preview.innerHTML = `
-      <div class="meal-preview-card" style="
-        background:#fff;
-        border-radius:16px;
-        box-shadow:0 4px 12px rgba(0,0,0,0.08);
-        padding:1rem;
-        display:flex;
-        align-items:center;
-        gap:1rem;
-        cursor:pointer;
-      ">
-        <img src="${img}" style="
-          width:75px;height:75px;border-radius:16px;object-fit:cover;
-        ">
-        <div style="flex:1;">
-          <h3 style="font-weight:700;font-size:1.1rem;margin:0;">${name}</h3>
-          <p style="font-size:0.8rem;color:#666;margin:0;">Toque para ver receta</p>
-        </div>
-      </div>
-    `;
-
-    preview.querySelector(".meal-preview-card").addEventListener("click", () => {
-      fetch("./data/recetas.json")
-        .then(r => r.json())
-        .then(list => {
-const found = list.find(x => x.name === name);
-          if (!found) return;
-
-          window.lastRecipeListRender = null;
-          window.returnToCalendarView = () => updateView("calendario");
-          showRecipeDetail(found);
-          window.cameFromCalendar = true;
-
-const organizeBtn = document.querySelector("#organizeBtn");
-          if (organizeBtn) {
-            organizeBtn.style.visibility = "hidden";
-            organizeBtn.style.pointerEvents = "none";
+                  const organizeBtn = document.querySelector("#organizeBtn");
+                  if (organizeBtn) {
+                    organizeBtn.style.visibility = "hidden";
+                    organizeBtn.style.pointerEvents = "none";
+                  }
+                });
+            });
           }
-        });
-    });
-  });
-});
 
+          const mealCalendarController = buildUnifiedCalendar(mealCalendarContainer, {
+            initialDate: selectedDate || new Date(),
+            getCellInfo: (date) => {
+              const isToday = date.toDateString() === new Date().toDateString();
+              const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
+              if (isSelected) return { bg: "#000", color: "#fff", selected: true };
+              if (isToday) return { bg: "#ccc", color: "#333" };
+              return null;
+            },
+            onSelectDate: (dateStr) => {
+              selectedDate = new Date(dateStr + "T00:00:00");
+              mealCalendarController.rerender();
+              showMealPreviewFor(selectedDate);
+            }
+          });
 
-/*  BLOQUE 2 TERMINA AQUÍ  */
+animate(mealCalendarContainer, { opacity: [0, 1], x: [40, 0] }, { duration: 0.45, easing: "ease-out" });
+
 
 // ====================================================
 // BOTÓN "ORGANIZAR" SOLO EN LA PANTALLA DEL CALENDARIO
@@ -3464,9 +3386,6 @@ function loadGymDays() {
 function saveGymDays(days) {
   localStorage.setItem("gym-days", JSON.stringify(days));
 }
-function dateKeyOf(date) {
-  return date.toISOString().slice(0, 10);
-}
 function formatDateEs(dateStr) {
   const d = new Date(dateStr + "T00:00:00");
   return d.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
@@ -3493,92 +3412,15 @@ icons += icon(GYM_ACTIVITY_TYPES[day.type].icon, "0.9rem");
     : { bg: "#fee2e2", color: "#b91c1c", icons };
 }
 
-/* ---------- Mini calendario reutilizable ---------- */
-function renderMiniCalendar(year, month, selectedDateStr) {
-  const monthName = new Date(year, month, 1).toLocaleString("es-ES", { month: "long", year: "numeric" });
-  const firstDay = new Date(year, month, 1);
-  const startOffset = (firstDay.getDay() + 6) % 7;
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const cells = [];
-  for (let i = 0; i < startOffset; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
-
-  return `
-    <div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
-        <button type="button" id="gymCalPrev" style="background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">‹</button>
-        <span style="font-weight:700;text-transform:capitalize;">${monthName}</span>
-        <button type="button" id="gymCalNext" style="background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">›</button>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:0.7rem;color:#777;font-weight:600;margin-bottom:0.3rem;">
-        <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">
-        ${cells.map(date => {
-          if (!date) return `<div></div>`;
-          const dStr = dateKeyOf(date);
-          const isSelected = dStr === selectedDateStr;
-          return `
-            <button type="button" class="gym-cal-day" data-date="${dStr}" style="
-              aspect-ratio:1;border-radius:8px;border:none;font-size:0.8rem;font-weight:600;cursor:pointer;
-              background:${isSelected ? "#111" : "#f3f4f6"};
-              color:${isSelected ? "#fff" : "#333"};
-            ">${date.getDate()}</button>
-          `;
-        }).join("")}
-      </div>
-    </div>
-  `;
-}
 
 /* ---------- Pantalla principal: calendario + lista de días ---------- */
-function renderGymHome(year, month) {
-  const now = new Date();
-  if (year === undefined) year = now.getFullYear();
-  if (month === undefined) month = now.getMonth();
-
+function renderGymHome() {
   const days = loadGymDays();
-  const monthName = new Date(year, month, 1).toLocaleString("es-ES", { month: "long", year: "numeric" });
-
-  const firstDay = new Date(year, month, 1);
-  const startOffset = (firstDay.getDay() + 6) % 7;
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const cells = [];
-  for (let i = 0; i < startOffset; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
 
   return `
     <div style="width:100%;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin:0.5rem 0 1rem 0;">
-        <button id="gymHomePrev" data-year="${year}" data-month="${month}" style="background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">‹</button>
-        <h2 style="font-size:1.2rem;font-weight:700;text-transform:capitalize;margin:0;">${monthName}</h2>
-        <button id="gymHomeNext" data-year="${year}" data-month="${month}" style="background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">›</button>
-      </div>
-
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-weight:600;font-size:0.75rem;color:#777;margin-bottom:0.4rem;">
-        <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
-      </div>
-
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:1rem;">
-        ${cells.map(date => {
-          if (!date) return `<div></div>`;
-          const info = getGymCoverageForDate(date, days);
-          const isToday = date.toDateString() === new Date().toDateString();
-          return `
-            <div style="
-              aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;
-              align-items:center;justify-content:center;gap:2px;font-size:0.75rem;font-weight:600;
-              background:${info.bg};color:${info.color};
-              ${isToday ? "border:2px solid #111;" : ""}
-            ">
-              <span>${date.getDate()}</span>
-              <span style="font-size:0.7rem;">${info.icons}</span>
-            </div>
-          `;
-        }).join("")}
-      </div>
+      <div id="gymHomeCalendar" style="margin-bottom:1rem;"></div>
 
       <div style="display:flex;gap:1rem;font-size:0.75rem;color:#777;margin-bottom:1.5rem;flex-wrap:wrap;">
         <span>🟩 cumplido</span><span>🟥 pendiente</span><span>🟦 próximo</span>
@@ -3598,7 +3440,7 @@ function renderGymHome(year, month) {
             display:flex;justify-content:space-between;align-items:center;
           ">
             <div>
-<h4 style="font-weight:700;font-size:1rem;margin:0;">${icon(type.icon, "1rem")} ${day.name}</h4>
+              <h4 style="font-weight:700;font-size:1rem;margin:0;">${icon(type.icon, "1rem")} ${day.name}</h4>
               <p style="font-size:0.8rem;color:#777;margin:0.3rem 0 0 0;">
                 ${formatDateEs(day.date)} — ${done}/${day.exercises.length}
               </p>
@@ -3724,27 +3566,21 @@ function attachGymEvents(content) {
   let selectedType = "gimnasio";
   let selectedDate = null;
   let selectedExercises = [];
-  let calYear = new Date().getFullYear();
-  let calMonth = new Date().getMonth();
 
   function renderCalendarWidget() {
     const container = content.querySelector("#gymCalendarContainer");
     if (!container) return;
-    container.innerHTML = renderMiniCalendar(calYear, calMonth, selectedDate);
-
-    container.querySelector("#gymCalPrev").addEventListener("click", () => {
-      calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
-      renderCalendarWidget();
-    });
-    container.querySelector("#gymCalNext").addEventListener("click", () => {
-      calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
-      renderCalendarWidget();
-    });
-    container.querySelectorAll(".gym-cal-day").forEach(btn => {
-      btn.addEventListener("click", () => {
-        selectedDate = btn.dataset.date;
+    buildUnifiedCalendar(container, {
+      initialDate: new Date(),
+      getCellInfo: (date) => {
+        const dStr = dateKeyOf(date);
+        if (dStr === selectedDate) return { bg: "#111", color: "#fff", selected: true };
+        return null;
+      },
+      onSelectDate: (dateStr) => {
+        selectedDate = dateStr;
         renderCalendarWidget();
-      });
+      }
     });
   }
 
@@ -3783,24 +3619,7 @@ function attachGymEvents(content) {
   });
 
   // navegación de meses en el home
-  const homePrev = content.querySelector("#gymHomePrev");
-  if (homePrev) {
-    homePrev.addEventListener("click", () => {
-      let y = Number(homePrev.dataset.year), m = Number(homePrev.dataset.month) - 1;
-      if (m < 0) { m = 11; y--; }
-      content.innerHTML = renderGymHome(y, m);
-      attachGymEvents(content);
-    });
-  }
-  const homeNext = content.querySelector("#gymHomeNext");
-  if (homeNext) {
-    homeNext.addEventListener("click", () => {
-      let y = Number(homeNext.dataset.year), m = Number(homeNext.dataset.month) + 1;
-      if (m > 11) { m = 0; y++; }
-      content.innerHTML = renderGymHome(y, m);
-      attachGymEvents(content);
-    });
-  }
+
 
   // abrir un día existente
   content.querySelectorAll(".gym-day-card").forEach(card => {
@@ -3938,7 +3757,7 @@ function attachGymEvents(content) {
     });
   }
 
-  // render inicial de widgets si estamos en la pantalla de crear
+// render inicial de widgets si estamos en la pantalla de crear
   if (content.querySelector("#gymCalendarContainer")) renderCalendarWidget();
   if (content.querySelector("#gymExerciseList")) renderExerciseList();
 }
