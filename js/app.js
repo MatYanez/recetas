@@ -42,9 +42,6 @@ async function sincronizarDesdeFirestore() {
   }
 }
 
-// Arranca la app YA con lo que haya guardado en el dispositivo — no espera a Firebase
-iniciarApp();
-
 // Sincroniza con la nube en segundo plano, sin bloquear la pantalla
 onAuthStateChanged(auth, user => {
   if (user) {
@@ -4075,4 +4072,6 @@ createBtn.addEventListener("click", () => {
   if (content.querySelector("#gymExerciseList")) renderExerciseList();
 }
 
-//v1
+iniciarApp();
+
+//v2
