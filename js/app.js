@@ -3458,7 +3458,12 @@ const WEEKDAY_LABELS = { lunes: "L", martes: "M", miercoles: "X", jueves: "J", v
 const JS_DAY_TO_KEY = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
 
 function loadGymDays() {
-  return safeParse(localStorage.getItem("gym-days"), []);
+  const days = safeParse(localStorage.getItem("gym-days"), []);
+  return days.map(d => ({
+    ...d,
+    type: d.type || "gimnasio",
+    weekdays: d.weekdays || (d.weekday ? [d.weekday] : [])
+  }));
 }
 function saveGymDays(days) {
   localStorage.setItem("gym-days", JSON.stringify(days));
