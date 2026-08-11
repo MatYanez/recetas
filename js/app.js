@@ -733,15 +733,20 @@ content.querySelectorAll(".calendar-day").forEach(day => {
       fetch("./data/recetas.json")
         .then(r => r.json())
         .then(list => {
-          const found = list.find(x => x.name === name);
-          if (found) window.lastRecipeListRender = null;
-window.returnToCalendarView = () => updateView("calendario");
-showRecipeDetail(found);
-window.cameFromCalendar = true;
-// Ocultar el botón Organizar
-const organizeBtn = document.querySelector("#organizeBtn");
-if (organizeBtn) organizeBtn.style.visibility = "hidden";
-organizeBtn.style.pointerEvents = "none";
+    const found = list.find(x => x.name === name);
+          if (!found) return; // la comida guardada ya no existe en recetas.json
+
+          window.lastRecipeListRender = null;
+          window.returnToCalendarView = () => updateView("calendario");
+          showRecipeDetail(found);
+          window.cameFromCalendar = true;
+
+          // Ocultar el botón Organizar
+          const organizeBtn = document.querySelector("#organizeBtn");
+          if (organizeBtn) {
+            organizeBtn.style.visibility = "hidden";
+            organizeBtn.style.pointerEvents = "none";
+          }
         });
     });
   });
