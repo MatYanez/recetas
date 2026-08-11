@@ -67,9 +67,10 @@ function dateKeyOf(date) {
   return date.toISOString().slice(0, 10);
 }
 
-/* ---------- Calendario unificado: siempre L-V, navegación por semana ---------- */
+/* ---------- Calendario unificado: comprimido (L-V) / expandido (mes completo) ---------- */
 function buildUnifiedCalendar(container, config) {
   let current = config.initialDate ? new Date(config.initialDate) : new Date();
+  let expanded = !!config.expanded;
 
   function weekStartOf(date) {
     const d = new Date(date);
@@ -80,34 +81,54 @@ function buildUnifiedCalendar(container, config) {
 
   function render() {
     const monthName = current.toLocaleString("es-ES", { month: "long", year: "numeric" });
-    const ws = weekStartOf(current);
-    const cells = [];
-    for (let i = 0; i < 5; i++) {
-      const d = new Date(ws);
-      d.setDate(ws.getDate() + i);
-      cells.push(d);
+
+    let cells = [];
+    if (expanded) {
+      const year = current.getFullYear();
+      const month = current.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const offset = (firstDay.getDay() + 6) % 7;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      for (let i = 0; i < offset; i++) cells.push(null);
+      for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
+    } else {
+      const ws = weekStartOf(current);
+      for (let i = 0; i < 5; i++) {
+        const d = new Date(ws);
+        d.setDate(ws.getDate() + i);
+        cells.push(d);
+      }
     }
+
+    const cols = expanded ? 7 : 5;
+    const headerDays = expanded
+      ? `<span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>`
+      : `<span>L</span><span>M</span><span>X</span><span>J</span><span>V</span>`;
 
     container.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
         <button type="button" class="cal-prev" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#333;padding:0.3rem;">‹</button>
-        <span style="font-weight:700;font-size:1.05rem;text-transform:capitalize;color:#111;">${monthName}</span>
+        <button type="button" class="cal-toggle" style="background:none;border:none;font-weight:700;font-size:1.05rem;text-transform:capitalize;display:flex;align-items:center;gap:2px;cursor:pointer;color:#111;">
+          ${monthName} ${icon(expanded ? "expand_less" : "expand_more", "1.2rem")}
+        </button>
         <button type="button" class="cal-next" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#333;padding:0.3rem;">›</button>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center;font-weight:600;font-size:0.72rem;color:#999;margin-bottom:0.4rem;">
-        <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span>
+      <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;text-align:center;font-weight:600;font-size:0.72rem;color:#999;margin-bottom:0.4rem;">
+        ${headerDays}
       </div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
+      <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;">
         ${cells.map(date => {
+          if (!date) return `<div></div>`;
           const info = (config.getCellInfo && config.getCellInfo(date)) || {};
+          const isWeekend = expanded && (date.getDay() === 0 || date.getDay() === 6);
           const isToday = date.toDateString() === new Date().toDateString();
           return `
             <button type="button" class="cal-day" data-date="${dateKeyOf(date)}" style="
               aspect-ratio:1;border-radius:10px;border:none;cursor:pointer;
               display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
               font-size:0.78rem;font-weight:600;
-              background:${info.bg || "#f3f4f6"};
-              color:${info.color || "#333"};
+              background:${info.bg || (isWeekend ? "#fafafa" : "#f3f4f6")};
+              color:${info.color || (isWeekend ? "#ccc" : "#333")};
               ${isToday && !info.selected ? "border:2px solid #111;" : "border:2px solid transparent;"}
             ">
               <span>${date.getDate()}</span>
@@ -118,12 +139,18 @@ function buildUnifiedCalendar(container, config) {
       </div>
     `;
 
+    container.querySelector(".cal-toggle").addEventListener("click", () => {
+      expanded = !expanded;
+      render();
+    });
     container.querySelector(".cal-prev").addEventListener("click", () => {
-      current.setDate(current.getDate() - 7);
+      if (expanded) current.setMonth(current.getMonth() - 1);
+      else current.setDate(current.getDate() - 7);
       render();
     });
     container.querySelector(".cal-next").addEventListener("click", () => {
-      current.setDate(current.getDate() + 7);
+      if (expanded) current.setMonth(current.getMonth() + 1);
+      else current.setDate(current.getDate() + 7);
       render();
     });
     container.querySelectorAll(".cal-day").forEach(btn => {
