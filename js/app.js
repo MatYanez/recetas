@@ -1556,8 +1556,8 @@ content.ontouchmove = (e) => {
 content.ontouchend = () => {
   if (!swipeEnabled) return; // bloqueado en pantallas tipo "detalle receta"
 
-  // Evitar swipe si tocaste UI interactiva
-  const interactiveTags = ["INPUT", "BUTTON", "IMG", "A", "TEXTAREA"];
+// Evitar swipe solo si tocaste algo realmente interactivo (no una imagen o texto)
+  const interactiveTags = ["INPUT", "BUTTON", "A", "TEXTAREA"];
   if (interactiveTags.includes(startTarget.tagName)) return;
 
   const deltaX = endX - startX;
