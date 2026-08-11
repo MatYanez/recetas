@@ -1,5 +1,13 @@
 import { animate, stagger } from "https://cdn.jsdelivr.net/npm/@motionone/dom/+esm";
-const USER_HEIGHT = 1.65; 
+const USER_HEIGHT = 1.65;
+
+function safeParse(raw, fallback) {
+  try {
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
 const header = document.querySelector(".header");
 const MEDALS = [
   {
@@ -187,9 +195,12 @@ function showNavigationBars() {
 
 
 /* ---------- Render inicial ---------- */
+let cardClickLocked = false;
+
 function render() {
   app.removeAttribute("style");
   app.innerHTML = "";
+  cardClickLocked = false;
 
   cards.forEach((card) => {
     const div = document.createElement("div");
@@ -198,6 +209,8 @@ function render() {
     div.textContent = card.title;
 
     div.addEventListener("click", () => {
+      if (cardClickLocked) return;
+      cardClickLocked = true;
       selected = card.id;
       expandCard(card);
     });
@@ -583,7 +596,7 @@ ${week.map((d, index) => {
   if (dow !== 1) weekStart.setDate(weekStart.getDate() - (dow - 1));
   const weekKey = weekStart.toISOString().slice(0,10);
 
-  const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
+const saved = safeParse(localStorage.getItem("meals-" + weekKey), {});
 
   const dist = saved.distribution || {
     lunes:"meal1", martes:"meal2", miercoles:"meal1",
@@ -695,7 +708,7 @@ content.querySelectorAll(".calendar-day").forEach(day => {
     const weekKey = day.dataset.weekkey;
     const slot = day.dataset.slot;
 
-    const saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
+    const saved = safeParse(localStorage.getItem("meals-" + weekKey), {});
     const name = saved[slot] || "";
     const img = saved[slot+"Img"] || "";
 
@@ -733,19 +746,19 @@ content.querySelectorAll(".calendar-day").forEach(day => {
       fetch("./data/recetas.json")
         .then(r => r.json())
         .then(list => {
-    const found = list.find(x => x.name === name);
-          if (!found) return; // la comida guardada ya no existe en recetas.json
+const found = list.find(x => x.name === name);
+          if (!found) return;
 
           window.lastRecipeListRender = null;
           window.returnToCalendarView = () => updateView("calendario");
           showRecipeDetail(found);
           window.cameFromCalendar = true;
 
-          // Ocultar el botón Organizar
           const organizeBtn = document.querySelector("#organizeBtn");
           if (organizeBtn) {
             organizeBtn.style.visibility = "hidden";
             organizeBtn.style.pointerEvents = "none";
+          }
           }
         });
     });
@@ -1005,7 +1018,7 @@ let selectedMeals = {
 function loadWeekMeals(weekKey) {
   screen.dataset.weekKey = weekKey;
 
-  let saved = JSON.parse(localStorage.getItem("meals-" + weekKey) || "{}");
+let saved = safeParse(localStorage.getItem("meals-" + weekKey), {});
 
   // Si NO existe distribución, generarla automáticamente
   if (!saved.distribution) {
@@ -1715,8 +1728,7 @@ function calculateWeekScore(week) {
 
 // ---------- LOAD & SAVE ----------
 function loadHabitData(date) {
-  const raw = localStorage.getItem("habits-" + date);
-  return raw ? JSON.parse(raw) : {};
+  return safeParse(localStorage.getItem("habits-" + date), {});
 }
 
 function saveHabitData(date, data) {
@@ -2575,49 +2587,6 @@ setTimeout(() => {
 
   }
 
-  // ---- Generar semanas del mes ----
-function getWeeksOfMonthExtended(year, month) {
-  const weeks = [];
-
-  function collectWeeks(y, m) {
-    const monthWeeks = [];
-    const date = new Date(y, m, 1);
-
-    // retroceder al lunes anterior
-    while (date.getDay() !== 1) date.setDate(date.getDate() - 1);
-
-    while (true) {
-      const start = new Date(date);
-      const end = new Date(start);
-      end.setDate(start.getDate() + 6);
-
-      monthWeeks.push({
-        start,
-        end,
-        weekKey: start.toISOString().slice(0, 10)
-      });
-
-      date.setDate(date.getDate() + 7);
-      if (date.getMonth() !== m) break;
-    }
-
-    return monthWeeks;
-  }
-
-  // Mes anterior
-  const prevMonth = month === 0 ? 11 : month - 1;
-  const prevYear = month === 0 ? year - 1 : year;
-
-  // Mes siguiente
-  const nextMonth = month === 11 ? 0 : month + 1;
-  const nextYear = month === 11 ? year + 1 : year;
-
-  weeks.push(...collectWeeks(prevYear, prevMonth));
-  weeks.push(...collectWeeks(year, month));
-  weeks.push(...collectWeeks(nextYear, nextMonth));
-
-  return weeks;
-}
 
 
 
@@ -2749,7 +2718,7 @@ function calculateMedals() {
     last30.push({ date: key, data: loadHabitData(key) });
   }
 
-  let earned = JSON.parse(localStorage.getItem("earned-medals") || "{}");
+let earned = safeParse(localStorage.getItem("earned-medals"), {});
   const progress = {};
 
   MEDALS.forEach(m => {
@@ -2963,7 +2932,7 @@ function saveWeeklyWeight(weight) {
 
 
 function loadWeightLog() {
-  return JSON.parse(localStorage.getItem("weightLog") || "[]");
+  return safeParse(localStorage.getItem("weightLog"), []);
 }
 
 function calculateIMC(weight) {
