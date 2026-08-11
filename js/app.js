@@ -3435,6 +3435,10 @@ if (!content) return alert("Error: no existe content para mostrar pasos.");
    GIMNASIO / FÚTBOL — días recurrentes + calendario de cobertura
 ================================================== */
 
+/* ==================================================
+   GIMNASIO / FÚTBOL — fecha específica por día + calendario
+================================================== */
+
 const GYM_ACTIVITY_TYPES = {
   gimnasio: {
     label: "Gimnasio",
@@ -3446,56 +3450,46 @@ const GYM_ACTIVITY_TYPES = {
       "Plancha", "Abdominales", "Hip thrust", "Jalón al pecho"
     ]
   },
-  futbol: {
-    label: "Fútbol",
-    icon: "⚽",
-    exercises: ["Entrenamiento", "Partido", "Calentamiento", "Cardio", "Estiramiento"]
-  }
+  futbol: { label: "Fútbol", icon: "⚽" }
 };
-
-const WEEKDAYS = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
-const WEEKDAY_LABELS = { lunes: "L", martes: "M", miercoles: "X", jueves: "J", viernes: "V", sabado: "S", domingo: "D" };
-const JS_DAY_TO_KEY = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
 
 function loadGymDays() {
   const days = safeParse(localStorage.getItem("gym-days"), []);
   return days.map(d => ({
-    ...d,
+    id: d.id,
     type: d.type || "gimnasio",
-    weekdays: d.weekdays || (d.weekday ? [d.weekday] : [])
+    name: d.name || (d.type === "futbol" ? "Partido" : "Día"),
+    date: d.date || dateKeyOf(new Date()),
+    exercises: (d.exercises || []).map(e => ({
+      id: e.id,
+      name: e.name,
+      done: !!e.done
+    }))
   }));
 }
 function saveGymDays(days) {
   localStorage.setItem("gym-days", JSON.stringify(days));
 }
-function loadGymLog(dateKey, dayId) {
-  return safeParse(localStorage.getItem(`gym-log-${dateKey}-${dayId}`), {});
-}
-function saveGymLog(dateKey, dayId, log) {
-  localStorage.setItem(`gym-log-${dateKey}-${dayId}`, JSON.stringify(log));
-}
 function dateKeyOf(date) {
   return date.toISOString().slice(0, 10);
 }
-function todayKey() {
-  return dateKeyOf(new Date());
+function formatDateEs(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
 }
 
 /* ---------- Cobertura de un día del calendario ---------- */
 function getGymCoverageForDate(date, days) {
-  const weekdayKey = JS_DAY_TO_KEY[date.getDay()];
-  const scheduled = days.filter(d => d.weekdays.includes(weekdayKey));
-  if (scheduled.length === 0) return { bg: "#f8f9fa", color: "#ccc", icons: "" };
+  const dStr = dateKeyOf(date);
+  const matches = days.filter(d => d.date === dStr);
+  if (matches.length === 0) return { bg: "#f8f9fa", color: "#ccc", icons: "" };
 
-  const dKey = dateKeyOf(date);
   const isFuture = date > new Date(new Date().toDateString());
   let allDone = true;
   let icons = "";
-
-  scheduled.forEach(day => {
+  matches.forEach(day => {
     icons += GYM_ACTIVITY_TYPES[day.type].icon;
-    const log = loadGymLog(dKey, day.id);
-    const done = day.exercises.length > 0 && day.exercises.every(e => log[e.id]);
+    const done = day.exercises.length > 0 && day.exercises.every(e => e.done);
     if (!done) allDone = false;
   });
 
@@ -3505,16 +3499,56 @@ function getGymCoverageForDate(date, days) {
     : { bg: "#fee2e2", color: "#b91c1c", icons };
 }
 
+/* ---------- Mini calendario reutilizable ---------- */
+function renderMiniCalendar(year, month, selectedDateStr) {
+  const monthName = new Date(year, month, 1).toLocaleString("es-ES", { month: "long", year: "numeric" });
+  const firstDay = new Date(year, month, 1);
+  const startOffset = (firstDay.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const cells = [];
+  for (let i = 0; i < startOffset; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
+
+  return `
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
+        <button type="button" id="gymCalPrev" style="background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">‹</button>
+        <span style="font-weight:700;text-transform:capitalize;">${monthName}</span>
+        <button type="button" id="gymCalNext" style="background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">›</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:0.7rem;color:#777;font-weight:600;margin-bottom:0.3rem;">
+        <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">
+        ${cells.map(date => {
+          if (!date) return `<div></div>`;
+          const dStr = dateKeyOf(date);
+          const isSelected = dStr === selectedDateStr;
+          return `
+            <button type="button" class="gym-cal-day" data-date="${dStr}" style="
+              aspect-ratio:1;border-radius:8px;border:none;font-size:0.8rem;font-weight:600;cursor:pointer;
+              background:${isSelected ? "#111" : "#f3f4f6"};
+              color:${isSelected ? "#fff" : "#333"};
+            ">${date.getDate()}</button>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
 /* ---------- Pantalla principal: calendario + lista de días ---------- */
-function renderGymHome() {
+function renderGymHome(year, month) {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  if (year === undefined) year = now.getFullYear();
+  if (month === undefined) month = now.getMonth();
+
   const days = loadGymDays();
-  const monthName = now.toLocaleString("es-ES", { month: "long", year: "numeric" });
+  const monthName = new Date(year, month, 1).toLocaleString("es-ES", { month: "long", year: "numeric" });
 
   const firstDay = new Date(year, month, 1);
-  const startOffset = (firstDay.getDay() + 6) % 7; // lunes = 0
+  const startOffset = (firstDay.getDay() + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const cells = [];
@@ -3523,30 +3557,26 @@ function renderGymHome() {
 
   return `
     <div style="width:100%;">
-      <h2 style="font-size:1.3rem;font-weight:700;margin:0.5rem 0 1rem 0;text-transform:capitalize;">${monthName}</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:0.5rem 0 1rem 0;">
+        <button id="gymHomePrev" data-year="${year}" data-month="${month}" style="background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">‹</button>
+        <h2 style="font-size:1.2rem;font-weight:700;text-transform:capitalize;margin:0;">${monthName}</h2>
+        <button id="gymHomeNext" data-year="${year}" data-month="${month}" style="background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">›</button>
+      </div>
 
       <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-weight:600;font-size:0.75rem;color:#777;margin-bottom:0.4rem;">
         <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
       </div>
 
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:1.5rem;">
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:1rem;">
         ${cells.map(date => {
           if (!date) return `<div></div>`;
           const info = getGymCoverageForDate(date, days);
           const isToday = date.toDateString() === new Date().toDateString();
           return `
             <div style="
-              aspect-ratio:1;
-              border-radius:10px;
-              display:flex;
-              flex-direction:column;
-              align-items:center;
-              justify-content:center;
-              gap:2px;
-              font-size:0.75rem;
-              font-weight:600;
-              background:${info.bg};
-              color:${info.color};
+              aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;
+              align-items:center;justify-content:center;gap:2px;font-size:0.75rem;font-weight:600;
+              background:${info.bg};color:${info.color};
               ${isToday ? "border:2px solid #111;" : ""}
             ">
               <span>${date.getDate()}</span>
@@ -3557,19 +3587,16 @@ function renderGymHome() {
       </div>
 
       <div style="display:flex;gap:1rem;font-size:0.75rem;color:#777;margin-bottom:1.5rem;flex-wrap:wrap;">
-        <span>🟩 cumplido</span>
-        <span>🟥 pendiente</span>
-        <span>🟦 próximo</span>
+        <span>🟩 cumplido</span><span>🟥 pendiente</span><span>🟦 próximo</span>
       </div>
 
       <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">Mis días</h3>
 
       ${days.length === 0 ? `
         <p style="text-align:center;color:#777;margin:1rem 0;">Todavía no tienes días creados.</p>
-      ` : days.map(day => {
+      ` : days.slice().sort((a, b) => a.date.localeCompare(b.date)).map(day => {
         const type = GYM_ACTIVITY_TYPES[day.type];
-        const log = loadGymLog(todayKey(), day.id);
-        const done = day.exercises.filter(e => log[e.id]).length;
+        const done = day.exercises.filter(e => e.done).length;
         return `
           <div class="gym-day-card" data-day-id="${day.id}" style="
             background:#fff;border-radius:16px;box-shadow:0 3px 12px rgba(0,0,0,0.07);
@@ -3579,7 +3606,7 @@ function renderGymHome() {
             <div>
               <h4 style="font-weight:700;font-size:1rem;margin:0;">${type.icon} ${day.name}</h4>
               <p style="font-size:0.8rem;color:#777;margin:0.3rem 0 0 0;">
-                ${day.weekdays.map(w => WEEKDAY_LABELS[w]).join(" · ")} — ${done}/${day.exercises.length} hoy
+                ${formatDateEs(day.date)} — ${done}/${day.exercises.length}
               </p>
             </div>
             <span style="font-size:1.2rem;">→</span>
@@ -3597,6 +3624,7 @@ function renderGymHome() {
 
 /* ---------- Pantalla: crear día ---------- */
 function renderGymCreateDay() {
+  const now = new Date();
   return `
     <div style="width:100%;">
       <button class="gym-back" data-go="home" style="
@@ -3618,37 +3646,40 @@ function renderGymCreateDay() {
         ">⚽ Fútbol</button>
       </div>
 
-      <input id="gymDayName" type="text" placeholder="Ej: Día 1 - Pecho y tríceps" style="
-        width:100%;padding:0.9rem;border-radius:12px;border:1px solid #ddd;
-        font-size:1rem;margin-bottom:1.2rem;box-sizing:border-box;
-      ">
-
-      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">¿Qué días de la semana se repite?</h3>
-      <div id="gymWeekdayChips" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.2rem;">
-        ${WEEKDAYS.map(w => `
-          <button class="gym-weekday-chip" data-weekday="${w}" style="
-            padding:0.5rem 0.9rem;border-radius:999px;border:1px solid #ddd;
-            background:#f3f4f6;font-size:0.85rem;font-weight:600;cursor:pointer;
-          ">${WEEKDAY_LABELS[w]}</button>
-        `).join("")}
-      </div>
-
-      <h3 id="gymExercisesLabel" style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">Ejercicios clásicos</h3>
-      <div id="gymExerciseChips" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.2rem;"></div>
-
-      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">Agregar otro</h3>
-      <div style="display:flex;gap:0.5rem;margin-bottom:1.2rem;">
-        <input id="gymCustomEx" type="text" placeholder="Nombre" style="
-          flex:1;padding:0.7rem;border-radius:12px;border:1px solid #ddd;
-          font-size:0.9rem;box-sizing:border-box;
+      <div id="gymNameSection" style="display:block;">
+        <input id="gymDayName" type="text" placeholder="Ej: Día 1 - Pecho y tríceps" style="
+          width:100%;padding:0.9rem;border-radius:12px;border:1px solid #ddd;
+          font-size:1rem;margin-bottom:1.2rem;box-sizing:border-box;
         ">
-        <button id="gymAddCustomEx" style="
-          background:#f3f4f6;border:1px solid #ddd;border-radius:12px;
-          padding:0.7rem 1rem;font-weight:600;cursor:pointer;
-        ">Añadir</button>
       </div>
 
-      <div id="gymSelectedList" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.5rem;"></div>
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">Elige el día</h3>
+      <div id="gymCalendarContainer" data-year="${now.getFullYear()}" data-month="${now.getMonth()}" style="margin-bottom:1.5rem;"></div>
+
+      <div id="gymExerciseSection" style="display:block;">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">Ejercicios</h3>
+        <input id="gymExSearch" type="text" placeholder="Buscar ejercicio..." style="
+          width:100%;padding:0.7rem;border-radius:12px;border:1px solid #ddd;
+          font-size:0.9rem;margin-bottom:0.8rem;box-sizing:border-box;
+        ">
+        <div id="gymExerciseList" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;"></div>
+
+        <button id="toggleAddCustom" type="button" style="
+          width:100%;background:transparent;border:2px solid #111;color:#111;
+          border-radius:12px;padding:0.8rem;font-weight:600;font-size:0.95rem;cursor:pointer;margin-bottom:1.5rem;
+        ">+ Agregar otro</button>
+
+        <div id="gymAddCustomBox" style="display:none;gap:0.5rem;margin-top:-1rem;margin-bottom:1.5rem;">
+          <input id="gymCustomEx" type="text" placeholder="Nombre del ejercicio" style="
+            flex:1;padding:0.7rem;border-radius:12px;border:1px solid #ddd;
+            font-size:0.9rem;box-sizing:border-box;
+          ">
+          <button id="gymAddCustomExBtn" type="button" style="
+            background:#f3f4f6;border:1px solid #ddd;border-radius:12px;
+            padding:0.7rem 1rem;font-weight:600;cursor:pointer;
+          ">Agregar</button>
+        </div>
+      </div>
 
       <button id="saveGymDay" style="
         width:100%;background:#111;color:#fff;border:none;border-radius:14px;
@@ -3661,7 +3692,6 @@ function renderGymCreateDay() {
 /* ---------- Pantalla: checklist de un día ---------- */
 function renderGymChecklist(day) {
   const type = GYM_ACTIVITY_TYPES[day.type];
-  const log = loadGymLog(todayKey(), day.id);
 
   return `
     <div style="width:100%;">
@@ -3671,19 +3701,16 @@ function renderGymChecklist(day) {
       ">← Volver</button>
 
       <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:0.3rem;">${type.icon} ${day.name}</h2>
-      <p style="font-size:0.85rem;color:#777;margin-bottom:1.2rem;">
-        Se repite: ${day.weekdays.map(w => WEEKDAY_LABELS[w]).join(" · ")}
-      </p>
+      <p style="font-size:0.85rem;color:#777;margin-bottom:1.2rem;">${formatDateEs(day.date)}</p>
 
       <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.5rem;">
         ${day.exercises.map(ex => `
           <label class="gym-check-item" data-ex-id="${ex.id}" style="
             display:flex;align-items:center;gap:0.9rem;background:#fff;
-            border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,0.05);
-            padding:1rem;cursor:pointer;
+            border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,0.05);padding:1rem;cursor:pointer;
           ">
-            <input type="checkbox" data-ex-id="${ex.id}" ${log[ex.id] ? "checked" : ""} style="width:22px;height:22px;">
-            <span style="font-weight:600;font-size:1rem;${log[ex.id] ? "text-decoration:line-through;color:#999;" : ""}">
+            <input type="checkbox" data-ex-id="${ex.id}" ${ex.done ? "checked" : ""} style="width:22px;height:22px;">
+            <span style="font-weight:600;font-size:1rem;${ex.done ? "text-decoration:line-through;color:#999;" : ""}">
               ${ex.name}
             </span>
           </label>
@@ -3701,48 +3728,54 @@ function renderGymChecklist(day) {
 /* ---------- Eventos ---------- */
 function attachGymEvents(content) {
   let selectedType = "gimnasio";
-  let selectedWeekdays = [];
+  let selectedDate = null;
   let selectedExercises = [];
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth();
 
-  function renderExerciseChips() {
-    const box = content.querySelector("#gymExerciseChips");
-    const label = content.querySelector("#gymExercisesLabel");
-    if (!box) return;
-    label.textContent = selectedType === "gimnasio" ? "Ejercicios clásicos" : "Actividades clásicas";
-    box.innerHTML = GYM_ACTIVITY_TYPES[selectedType].exercises.map(ex => `
-      <button class="gym-ex-chip" data-name="${ex}" style="
-        padding:0.5rem 0.9rem;border-radius:999px;border:1px solid #ddd;
-        background:#f3f4f6;font-size:0.85rem;font-weight:600;cursor:pointer;
-      ">${ex}</button>
-    `).join("");
-    bindExerciseChips();
-  }
+  function renderCalendarWidget() {
+    const container = content.querySelector("#gymCalendarContainer");
+    if (!container) return;
+    container.innerHTML = renderMiniCalendar(calYear, calMonth, selectedDate);
 
-  function bindExerciseChips() {
-    content.querySelectorAll(".gym-ex-chip").forEach(chip => {
-      chip.addEventListener("click", () => {
-        const name = chip.dataset.name;
-        if (!selectedExercises.includes(name)) {
-          selectedExercises.push(name);
-          renderSelectedList();
-        }
+    container.querySelector("#gymCalPrev").addEventListener("click", () => {
+      calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendarWidget();
+    });
+    container.querySelector("#gymCalNext").addEventListener("click", () => {
+      calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendarWidget();
+    });
+    container.querySelectorAll(".gym-cal-day").forEach(btn => {
+      btn.addEventListener("click", () => {
+        selectedDate = btn.dataset.date;
+        renderCalendarWidget();
       });
     });
   }
 
-  function renderSelectedList() {
-    const box = content.querySelector("#gymSelectedList");
+  function renderExerciseList() {
+    const box = content.querySelector("#gymExerciseList");
     if (!box) return;
-    box.innerHTML = selectedExercises.map((name, i) => `
-      <div style="display:flex;justify-content:space-between;align-items:center;background:#f3f4f6;border-radius:10px;padding:0.6rem 0.9rem;">
-        <span style="font-weight:600;font-size:0.9rem;">${name}</span>
-        <button class="gym-remove-ex" data-index="${i}" style="background:none;border:none;color:#d33;font-weight:700;cursor:pointer;">✕</button>
-      </div>
-    `).join("");
-    box.querySelectorAll(".gym-remove-ex").forEach(btn => {
-      btn.addEventListener("click", () => {
-        selectedExercises.splice(Number(btn.dataset.index), 1);
-        renderSelectedList();
+    const search = (content.querySelector("#gymExSearch")?.value || "").toLowerCase();
+    const pool = [...new Set([...GYM_ACTIVITY_TYPES.gimnasio.exercises, ...selectedExercises])];
+    box.innerHTML = pool
+      .filter(name => name.toLowerCase().includes(search))
+      .map(name => `
+        <label style="display:flex;align-items:center;gap:0.7rem;background:#f8f9fa;border-radius:10px;padding:0.6rem 0.8rem;cursor:pointer;">
+          <input type="checkbox" class="gym-ex-check" data-name="${name}" ${selectedExercises.includes(name) ? "checked" : ""}>
+          <span style="font-weight:600;font-size:0.9rem;">${name}</span>
+        </label>
+      `).join("");
+
+    box.querySelectorAll(".gym-ex-check").forEach(cb => {
+      cb.addEventListener("change", () => {
+        const name = cb.dataset.name;
+        if (cb.checked) {
+          if (!selectedExercises.includes(name)) selectedExercises.push(name);
+        } else {
+          selectedExercises = selectedExercises.filter(n => n !== name);
+        }
       });
     });
   }
@@ -3754,6 +3787,26 @@ function attachGymEvents(content) {
       attachGymEvents(content);
     });
   });
+
+  // navegación de meses en el home
+  const homePrev = content.querySelector("#gymHomePrev");
+  if (homePrev) {
+    homePrev.addEventListener("click", () => {
+      let y = Number(homePrev.dataset.year), m = Number(homePrev.dataset.month) - 1;
+      if (m < 0) { m = 11; y--; }
+      content.innerHTML = renderGymHome(y, m);
+      attachGymEvents(content);
+    });
+  }
+  const homeNext = content.querySelector("#gymHomeNext");
+  if (homeNext) {
+    homeNext.addEventListener("click", () => {
+      let y = Number(homeNext.dataset.year), m = Number(homeNext.dataset.month) + 1;
+      if (m > 11) { m = 0; y++; }
+      content.innerHTML = renderGymHome(y, m);
+      attachGymEvents(content);
+    });
+  }
 
   // abrir un día existente
   content.querySelectorAll(".gym-day-card").forEach(card => {
@@ -3771,11 +3824,12 @@ function attachGymEvents(content) {
   if (createBtn) {
     createBtn.addEventListener("click", () => {
       selectedType = "gimnasio";
-      selectedWeekdays = [];
+      selectedDate = null;
       selectedExercises = [];
+      calYear = new Date().getFullYear();
+      calMonth = new Date().getMonth();
       content.innerHTML = renderGymCreateDay();
       attachGymEvents(content);
-      renderExerciseChips();
     });
   }
 
@@ -3783,45 +3837,43 @@ function attachGymEvents(content) {
   content.querySelectorAll(".gym-type-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       selectedType = btn.dataset.type;
-      selectedExercises = [];
       content.querySelectorAll(".gym-type-btn").forEach(b => {
         const active = b.dataset.type === selectedType;
         b.style.background = active ? "#111" : "#fff";
         b.style.color = active ? "#fff" : "#333";
         b.style.borderColor = active ? "#111" : "#ddd";
       });
-      renderExerciseChips();
-      renderSelectedList();
+      const nameSection = content.querySelector("#gymNameSection");
+      const exSection = content.querySelector("#gymExerciseSection");
+      if (nameSection) nameSection.style.display = selectedType === "gimnasio" ? "block" : "none";
+      if (exSection) exSection.style.display = selectedType === "gimnasio" ? "block" : "none";
     });
   });
 
-  // elegir días de la semana
-  content.querySelectorAll(".gym-weekday-chip").forEach(chip => {
-    chip.addEventListener("click", () => {
-      const w = chip.dataset.weekday;
-      if (selectedWeekdays.includes(w)) {
-        selectedWeekdays = selectedWeekdays.filter(x => x !== w);
-        chip.style.background = "#f3f4f6";
-        chip.style.color = "#333";
-      } else {
-        selectedWeekdays.push(w);
-        chip.style.background = "#111";
-        chip.style.color = "#fff";
-      }
-    });
-  });
+  // buscador de ejercicios
+  const searchInput = content.querySelector("#gymExSearch");
+  if (searchInput) searchInput.addEventListener("input", renderExerciseList);
 
-  // agregar ejercicio/actividad custom
-  const addCustomBtn = content.querySelector("#gymAddCustomEx");
-  if (addCustomBtn) {
-    addCustomBtn.addEventListener("click", () => {
+  // toggle "Agregar otro"
+  const toggleBtn = content.querySelector("#toggleAddCustom");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      const box = content.querySelector("#gymAddCustomBox");
+      box.style.display = box.style.display === "none" ? "flex" : "none";
+    });
+  }
+
+  // agregar ejercicio custom
+  const addCustomExBtn = content.querySelector("#gymAddCustomExBtn");
+  if (addCustomExBtn) {
+    addCustomExBtn.addEventListener("click", () => {
       const input = content.querySelector("#gymCustomEx");
       const name = input.value.trim();
-      if (name && !selectedExercises.includes(name)) {
-        selectedExercises.push(name);
-        input.value = "";
-        renderSelectedList();
-      }
+      if (!name) return;
+      if (!selectedExercises.includes(name)) selectedExercises.push(name);
+      input.value = "";
+      content.querySelector("#gymExSearch").value = "";
+      renderExerciseList();
     });
   }
 
@@ -3829,20 +3881,32 @@ function attachGymEvents(content) {
   const saveBtn = content.querySelector("#saveGymDay");
   if (saveBtn) {
     saveBtn.addEventListener("click", () => {
-      const nameInput = content.querySelector("#gymDayName");
-      const dayName = nameInput.value.trim();
-      if (!dayName) return alert("Ponle un nombre al día.");
-      if (selectedWeekdays.length === 0) return alert("Elige al menos un día de la semana.");
-      if (selectedExercises.length === 0) return alert("Agrega al menos un ejercicio o actividad.");
+      if (!selectedDate) return alert("Elige un día en el calendario.");
+
+      let newDay;
+      if (selectedType === "futbol") {
+        newDay = {
+          id: "day-" + Date.now(),
+          type: "futbol",
+          name: "Partido",
+          date: selectedDate,
+          exercises: [{ id: "ex-partido", name: "Partido", done: false }]
+        };
+      } else {
+        const nameInput = content.querySelector("#gymDayName");
+        const dayName = nameInput.value.trim();
+        if (!dayName) return alert("Ponle un nombre al día.");
+        if (selectedExercises.length === 0) return alert("Elige al menos un ejercicio.");
+        newDay = {
+          id: "day-" + Date.now(),
+          type: "gimnasio",
+          name: dayName,
+          date: selectedDate,
+          exercises: selectedExercises.map((name, i) => ({ id: "ex-" + Date.now() + "-" + i, name, done: false }))
+        };
+      }
 
       const days = loadGymDays();
-      const newDay = {
-        id: "day-" + Date.now(),
-        type: selectedType,
-        name: dayName,
-        weekdays: selectedWeekdays,
-        exercises: selectedExercises.map((name, i) => ({ id: "ex-" + Date.now() + "-" + i, name }))
-      };
       days.push(newDay);
       saveGymDays(days);
 
@@ -3856,10 +3920,12 @@ function attachGymEvents(content) {
   content.querySelectorAll(".gym-check-item input[type=checkbox]").forEach(checkbox => {
     checkbox.addEventListener("change", () => {
       if (!deleteBtnRef) return;
-      const dayId = deleteBtnRef.dataset.dayId;
-      const log = loadGymLog(todayKey(), dayId);
-      log[checkbox.dataset.exId] = checkbox.checked;
-      saveGymLog(todayKey(), dayId, log);
+      const days = loadGymDays();
+      const day = days.find(d => d.id === deleteBtnRef.dataset.dayId);
+      if (!day) return;
+      const ex = day.exercises.find(e => e.id === checkbox.dataset.exId);
+      if (ex) ex.done = checkbox.checked;
+      saveGymDays(days);
 
       const label = checkbox.closest(".gym-check-item").querySelector("span");
       label.style.textDecoration = checkbox.checked ? "line-through" : "none";
@@ -3870,18 +3936,21 @@ function attachGymEvents(content) {
   // eliminar día
   if (deleteBtnRef) {
     deleteBtnRef.addEventListener("click", () => {
-      if (!confirm("¿Eliminar este día de rutina?")) return;
+      if (!confirm("¿Eliminar este día?")) return;
       const days = loadGymDays().filter(d => d.id !== deleteBtnRef.dataset.dayId);
       saveGymDays(days);
       content.innerHTML = renderGymHome();
       attachGymEvents(content);
     });
   }
+
+  // render inicial de widgets si estamos en la pantalla de crear
+  if (content.querySelector("#gymCalendarContainer")) renderCalendarWidget();
+  if (content.querySelector("#gymExerciseList")) renderExerciseList();
 }
 
 
 /* ---------- Inicio ---------- */
 render();
-
 
 //v2
