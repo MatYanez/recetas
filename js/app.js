@@ -837,8 +837,9 @@ function openOrganizeScreen() {
     { duration: 0.45, easing: "ease-out" }
   );
 
-  const back = document.createElement("button");
+const back = document.createElement("button");
   back.textContent = "← Volver";
+  back.className = "screen-back-btn";
   Object.assign(back.style, {
     background: "none",
     border: "none",
@@ -1197,8 +1198,9 @@ screen.appendChild(saveBtn);
 
     animate(modal, { y: ["100%", "0%"] }, { duration: 0.35 });
 
-    const back = document.createElement("button");
+const back = document.createElement("button");
     back.textContent = "← Cerrar";
+    back.className = "screen-back-btn";
     Object.assign(back.style, {
       background: "none", border: "none",
       color: "#007AFF", fontSize: "1.2rem",
@@ -1450,8 +1452,9 @@ showRecipeDetail(list[i]);
   // --- Pasos ---
   function showSteps(recipe) {
     content.innerHTML = "";
-    const back = document.createElement("button");
+const back = document.createElement("button");
     back.textContent = "← Atrás";
+    back.className = "screen-back-btn";
     Object.assign(back.style, {
       background: "none",
       border: "none",
@@ -1565,9 +1568,10 @@ content.ontouchend = () => {
   if (distance < 60 || holdTime > 400) return;
 
 
-
-// Cualquier swipe lateral válido = volver atrás (al home)
-  updateView("home");
+// Swipe = volver a la pantalla anterior dentro del tab (si existe un botón "volver" visible).
+  // Si no hay ninguno, ya estamos en el tope del tab y no se hace nada.
+  const backBtn = document.querySelector(".screen-back-btn, .habit-back");
+  if (backBtn) backBtn.click();
 };
 
       }); // fin .finished.then() del animate(content)
@@ -3128,8 +3132,9 @@ function showRecipeDetail(recipe) {
     // -------------------
     //  BOTÓN VOLVER
     // -------------------
-    const backBtn = document.createElement("button");
+const backBtn = document.createElement("button");
     backBtn.textContent = "← Volver";
+    backBtn.className = "screen-back-btn";
     Object.assign(backBtn.style, {
         background: "none",
         border: "none",
@@ -3389,8 +3394,9 @@ btn.innerHTML = `${icon("restaurant_menu")} Ver preparación paso a paso`;
     const content = window.currentRecipeContent;
 if (!content) return alert("Error: no existe content para mostrar pasos.");
     content.innerHTML = "";
-    const back = document.createElement("button");
+const back = document.createElement("button");
     back.textContent = "← Atrás";
+    back.className = "screen-back-btn";
     Object.assign(back.style, {
       background: "none",
       border: "none",
