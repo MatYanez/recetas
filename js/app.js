@@ -1,4 +1,62 @@
 import { animate, stagger } from "https://cdn.jsdelivr.net/npm/@motionone/dom/+esm";
+import { auth, db, onAuthStateChanged, signInAnonymously, collection, doc, setDoc, getDocs } from "./firebase-init.js";
+
+/* =====================================================
+   SINCRONIZACIÓN CON FIREBASE (Firestore como respaldo en la nube)
+   Intercepta localStorage: cada guardado local también se
+   espeja a Firestore, y al abrir la app se descarga todo
+   de Firestore antes de mostrar la interfaz.
+===================================================== */
+const _rawSetItem = Storage.prototype.setItem.bind(localStorage);
+let firebaseSyncReady = false;
+
+localStorage.setItem = function (key, value) {
+  _rawSetItem(key, value);
+  if (firebaseSyncReady) {
+    setDoc(doc(collection(db, "app_state"), key), {
+      value,
+      updatedAt: Date.now()
+    }).catch(err => console.error("Firestore: error guardando", key, err));
+  }
+};
+
+function iniciarApp() {
+  if (window.__appStarted) return;
+  window.__appStarted = true;
+  render();
+}
+
+async function sincronizarDesdeFirestore() {
+  try {
+    const snapshot = await getDocs(collection(db, "app_state"));
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      if (data && typeof data.value === "string") {
+        _rawSetItem(docSnap.id, data.value);
+      }
+    });
+  } catch (err) {
+    console.error("Firestore: error sincronizando al iniciar", err);
+  } finally {
+    firebaseSyncReady = true;
+    iniciarApp();
+  }
+}
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    sincronizarDesdeFirestore();
+  } else {
+    signInAnonymously(auth).catch(err => {
+      console.error("Firestore: no se pudo iniciar sesión anónima", err);
+      iniciarApp();
+    });
+  }
+});
+
+// Salvavidas: si no hay internet o Firebase no responde en 4s, arranca igual con lo local
+setTimeout(iniciarApp, 4000);
+
 const USER_HEIGHT = 1.65;
 
 function icon(name, size = "1.2rem") {
@@ -3972,8 +4030,5 @@ createBtn.addEventListener("click", () => {
   if (content.querySelector("#gymCalendarContainer")) renderCalendarWidget();
   if (content.querySelector("#gymExerciseList")) renderExerciseList();
 }
-
-/* ---------- Inicio ---------- */
-render();
 
 //v2
