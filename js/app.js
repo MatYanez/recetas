@@ -3635,12 +3635,10 @@ function attachGymEvents(content) {
   // ir a crear día
   const createBtn = content.querySelector("#createGymDay");
   if (createBtn) {
-    createBtn.addEventListener("click", () => {
+createBtn.addEventListener("click", () => {
       selectedType = "gimnasio";
       selectedDate = null;
       selectedExercises = [];
-      calYear = new Date().getFullYear();
-      calMonth = new Date().getMonth();
       content.innerHTML = renderGymCreateDay();
       attachGymEvents(content);
     });
