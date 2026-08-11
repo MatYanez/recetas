@@ -224,11 +224,11 @@ icon: "local_drink",
     type: "streak",
     habit: "sugarDrinks"
   },
-  {
+{
     key: "stepsMaster",
     title: "Caminante",
 icon: "directions_walk",
-    description: "7 días completando 8000 pasos.",
+    description: "7 días completando 7000 pasos.",
     required: 7,
     type: "streak",
     habit: "steps8000"
@@ -2294,7 +2294,7 @@ const HABITS = [
 { key: "water",        label: `${icon("water_drop")} Tomé 1.5 L de agua`,         yes: 100, no: -20 },
   { key: "sweets",       label: `${icon("cookie")} Evité dulces`,               yes: 250, no: -50 },
   { key: "sugarDrinks",  label: `${icon("local_drink")} Evité bebidas azucaradas`,   yes: 250, no: -50 },
-  { key: "steps8000",    label: `${icon("directions_walk")} Hice 8000 pasos`,            yes: 200, no: -40 },
+{ key: "steps8000",    label: `${icon("directions_walk")} Hice 7000 pasos`,            yes: 200, no: -40 },
   { key: "exercise20",   label: `${icon("fitness_center")} Entrené 20 min`,            yes: 150, no: -30 },
   { key: "salad",        label: `${icon("eco")} Comí ensalada`,              yes: 50,  no: -10 },
 ];
