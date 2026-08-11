@@ -35,27 +35,27 @@ async function sincronizarDesdeFirestore() {
         _rawSetItem(docSnap.id, data.value);
       }
     });
-  } catch (err) {
-    console.error("Firestore: error sincronizando al iniciar", err);
+} catch (err) {
+    console.error("Firestore: error sincronizando en segundo plano", err);
   } finally {
     firebaseSyncReady = true;
-    iniciarApp();
   }
 }
 
+// Arranca la app YA con lo que haya guardado en el dispositivo — no espera a Firebase
+iniciarApp();
+
+// Sincroniza con la nube en segundo plano, sin bloquear la pantalla
 onAuthStateChanged(auth, user => {
   if (user) {
     sincronizarDesdeFirestore();
   } else {
     signInAnonymously(auth).catch(err => {
       console.error("Firestore: no se pudo iniciar sesión anónima", err);
-      iniciarApp();
     });
   }
 });
 
-// Salvavidas: si no hay internet o Firebase no responde en 4s, arranca igual con lo local
-setTimeout(iniciarApp, 4000);
 
 const USER_HEIGHT = 1.65;
 
@@ -170,6 +170,15 @@ function safeParse(raw, fallback) {
     return fallback;
   }
 }
+
+let _recetasCache = null;
+function getRecetasData() {
+  if (!_recetasCache) {
+    _recetasCache = fetch("./data/recetas.json").then(r => r.json());
+  }
+  return _recetasCache;
+}
+
 const header = document.querySelector(".header");
 const MEDALS = [
   {
@@ -1205,8 +1214,7 @@ const back = document.createElement("button");
     list.style.flexDirection = "column";
     list.style.gap = "1rem";
 
-    fetch("./data/recetas.json")
-      .then(res => res.json())
+getRecetasData()
       .then(data => {
         function renderList(q = "") {
           list.innerHTML = "";
@@ -1290,12 +1298,10 @@ else if (sectionId === "almuerzos") {
   let recipes = [];
 
   // --- Cargar recetas desde JSON ---
-  fetch("./data/recetas.json")
-    .then(res => res.json())
-    .then(data => {
-      recipes = data;
-      renderRecipes();
-    })
+preview.querySelector(".meal-preview-card").addEventListener("click", () => {
+              getRecetasData()
+                .then(list => {
+                  const found = list.find(x => x.name === name);
     .catch(err => {
       console.error("Error al cargar recetas:", err);
       content.innerHTML = "<p>Error al cargar recetas.</p>";
