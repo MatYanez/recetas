@@ -3247,8 +3247,8 @@ function showRecipeDetail(recipe) {
             userSelect: "none",
         });
 
-        const label = document.createElement("span");
-        label.textContent = title;
+const label = document.createElement("span");
+        label.innerHTML = title;
         header.appendChild(label);
 
         const arrow = document.createElement("i");
