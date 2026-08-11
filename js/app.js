@@ -2481,8 +2481,8 @@ function setupHabitCalendar(container, onDateSelected) {
       year: "numeric"
     });
 
-    weekCarousel.innerHTML = "";
-    const weeks = getWeeksOfMonth(year, month);
+weekCarousel.innerHTML = "";
+    const weeks = getWeeksOfMonthDays(year, month);
 
     weeks.forEach(week => {
       const slide = document.createElement("div");
@@ -2924,6 +2924,25 @@ function getWeeksOfMonth(year, month) {
   weeks.push(...collectWeeks(year, month));
   weeks.push(...collectWeeks(nextY, nextM));
 
+  return weeks;
+}
+
+/* Semanas como arrays de 5 días (L-V) — usado por el calendario de hábitos */
+function getWeeksOfMonthDays(year, month) {
+  const days = [];
+  let d = new Date(year, month, 1);
+  while (d.getMonth() === month) {
+    const day = d.getDay();
+    if (day >= 1 && day <= 5) days.push(new Date(d));
+    d.setDate(d.getDate() + 1);
+  }
+
+  const weeks = [];
+  for (let i = 0; i < days.length; i += 5) {
+    const slice = days.slice(i, i + 5);
+    while (slice.length < 5) slice.push(null);
+    weeks.push(slice);
+  }
   return weeks;
 }
 
