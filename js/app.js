@@ -3455,10 +3455,16 @@ function renderGymHome() {
         `;
       }).join("")}
 
-      <button id="createGymDay" style="
+<button id="createGymDay" style="
         width:100%;background:#111;color:#fff;border:none;border-radius:14px;
         padding:1rem;font-weight:600;font-size:1rem;cursor:pointer;margin-top:0.5rem;
       ">+ Crear día</button>
+
+      <button id="viewWeeklyGymSummary" style="
+        width:100%;background:transparent;color:#111;border:2px solid #111;border-radius:14px;
+        padding:0.9rem;font-weight:600;font-size:0.95rem;cursor:pointer;margin-top:0.7rem;
+        display:flex;align-items:center;justify-content:center;gap:0.4rem;
+      ">${icon("summarize", "1.1rem")} Resumen semanal de comentarios</button>
     </div>
   `;
 }
@@ -3595,6 +3601,103 @@ function renderGymChecklist(day) {
   `;
 }
 
+/* ---------- Semana (lunes) de una fecha ---------- */
+function gymWeekStartOf(date) {
+  const d = new Date(date);
+  const dow = d.getDay() || 7;
+  if (dow !== 1) d.setDate(d.getDate() - (dow - 1));
+  return d;
+}
+
+/* ---------- Pantalla: resumen semanal de comentarios ---------- */
+function renderGymWeeklySummary(weekStart) {
+  const allDays = loadGymDays();
+  const start = new Date(weekStart);
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    weekDates.push(d);
+  }
+
+  const rangeLabel = `${start.toLocaleDateString("es-ES", { day: "numeric", month: "short" })} – ${weekDates[6].toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}`;
+
+  const entries = weekDates
+    .map(d => ({ date: d, day: allDays.find(gd => gd.date === dateKeyOf(d)) }))
+    .filter(e => e.day);
+
+  return `
+    <div style="width:100%;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <button class="gym-back" data-go="home" style="
+          background:none;border:none;color:#007AFF;font-weight:600;font-size:1rem;
+          padding:0;cursor:pointer;
+        ">← Volver</button>
+        <button id="copyGymWeeklySummary" data-weekstart="${dateKeyOf(start)}" style="
+          background:#f3f4f6;border:1px solid #ddd;border-radius:10px;
+          padding:0.5rem 0.8rem;font-weight:600;font-size:0.85rem;cursor:pointer;
+          display:flex;align-items:center;gap:0.4rem;
+        ">${icon("content_copy", "1rem")} Copiar</button>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <button id="gymWeekPrev" data-weekstart="${dateKeyOf(start)}" style="background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">‹</button>
+        <h2 style="font-size:1.15rem;font-weight:700;margin:0;">${rangeLabel}</h2>
+        <button id="gymWeekNext" data-weekstart="${dateKeyOf(start)}" style="background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">›</button>
+      </div>
+
+      ${entries.length === 0 ? `
+        <p style="text-align:center;color:#777;margin:2rem 0;">No hay días registrados esta semana.</p>
+      ` : entries.map(({ date, day }) => {
+        const type = GYM_ACTIVITY_TYPES[day.type];
+        const doneList = day.exercises.filter(e => e.done).map(e => e.name);
+        const pendingList = day.exercises.filter(e => !e.done).map(e => e.name);
+        const statusLabel = day.completed === true ? "Cumplido" : day.completed === false ? "No cumplido" : "Sin marcar";
+        const statusColor = day.completed === true ? "#15803d" : day.completed === false ? "#b91c1c" : "#999";
+        return `
+          <div style="background:#fff;border-radius:16px;box-shadow:0 3px 12px rgba(0,0,0,0.07);padding:1.1rem;margin-bottom:1rem;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem;">
+              <strong style="font-size:1rem;">${icon(type.icon, "1rem")} ${day.name} — ${date.toLocaleDateString("es-ES", { weekday: "long", day: "numeric" })}</strong>
+              <span style="font-size:0.8rem;font-weight:700;color:${statusColor};">${statusLabel}</span>
+            </div>
+            ${doneList.length ? `<p style="font-size:0.85rem;color:#555;margin:0.3rem 0;"><strong>Hechos:</strong> ${doneList.join(", ")}</p>` : ""}
+            ${pendingList.length ? `<p style="font-size:0.85rem;color:#999;margin:0.3rem 0;"><strong>Pendientes:</strong> ${pendingList.join(", ")}</p>` : ""}
+            <p style="font-size:0.85rem;color:#333;margin:0.5rem 0 0 0;white-space:pre-wrap;">
+              ${day.comment ? day.comment : `<span style="color:#aaa;">Sin comentario</span>`}
+            </p>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function buildGymWeeklySummaryText(weekStartStr) {
+  const allDays = loadGymDays();
+  const start = new Date(weekStartStr + "T00:00:00");
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    weekDates.push(d);
+  }
+
+  const rangeLabel = `${start.toLocaleDateString("es-ES")} - ${weekDates[6].toLocaleDateString("es-ES")}`;
+  let text = `Resumen semanal de entrenamiento (${rangeLabel})\n\n`;
+
+  weekDates.forEach(d => {
+    const day = allDays.find(gd => gd.date === dateKeyOf(d));
+    if (!day) return;
+    const statusLabel = day.completed === true ? "Cumplido" : day.completed === false ? "No cumplido" : "Sin marcar";
+    text += `${d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })} — ${day.name} (${GYM_ACTIVITY_TYPES[day.type].label})\n`;
+    text += `Estado: ${statusLabel}\n`;
+    text += `Ejercicios: ${day.exercises.map(e => `${e.name} [${e.done ? "hecho" : "pendiente"}]`).join(", ") || "—"}\n`;
+    text += `Comentario: ${day.comment || "—"}\n\n`;
+  });
+
+  return text;
+}
+
 /* ---------- Eventos ---------- */
 function attachGymEvents(content) {
   let selectedType = "gimnasio";
@@ -3666,7 +3769,7 @@ function attachGymEvents(content) {
     });
   });
 
-  // ir a crear día
+// ir a crear día
   const createBtn = content.querySelector("#createGymDay");
   if (createBtn) {
 createBtn.addEventListener("click", () => {
@@ -3675,6 +3778,46 @@ createBtn.addEventListener("click", () => {
       selectedExercises = [];
       content.innerHTML = renderGymCreateDay();
       attachGymEvents(content);
+    });
+  }
+
+  // ver resumen semanal de comentarios
+  const summaryBtn = content.querySelector("#viewWeeklyGymSummary");
+  if (summaryBtn) {
+    summaryBtn.addEventListener("click", () => {
+      content.innerHTML = renderGymWeeklySummary(gymWeekStartOf(new Date()));
+      attachGymEvents(content);
+    });
+  }
+
+  // navegar semana anterior/siguiente en el resumen
+  const weekPrevBtn = content.querySelector("#gymWeekPrev");
+  if (weekPrevBtn) {
+    weekPrevBtn.addEventListener("click", () => {
+      const d = new Date(weekPrevBtn.dataset.weekstart + "T00:00:00");
+      d.setDate(d.getDate() - 7);
+      content.innerHTML = renderGymWeeklySummary(d);
+      attachGymEvents(content);
+    });
+  }
+  const weekNextBtn = content.querySelector("#gymWeekNext");
+  if (weekNextBtn) {
+    weekNextBtn.addEventListener("click", () => {
+      const d = new Date(weekNextBtn.dataset.weekstart + "T00:00:00");
+      d.setDate(d.getDate() + 7);
+      content.innerHTML = renderGymWeeklySummary(d);
+      attachGymEvents(content);
+    });
+  }
+
+  // copiar resumen semanal como texto
+  const copyBtn = content.querySelector("#copyGymWeeklySummary");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      const text = buildGymWeeklySummaryText(copyBtn.dataset.weekstart);
+      navigator.clipboard.writeText(text)
+        .then(() => animateAlert())
+        .catch(() => alert(text));
     });
   }
 
