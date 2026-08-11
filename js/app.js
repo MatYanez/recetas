@@ -1823,8 +1823,6 @@ function calculateCurrentStreak() {
 }
 
 function renderHabitsScreen() {
-  const score = calculateWeeklyPoints();
-  const { color, label } = getScoreColor(score);
   const levelInfo = getLevelInfo(calculateTotalXP());
   const streak = calculateCurrentStreak();
 
@@ -1856,36 +1854,6 @@ function renderHabitsScreen() {
         ${levelInfo.next ? `${levelInfo.xp - levelInfo.current.minXP} / ${levelInfo.next.minXP - levelInfo.current.minXP} XP hacia ${levelInfo.next.name}` : "¡Nivel máximo alcanzado!"}
       </p>
     </div>
-
-    <!-- SCORE CARD -->
-    <div style="
-      width:100%;
-      padding:1.3rem;
-      background:#fff;
-      border-radius:18px;
-      box-shadow:0 3px 12px rgba(0,0,0,0.07);
-      margin-bottom:1.5rem;
-      text-align:center;
-    ">
-      <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:1rem;">
-        Tu puntaje semanal
-      </h3>
-
-      <!-- SOLO NÚMERO SIN CÍRCULO -->
-      <div style="
-        font-size:2.9rem;
-        font-weight:800;
-        color:${color};
-        margin-bottom:0.3rem;
-      ">
-        ${score}
-      </div>
-
-      <p style="font-size:1.1rem; font-weight:600; color:#333;">
-        ${label}
-      </p>
-    </div>
-
 
 <button id="viewAchievements" style="
   margin-top:1rem;
