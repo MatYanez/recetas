@@ -3755,11 +3755,19 @@ createBtn.addEventListener("click", () => {
     });
   }
 
-// render inicial de widgets si estamos en la pantalla de crear
+// calendario del home (cobertura)
+  const gymHomeCalendarBox = content.querySelector("#gymHomeCalendar");
+  if (gymHomeCalendarBox) {
+    buildUnifiedCalendar(gymHomeCalendarBox, {
+      initialDate: new Date(),
+      getCellInfo: (date) => getGymCoverageForDate(date, loadGymDays())
+    });
+  }
+
+  // render inicial de widgets si estamos en la pantalla de crear
   if (content.querySelector("#gymCalendarContainer")) renderCalendarWidget();
   if (content.querySelector("#gymExerciseList")) renderExerciseList();
 }
-
 
 /* ---------- Inicio ---------- */
 render();
