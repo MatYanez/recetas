@@ -1,6 +1,10 @@
 import { animate, stagger } from "https://cdn.jsdelivr.net/npm/@motionone/dom/+esm";
 const USER_HEIGHT = 1.65;
 
+function icon(name, size = "1.2rem") {
+  return `<span class="material-symbols-outlined" style="font-size:${size};">${name}</span>`;
+}
+
 function safeParse(raw, fallback) {
   try {
     return raw ? JSON.parse(raw) : fallback;
@@ -13,7 +17,7 @@ const MEDALS = [
   {
     key: "firstGoodDay",
     title: "Primer día bueno",
-    emoji: "🥉",
+icon: "workspace_premium",
     description: "Obtén 700 puntos en un día.",
     required: 700,
     type: "daily-score"
@@ -21,7 +25,7 @@ const MEDALS = [
   {
     key: "weekDisciplined",
     title: "Semana disciplinada",
-    emoji: "🥈",
+icon: "workspace_premium",
     description: "Promedio semanal mayor a 700 puntos.",
     required: 700,
     type: "weekly-score"
@@ -29,7 +33,7 @@ const MEDALS = [
   {
     key: "weekPerfect",
     title: "Semana perfecta",
-    emoji: "🥇",
+icon: "workspace_premium",
     description: "Promedio semanal mayor a 900 puntos.",
     required: 900,
     type: "weekly-score"
@@ -37,7 +41,7 @@ const MEDALS = [
   {
     key: "waterStreak",
     title: "Hidratado",
-    emoji: "💧",
+icon: "water_drop",
     description: "Toma agua 5 días seguidos.",
     required: 5,
     type: "streak",
@@ -46,7 +50,7 @@ const MEDALS = [
   {
     key: "noSweets",
     title: "Anti-dulces",
-    emoji: "🍬",
+icon: "cookie",
     description: "Evita dulces 5 días seguidos.",
     required: 5,
     type: "streak",
@@ -55,7 +59,7 @@ const MEDALS = [
   {
     key: "noSugarDrinks",
     title: "Cero azúcar líquida",
-    emoji: "🥤",
+icon: "local_drink",
     description: "Evita bebidas azucaradas 5 días seguidos.",
     required: 5,
     type: "streak",
@@ -64,7 +68,7 @@ const MEDALS = [
   {
     key: "stepsMaster",
     title: "Caminante",
-    emoji: "🚶",
+icon: "directions_walk",
     description: "7 días completando 8000 pasos.",
     required: 7,
     type: "streak",
@@ -73,7 +77,7 @@ const MEDALS = [
   {
     key: "trainer",
     title: "Entrenador",
-    emoji: "🏋️",
+icon: "fitness_center",
     description: "7 días entrenando.",
     required: 7,
     type: "streak",
@@ -82,7 +86,7 @@ const MEDALS = [
   {
     key: "veggie",
     title: "Veggie Master",
-    emoji: "🥦",
+icon: "eco",
     description: "Come ensalada 7 veces.",
     required: 7,
     type: "count",
@@ -91,17 +95,17 @@ const MEDALS = [
   {
     key: "noNegative10",
     title: "Racha 10",
-    emoji: "🔥",
+icon: "local_fire_department",
     description: "10 días sin puntos negativos.",
     required: 10,
     type: "streak-nonegative"
   }
 ];
 const ACCUMULATION_MEDALS = [
-  { key: "collector_5",  title: "Coleccionista Nivel 1", emoji: "🏆", required: 5 },
-  { key: "collector_10", title: "Coleccionista Nivel 2", emoji: "🏆", required: 10 },
-  { key: "collector_15", title: "Coleccionista Nivel 3", emoji: "🏆", required: 15 },
-  { key: "collector_20", title: "Coleccionista Nivel 4", emoji: "🏆", required: 20 },
+  { key: "collector_5",  title: "Coleccionista Nivel 1", icon: "emoji_events", required: 5 },
+  { key: "collector_10", title: "Coleccionista Nivel 2", icon: "emoji_events", required: 10 },
+  { key: "collector_15", title: "Coleccionista Nivel 3", icon: "emoji_events", required: 15 },
+  { key: "collector_20", title: "Coleccionista Nivel 4", icon: "emoji_events", required: 20 },
 ];
 
 const cards = [
@@ -346,11 +350,11 @@ Object.assign(bottomBar.style, {
   zIndex: "50",
 });
 bottomBar.innerHTML = `
-  <button class="tab-item" data-id="home">🏠</button>
-  <button class="tab-item" data-id="calendario">📅</button>
-  <button class="tab-item" data-id="almuerzos">🍽️</button>
-<button class="tab-item" data-id="gimnasio">🏋️</button>
-  <button class="tab-item" data-id="habitos">🌱</button>
+<button class="tab-item" data-id="home">${icon("home")}</button>
+  <button class="tab-item" data-id="calendario">${icon("calendar_month")}</button>
+  <button class="tab-item" data-id="almuerzos">${icon("restaurant")}</button>
+  <button class="tab-item" data-id="gimnasio">${icon("fitness_center")}</button>
+  <button class="tab-item" data-id="habitos">${icon("spa")}</button>
   <div id="indicator" style="
     position:absolute;
     top:50%;
@@ -1676,9 +1680,9 @@ function analyzeTrend(values) {
 
   const diff = last - first;
 
-  if (diff > 0.2) return "Tendencia a la baja 👇⚠️";
-  if (diff < -0.2) return "Tendencia positiva 👍🔥";
-  return "Estable ✔️";
+if (diff > 0.2) return `${icon("trending_down")} Tendencia a la baja`;
+  if (diff < -0.2) return `${icon("trending_up")} Tendencia positiva`;
+  return `${icon("check_circle")} Estable`;
 }
 
 
@@ -1840,7 +1844,7 @@ function renderHabitsScreen() {
   font-size:1rem;
   cursor:pointer;
 ">
-  ⭐ Ver logros
+${icon("star")} Ver logros
 </button>
 
 
@@ -1855,7 +1859,7 @@ function renderHabitsScreen() {
   font-size:1rem;
   cursor:pointer;
 ">
-  🏅 Ver medallas
+${icon("military_tech")} Ver medallas
 </button>
 
 
@@ -1867,25 +1871,25 @@ function renderHabitsScreen() {
         width:100%; text-align:left;
         padding:1rem; border-radius:14px;
         background:#f3f4f6; border:none; font-weight:600;
-      ">📋 Registrar hábitos diarios →</button>
+">${icon("checklist")} Registrar hábitos diarios →</button>
 
       <button class="habit-nav" data-go="weekly" style="
         width:100%; text-align:left;
         padding:1rem; border-radius:14px;
         background:#f3f4f6; border:none; font-weight:600;
-      ">📅 Resumen semanal →</button>
+">${icon("calendar_month")} Resumen semanal →</button>
 
       <button class="habit-nav" data-go="trends" style="
         width:100%; text-align:left;
         padding:1rem; border-radius:14px;
         background:#f3f4f6; border:none; font-weight:600;
-      ">📈 Tendencias →</button>
+">${icon("trending_up")} Tendencias →</button>
 
       <button class="habit-nav" data-go="registro" style="
         width:100%; text-align:left;
         padding:1rem; border-radius:14px;
         background:#f3f4f6; border:none; font-weight:600;
-      ">⚖️ Registro personal →</button>
+">${icon("monitor_weight")} Registro personal →</button>
 
     </div>
   `;
@@ -1936,13 +1940,13 @@ function analyzeHabitProgress() {
     let trendMonth = "";
 
     // — Semana
-    if (cw > pw) trendWeek = "Mejoraste respecto a la semana pasada 👏";
-    else if (cw < pw) trendWeek = "Disminuiste respecto a la semana pasada 👀";
+if (cw > pw) trendWeek = `${icon("thumb_up")} Mejoraste respecto a la semana pasada`;
+    else if (cw < pw) trendWeek = `${icon("trending_down")} Disminuiste respecto a la semana pasada`;
     else trendWeek = "Te mantuviste igual que la semana pasada.";
 
     // — Mes
-    if (cw > m) trendMonth = "Tu promedio mensual va en alza 🔥";
-    else if (cw < m) trendMonth = "Estás por debajo de tu nivel mensual 😬";
+    if (cw > m) trendMonth = `${icon("local_fire_department")} Tu promedio mensual va en alza`;
+    else if (cw < m) trendMonth = `${icon("sentiment_dissatisfied")} Estás por debajo de tu nivel mensual`;
     else trendMonth = "Mantienes tu promedio mensual.";
 
     result[h.key] = {
@@ -2077,7 +2081,7 @@ function renderTrends() {
   // Tarjeta de PESO
   html += `
     <div class="trend-card">
-      <h3 class="trend-title">⚖️ Peso</h3>
+<h3 class="trend-title">${icon("monitor_weight")} Peso</h3>
       <canvas id="chartWeight" width="300" height="90" class="trend-chart"></canvas>
       <p class="trend-desc">${analyzeTrend(weightTrend)}</p>
     </div>
@@ -2241,7 +2245,7 @@ function renderMedalsScreen() {
     const pct = Math.min(100, Math.round(((progress[m.key] || 0) * 100)));
 
     const unlocked = count > 0;
-    const displayEmoji = unlocked ? m.emoji : "🔒";
+const displayEmoji = icon(unlocked ? m.icon : "lock", "2rem");
 
     html += `
       <div style="
@@ -2289,7 +2293,7 @@ function renderMedalsScreen() {
 // ---------- SMALL ALERT ----------
 function animateAlert() {
   const div = document.createElement("div");
-  div.textContent = "✔ Guardado";
+div.innerHTML = `${icon("check_circle")} Guardado`;
   Object.assign(div.style, {
     position: "fixed",
     bottom: "2rem",
@@ -2319,12 +2323,12 @@ function animateAlert() {
 // ===============================================
 
 const HABITS = [
-  { key: "water",        label: "💧 Tomé 1.5 L de agua",         yes: 100, no: -20 },
-  { key: "sweets",       label: "🍬 Evité dulces",               yes: 250, no: -50 },
-  { key: "sugarDrinks",  label: "🥤 Evité bebidas azucaradas",   yes: 250, no: -50 },
-  { key: "steps8000",    label: "🚶 Hice 8000 pasos",            yes: 200, no: -40 },
-  { key: "exercise20",   label: "🏋️ Entrené 20 min",            yes: 150, no: -30 },
-  { key: "salad",        label: "🥦 Comí ensalada",              yes: 50,  no: -10 },
+{ key: "water",        label: `${icon("water_drop")} Tomé 1.5 L de agua`,         yes: 100, no: -20 },
+  { key: "sweets",       label: `${icon("cookie")} Evité dulces`,               yes: 250, no: -50 },
+  { key: "sugarDrinks",  label: `${icon("local_drink")} Evité bebidas azucaradas`,   yes: 250, no: -50 },
+  { key: "steps8000",    label: `${icon("directions_walk")} Hice 8000 pasos`,            yes: 200, no: -40 },
+  { key: "exercise20",   label: `${icon("fitness_center")} Entrené 20 min`,            yes: 150, no: -30 },
+  { key: "salad",        label: `${icon("eco")} Comí ensalada`,              yes: 50,  no: -10 },
 ];
 
 
@@ -2870,9 +2874,9 @@ function renderWeeklyDetail(weekId) {
         ${week.days.map(d => {
           const v = d.data[h.key];
           if (v === 1)
-            return `<td style="padding:6px;background:#c8ffc8;">✔</td>`;
+return `<td style="padding:6px;background:#c8ffc8;">${icon("check", "1rem")}</td>`;
           if (v === 0)
-            return `<td style="padding:6px;background:#ffc8c8;">✖</td>`;
+return `<td style="padding:6px;background:#ffc8c8;">${icon("close", "1rem")}</td>`;
           return `<td style="padding:6px;background:#e0e0e0;">—</td>`;
         }).join("")}
       </tr>
@@ -3358,7 +3362,7 @@ function showRecipeDetail(recipe) {
         `).join("")}
         </div>
     `;
-    content.appendChild(createExpandable("🧂 Ingredientes", ingredientsCardHTML));
+content.appendChild(createExpandable(`${icon("kitchen")} Ingredientes`, ingredientsCardHTML));
 
     // ------------------------
     //   NUTRICIÓN
@@ -3372,13 +3376,13 @@ function showRecipeDetail(recipe) {
                 <span>${k}</span><strong>${v}</strong>
             </div>
         `).join("");
-    content.appendChild(createExpandable("⚡ Valores nutricionales", nutritionCardHTML));
+content.appendChild(createExpandable(`${icon("bolt")} Valores nutricionales`, nutritionCardHTML));
 
     // ------------------------
     //   BOTÓN PASOS
     // ------------------------
     const btn = document.createElement("button");
-    btn.textContent = "👨‍🍳 Ver preparación paso a paso";
+btn.innerHTML = `${icon("restaurant_menu")} Ver preparación paso a paso`;
     Object.assign(btn.style, {
         width: "100%",
         backgroundColor: "#111",
@@ -3442,7 +3446,7 @@ if (!content) return alert("Error: no existe content para mostrar pasos.");
 const GYM_ACTIVITY_TYPES = {
   gimnasio: {
     label: "Gimnasio",
-    icon: "🏋️",
+    icon: "fitness_center",
     exercises: [
       "Sentadilla", "Peso muerto", "Press banca", "Press militar",
       "Remo con barra", "Dominadas", "Curl de bíceps", "Extensión de tríceps",
@@ -3450,7 +3454,7 @@ const GYM_ACTIVITY_TYPES = {
       "Plancha", "Abdominales", "Hip thrust", "Jalón al pecho"
     ]
   },
-  futbol: { label: "Fútbol", icon: "⚽" }
+futbol: { label: "Fútbol", icon: "sports_soccer" }
 };
 
 function loadGymDays() {
@@ -3488,7 +3492,7 @@ function getGymCoverageForDate(date, days) {
   let allDone = true;
   let icons = "";
   matches.forEach(day => {
-    icons += GYM_ACTIVITY_TYPES[day.type].icon;
+icons += icon(GYM_ACTIVITY_TYPES[day.type].icon, "0.9rem");
     const done = day.exercises.length > 0 && day.exercises.every(e => e.done);
     if (!done) allDone = false;
   });
@@ -3604,7 +3608,7 @@ function renderGymHome(year, month) {
             display:flex;justify-content:space-between;align-items:center;
           ">
             <div>
-              <h4 style="font-weight:700;font-size:1rem;margin:0;">${type.icon} ${day.name}</h4>
+<h4 style="font-weight:700;font-size:1rem;margin:0;">${icon(type.icon, "1rem")} ${day.name}</h4>
               <p style="font-size:0.8rem;color:#777;margin:0.3rem 0 0 0;">
                 ${formatDateEs(day.date)} — ${done}/${day.exercises.length}
               </p>
@@ -3639,11 +3643,11 @@ function renderGymCreateDay() {
         <button class="gym-type-btn" data-type="gimnasio" style="
           flex:1;padding:0.9rem;border-radius:12px;border:2px solid #111;
           background:#111;color:#fff;font-weight:600;cursor:pointer;
-        ">🏋️ Gimnasio</button>
+">${icon("fitness_center")} Gimnasio</button>
         <button class="gym-type-btn" data-type="futbol" style="
           flex:1;padding:0.9rem;border-radius:12px;border:2px solid #ddd;
           background:#fff;color:#333;font-weight:600;cursor:pointer;
-        ">⚽ Fútbol</button>
+        ">${icon("sports_soccer")} Fútbol</button>
       </div>
 
       <div id="gymNameSection" style="display:block;">
@@ -3700,7 +3704,7 @@ function renderGymChecklist(day) {
         padding:0;cursor:pointer;margin-bottom:1rem;
       ">← Volver</button>
 
-      <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:0.3rem;">${type.icon} ${day.name}</h2>
+<h2 style="font-size:1.4rem;font-weight:700;margin-bottom:0.3rem;">${icon(type.icon)} ${day.name}</h2>
       <p style="font-size:0.85rem;color:#777;margin-bottom:1.2rem;">${formatDateEs(day.date)}</p>
 
       <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.5rem;">
