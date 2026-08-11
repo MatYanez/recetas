@@ -151,8 +151,9 @@ let cells = [];
       else current.setDate(current.getDate() + 7);
       render();
     });
-    container.querySelectorAll(".cal-day").forEach(btn => {
+container.querySelectorAll(".cal-day").forEach(btn => {
       btn.addEventListener("click", () => {
+        current = new Date(btn.dataset.date + "T00:00:00");
         if (config.onSelectDate) config.onSelectDate(btn.dataset.date);
       });
     });
