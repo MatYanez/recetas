@@ -2895,6 +2895,37 @@ function attachWeeklyDetailEvents(content) {
 }
 
 
+function getWeeksOfMonth(year, month) {
+  const weeks = [];
+
+  function collectWeeks(y, m) {
+    const arr = [];
+    const date = new Date(y, m, 1);
+    while (date.getDay() !== 1) date.setDate(date.getDate() - 1);
+
+    while (true) {
+      const start = new Date(date);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      arr.push({ start, end, weekKey: start.toISOString().slice(0, 10) });
+      date.setDate(date.getDate() + 7);
+      if (date.getMonth() !== m) break;
+    }
+    return arr;
+  }
+
+  const prevM = month === 0 ? 11 : month - 1;
+  const prevY = month === 0 ? year - 1 : year;
+  const nextM = month === 11 ? 0 : month + 1;
+  const nextY = month === 11 ? year + 1 : year;
+
+  weeks.push(...collectWeeks(prevY, prevM));
+  weeks.push(...collectWeeks(year, month));
+  weeks.push(...collectWeeks(nextY, nextM));
+
+  return weeks;
+}
+
 function getWeekKey(date = new Date()) {
   const d = new Date(date);
   const day = d.getDay() || 7;
