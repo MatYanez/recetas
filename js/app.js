@@ -3431,12 +3431,31 @@ if (!content) return alert("Error: no existe content para mostrar pasos.");
    GIMNASIO — días de rutina + checklist de ejercicios
 ================================================== */
 
-const PREDEFINED_EXERCISES = [
-  "Sentadilla", "Peso muerto", "Press banca", "Press militar",
-  "Remo con barra", "Dominadas", "Curl de bíceps", "Extensión de tríceps",
-  "Prensa de piernas", "Zancadas", "Elevaciones laterales", "Face pull",
-  "Plancha", "Abdominales", "Hip thrust", "Jalón al pecho"
-];
+/* ==================================================
+   GIMNASIO / FÚTBOL — días recurrentes + calendario de cobertura
+================================================== */
+
+const GYM_ACTIVITY_TYPES = {
+  gimnasio: {
+    label: "Gimnasio",
+    icon: "🏋️",
+    exercises: [
+      "Sentadilla", "Peso muerto", "Press banca", "Press militar",
+      "Remo con barra", "Dominadas", "Curl de bíceps", "Extensión de tríceps",
+      "Prensa de piernas", "Zancadas", "Elevaciones laterales", "Face pull",
+      "Plancha", "Abdominales", "Hip thrust", "Jalón al pecho"
+    ]
+  },
+  futbol: {
+    label: "Fútbol",
+    icon: "⚽",
+    exercises: ["Entrenamiento", "Partido", "Calentamiento", "Cardio", "Estiramiento"]
+  }
+};
+
+const WEEKDAYS = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
+const WEEKDAY_LABELS = { lunes: "L", martes: "M", miercoles: "X", jueves: "J", viernes: "V", sabado: "S", domingo: "D" };
+const JS_DAY_TO_KEY = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
 
 function loadGymDays() {
   return safeParse(localStorage.getItem("gym-days"), []);
@@ -3450,58 +3469,122 @@ function loadGymLog(dateKey, dayId) {
 function saveGymLog(dateKey, dayId, log) {
   localStorage.setItem(`gym-log-${dateKey}-${dayId}`, JSON.stringify(log));
 }
+function dateKeyOf(date) {
+  return date.toISOString().slice(0, 10);
+}
 function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+  return dateKeyOf(new Date());
 }
 
-/* ---------- Pantalla: lista de días ---------- */
+/* ---------- Cobertura de un día del calendario ---------- */
+function getGymCoverageForDate(date, days) {
+  const weekdayKey = JS_DAY_TO_KEY[date.getDay()];
+  const scheduled = days.filter(d => d.weekdays.includes(weekdayKey));
+  if (scheduled.length === 0) return { bg: "#f8f9fa", color: "#ccc", icons: "" };
+
+  const dKey = dateKeyOf(date);
+  const isFuture = date > new Date(new Date().toDateString());
+  let allDone = true;
+  let icons = "";
+
+  scheduled.forEach(day => {
+    icons += GYM_ACTIVITY_TYPES[day.type].icon;
+    const log = loadGymLog(dKey, day.id);
+    const done = day.exercises.length > 0 && day.exercises.every(e => log[e.id]);
+    if (!done) allDone = false;
+  });
+
+  if (isFuture) return { bg: "#eef2ff", color: "#4338ca", icons };
+  return allDone
+    ? { bg: "#dcfce7", color: "#15803d", icons }
+    : { bg: "#fee2e2", color: "#b91c1c", icons };
+}
+
+/* ---------- Pantalla principal: calendario + lista de días ---------- */
 function renderGymHome() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
   const days = loadGymDays();
+  const monthName = now.toLocaleString("es-ES", { month: "long", year: "numeric" });
+
+  const firstDay = new Date(year, month, 1);
+  const startOffset = (firstDay.getDay() + 6) % 7; // lunes = 0
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const cells = [];
+  for (let i = 0; i < startOffset; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
 
   return `
     <div style="width:100%;">
+      <h2 style="font-size:1.3rem;font-weight:700;margin:0.5rem 0 1rem 0;text-transform:capitalize;">${monthName}</h2>
+
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-weight:600;font-size:0.75rem;color:#777;margin-bottom:0.4rem;">
+        <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:1.5rem;">
+        ${cells.map(date => {
+          if (!date) return `<div></div>`;
+          const info = getGymCoverageForDate(date, days);
+          const isToday = date.toDateString() === new Date().toDateString();
+          return `
+            <div style="
+              aspect-ratio:1;
+              border-radius:10px;
+              display:flex;
+              flex-direction:column;
+              align-items:center;
+              justify-content:center;
+              gap:2px;
+              font-size:0.75rem;
+              font-weight:600;
+              background:${info.bg};
+              color:${info.color};
+              ${isToday ? "border:2px solid #111;" : ""}
+            ">
+              <span>${date.getDate()}</span>
+              <span style="font-size:0.7rem;">${info.icons}</span>
+            </div>
+          `;
+        }).join("")}
+      </div>
+
+      <div style="display:flex;gap:1rem;font-size:0.75rem;color:#777;margin-bottom:1.5rem;flex-wrap:wrap;">
+        <span>🟩 cumplido</span>
+        <span>🟥 pendiente</span>
+        <span>🟦 próximo</span>
+      </div>
+
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">Mis días</h3>
+
       ${days.length === 0 ? `
-        <p style="text-align:center;color:#777;margin-top:2rem;">
-          Todavía no tienes días de rutina creados.
-        </p>
+        <p style="text-align:center;color:#777;margin:1rem 0;">Todavía no tienes días creados.</p>
       ` : days.map(day => {
+        const type = GYM_ACTIVITY_TYPES[day.type];
         const log = loadGymLog(todayKey(), day.id);
         const done = day.exercises.filter(e => log[e.id]).length;
-        const total = day.exercises.length;
         return `
           <div class="gym-day-card" data-day-id="${day.id}" style="
-            background:#fff;
-            border-radius:16px;
-            box-shadow:0 3px 12px rgba(0,0,0,0.07);
-            padding:1.2rem;
-            margin-bottom:1rem;
-            cursor:pointer;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
+            background:#fff;border-radius:16px;box-shadow:0 3px 12px rgba(0,0,0,0.07);
+            padding:1.1rem;margin-bottom:0.8rem;cursor:pointer;
+            display:flex;justify-content:space-between;align-items:center;
           ">
             <div>
-              <h3 style="font-weight:700;font-size:1.1rem;margin:0;">${day.name}</h3>
-              <p style="font-size:0.85rem;color:#777;margin:0.3rem 0 0 0;">
-                ${total} ejercicio${total === 1 ? "" : "s"} · ${done}/${total} hoy
+              <h4 style="font-weight:700;font-size:1rem;margin:0;">${type.icon} ${day.name}</h4>
+              <p style="font-size:0.8rem;color:#777;margin:0.3rem 0 0 0;">
+                ${day.weekdays.map(w => WEEKDAY_LABELS[w]).join(" · ")} — ${done}/${day.exercises.length} hoy
               </p>
             </div>
-            <span style="font-size:1.3rem;">→</span>
+            <span style="font-size:1.2rem;">→</span>
           </div>
         `;
       }).join("")}
 
       <button id="createGymDay" style="
-        width:100%;
-        background:#111;
-        color:#fff;
-        border:none;
-        border-radius:14px;
-        padding:1rem;
-        font-weight:600;
-        font-size:1rem;
-        cursor:pointer;
-        margin-top:0.5rem;
+        width:100%;background:#111;color:#fff;border:none;border-radius:14px;
+        padding:1rem;font-weight:600;font-size:1rem;cursor:pointer;margin-top:0.5rem;
       ">+ Crear día</button>
     </div>
   `;
@@ -3512,70 +3595,59 @@ function renderGymCreateDay() {
   return `
     <div style="width:100%;">
       <button class="gym-back" data-go="home" style="
-        background:none;border:none;color:#007AFF;
-        font-weight:600;font-size:1rem;padding:0;
-        cursor:pointer;margin-bottom:1rem;
+        background:none;border:none;color:#007AFF;font-weight:600;font-size:1rem;
+        padding:0;cursor:pointer;margin-bottom:1rem;
       ">← Volver</button>
 
       <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:1rem;">Nuevo día</h2>
 
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">Tipo de día</h3>
+      <div style="display:flex;gap:0.6rem;margin-bottom:1.2rem;">
+        <button class="gym-type-btn" data-type="gimnasio" style="
+          flex:1;padding:0.9rem;border-radius:12px;border:2px solid #111;
+          background:#111;color:#fff;font-weight:600;cursor:pointer;
+        ">🏋️ Gimnasio</button>
+        <button class="gym-type-btn" data-type="futbol" style="
+          flex:1;padding:0.9rem;border-radius:12px;border:2px solid #ddd;
+          background:#fff;color:#333;font-weight:600;cursor:pointer;
+        ">⚽ Fútbol</button>
+      </div>
+
       <input id="gymDayName" type="text" placeholder="Ej: Día 1 - Pecho y tríceps" style="
-        width:100%;
-        padding:0.9rem;
-        border-radius:12px;
-        border:1px solid #ddd;
-        font-size:1rem;
-        margin-bottom:1.2rem;
-        box-sizing:border-box;
+        width:100%;padding:0.9rem;border-radius:12px;border:1px solid #ddd;
+        font-size:1rem;margin-bottom:1.2rem;box-sizing:border-box;
       ">
 
-      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">Ejercicios clásicos</h3>
-      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.2rem;">
-        ${PREDEFINED_EXERCISES.map(ex => `
-          <button class="gym-ex-chip" data-name="${ex}" style="
-            padding:0.5rem 0.9rem;
-            border-radius:999px;
-            border:1px solid #ddd;
-            background:#f3f4f6;
-            font-size:0.85rem;
-            font-weight:600;
-            cursor:pointer;
-          ">${ex}</button>
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">¿Qué días de la semana se repite?</h3>
+      <div id="gymWeekdayChips" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.2rem;">
+        ${WEEKDAYS.map(w => `
+          <button class="gym-weekday-chip" data-weekday="${w}" style="
+            padding:0.5rem 0.9rem;border-radius:999px;border:1px solid #ddd;
+            background:#f3f4f6;font-size:0.85rem;font-weight:600;cursor:pointer;
+          ">${WEEKDAY_LABELS[w]}</button>
         `).join("")}
       </div>
 
-      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">Agregar otro ejercicio</h3>
+      <h3 id="gymExercisesLabel" style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">Ejercicios clásicos</h3>
+      <div id="gymExerciseChips" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.2rem;"></div>
+
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.6rem;">Agregar otro</h3>
       <div style="display:flex;gap:0.5rem;margin-bottom:1.2rem;">
-        <input id="gymCustomEx" type="text" placeholder="Nombre del ejercicio" style="
-          flex:1;
-          padding:0.7rem;
-          border-radius:12px;
-          border:1px solid #ddd;
-          font-size:0.9rem;
-          box-sizing:border-box;
+        <input id="gymCustomEx" type="text" placeholder="Nombre" style="
+          flex:1;padding:0.7rem;border-radius:12px;border:1px solid #ddd;
+          font-size:0.9rem;box-sizing:border-box;
         ">
         <button id="gymAddCustomEx" style="
-          background:#f3f4f6;
-          border:1px solid #ddd;
-          border-radius:12px;
-          padding:0.7rem 1rem;
-          font-weight:600;
-          cursor:pointer;
+          background:#f3f4f6;border:1px solid #ddd;border-radius:12px;
+          padding:0.7rem 1rem;font-weight:600;cursor:pointer;
         ">Añadir</button>
       </div>
 
       <div id="gymSelectedList" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.5rem;"></div>
 
       <button id="saveGymDay" style="
-        width:100%;
-        background:#111;
-        color:#fff;
-        border:none;
-        border-radius:14px;
-        padding:1rem;
-        font-weight:600;
-        font-size:1rem;
-        cursor:pointer;
+        width:100%;background:#111;color:#fff;border:none;border-radius:14px;
+        padding:1rem;font-weight:600;font-size:1rem;cursor:pointer;
       ">Guardar día</button>
     </div>
   `;
@@ -3583,33 +3655,29 @@ function renderGymCreateDay() {
 
 /* ---------- Pantalla: checklist de un día ---------- */
 function renderGymChecklist(day) {
+  const type = GYM_ACTIVITY_TYPES[day.type];
   const log = loadGymLog(todayKey(), day.id);
 
   return `
     <div style="width:100%;">
       <button class="gym-back" data-go="home" style="
-        background:none;border:none;color:#007AFF;
-        font-weight:600;font-size:1rem;padding:0;
-        cursor:pointer;margin-bottom:1rem;
+        background:none;border:none;color:#007AFF;font-weight:600;font-size:1rem;
+        padding:0;cursor:pointer;margin-bottom:1rem;
       ">← Volver</button>
 
-      <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:1rem;">${day.name}</h2>
+      <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:0.3rem;">${type.icon} ${day.name}</h2>
+      <p style="font-size:0.85rem;color:#777;margin-bottom:1.2rem;">
+        Se repite: ${day.weekdays.map(w => WEEKDAY_LABELS[w]).join(" · ")}
+      </p>
 
       <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.5rem;">
         ${day.exercises.map(ex => `
           <label class="gym-check-item" data-ex-id="${ex.id}" style="
-            display:flex;
-            align-items:center;
-            gap:0.9rem;
-            background:#fff;
-            border-radius:14px;
-            box-shadow:0 2px 8px rgba(0,0,0,0.05);
-            padding:1rem;
-            cursor:pointer;
+            display:flex;align-items:center;gap:0.9rem;background:#fff;
+            border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,0.05);
+            padding:1rem;cursor:pointer;
           ">
-            <input type="checkbox" data-ex-id="${ex.id}" ${log[ex.id] ? "checked" : ""} style="
-              width:22px;height:22px;
-            ">
+            <input type="checkbox" data-ex-id="${ex.id}" ${log[ex.id] ? "checked" : ""} style="width:22px;height:22px;">
             <span style="font-weight:600;font-size:1rem;${log[ex.id] ? "text-decoration:line-through;color:#999;" : ""}">
               ${ex.name}
             </span>
@@ -3618,15 +3686,8 @@ function renderGymChecklist(day) {
       </div>
 
       <button id="deleteGymDay" data-day-id="${day.id}" style="
-        width:100%;
-        background:#fff0f0;
-        color:#d33;
-        border:1px solid #f3c9c9;
-        border-radius:14px;
-        padding:0.9rem;
-        font-weight:600;
-        font-size:0.95rem;
-        cursor:pointer;
+        width:100%;background:#fff0f0;color:#d33;border:1px solid #f3c9c9;
+        border-radius:14px;padding:0.9rem;font-weight:600;font-size:0.95rem;cursor:pointer;
       ">Eliminar día</button>
     </div>
   `;
@@ -3634,7 +3695,35 @@ function renderGymChecklist(day) {
 
 /* ---------- Eventos ---------- */
 function attachGymEvents(content) {
+  let selectedType = "gimnasio";
+  let selectedWeekdays = [];
   let selectedExercises = [];
+
+  function renderExerciseChips() {
+    const box = content.querySelector("#gymExerciseChips");
+    const label = content.querySelector("#gymExercisesLabel");
+    if (!box) return;
+    label.textContent = selectedType === "gimnasio" ? "Ejercicios clásicos" : "Actividades clásicas";
+    box.innerHTML = GYM_ACTIVITY_TYPES[selectedType].exercises.map(ex => `
+      <button class="gym-ex-chip" data-name="${ex}" style="
+        padding:0.5rem 0.9rem;border-radius:999px;border:1px solid #ddd;
+        background:#f3f4f6;font-size:0.85rem;font-weight:600;cursor:pointer;
+      ">${ex}</button>
+    `).join("");
+    bindExerciseChips();
+  }
+
+  function bindExerciseChips() {
+    content.querySelectorAll(".gym-ex-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const name = chip.dataset.name;
+        if (!selectedExercises.includes(name)) {
+          selectedExercises.push(name);
+          renderSelectedList();
+        }
+      });
+    });
+  }
 
   function renderSelectedList() {
     const box = content.querySelector("#gymSelectedList");
@@ -3645,6 +3734,12 @@ function attachGymEvents(content) {
         <button class="gym-remove-ex" data-index="${i}" style="background:none;border:none;color:#d33;font-weight:700;cursor:pointer;">✕</button>
       </div>
     `).join("");
+    box.querySelectorAll(".gym-remove-ex").forEach(btn => {
+      btn.addEventListener("click", () => {
+        selectedExercises.splice(Number(btn.dataset.index), 1);
+        renderSelectedList();
+      });
+    });
   }
 
   // volver al home
@@ -3670,24 +3765,48 @@ function attachGymEvents(content) {
   const createBtn = content.querySelector("#createGymDay");
   if (createBtn) {
     createBtn.addEventListener("click", () => {
+      selectedType = "gimnasio";
+      selectedWeekdays = [];
       selectedExercises = [];
       content.innerHTML = renderGymCreateDay();
       attachGymEvents(content);
+      renderExerciseChips();
     });
   }
 
-  // seleccionar ejercicio predefinido
-  content.querySelectorAll(".gym-ex-chip").forEach(chip => {
+  // elegir tipo de día
+  content.querySelectorAll(".gym-type-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedType = btn.dataset.type;
+      selectedExercises = [];
+      content.querySelectorAll(".gym-type-btn").forEach(b => {
+        const active = b.dataset.type === selectedType;
+        b.style.background = active ? "#111" : "#fff";
+        b.style.color = active ? "#fff" : "#333";
+        b.style.borderColor = active ? "#111" : "#ddd";
+      });
+      renderExerciseChips();
+      renderSelectedList();
+    });
+  });
+
+  // elegir días de la semana
+  content.querySelectorAll(".gym-weekday-chip").forEach(chip => {
     chip.addEventListener("click", () => {
-      const name = chip.dataset.name;
-      if (!selectedExercises.includes(name)) {
-        selectedExercises.push(name);
-        renderSelectedList();
+      const w = chip.dataset.weekday;
+      if (selectedWeekdays.includes(w)) {
+        selectedWeekdays = selectedWeekdays.filter(x => x !== w);
+        chip.style.background = "#f3f4f6";
+        chip.style.color = "#333";
+      } else {
+        selectedWeekdays.push(w);
+        chip.style.background = "#111";
+        chip.style.color = "#fff";
       }
     });
   });
 
-  // agregar ejercicio custom
+  // agregar ejercicio/actividad custom
   const addCustomBtn = content.querySelector("#gymAddCustomEx");
   if (addCustomBtn) {
     addCustomBtn.addEventListener("click", () => {
@@ -3701,17 +3820,6 @@ function attachGymEvents(content) {
     });
   }
 
-  // quitar ejercicio de la lista seleccionada (delegado)
-  const selectedList = content.querySelector("#gymSelectedList");
-  if (selectedList) {
-    selectedList.addEventListener("click", (e) => {
-      const btn = e.target.closest(".gym-remove-ex");
-      if (!btn) return;
-      selectedExercises.splice(Number(btn.dataset.index), 1);
-      renderSelectedList();
-    });
-  }
-
   // guardar día nuevo
   const saveBtn = content.querySelector("#saveGymDay");
   if (saveBtn) {
@@ -3719,12 +3827,15 @@ function attachGymEvents(content) {
       const nameInput = content.querySelector("#gymDayName");
       const dayName = nameInput.value.trim();
       if (!dayName) return alert("Ponle un nombre al día.");
-      if (selectedExercises.length === 0) return alert("Agrega al menos un ejercicio.");
+      if (selectedWeekdays.length === 0) return alert("Elige al menos un día de la semana.");
+      if (selectedExercises.length === 0) return alert("Agrega al menos un ejercicio o actividad.");
 
       const days = loadGymDays();
       const newDay = {
         id: "day-" + Date.now(),
+        type: selectedType,
         name: dayName,
+        weekdays: selectedWeekdays,
         exercises: selectedExercises.map((name, i) => ({ id: "ex-" + Date.now() + "-" + i, name }))
       };
       days.push(newDay);
@@ -3736,12 +3847,11 @@ function attachGymEvents(content) {
   }
 
   // marcar/desmarcar ejercicio del checklist
+  const deleteBtnRef = content.querySelector("#deleteGymDay");
   content.querySelectorAll(".gym-check-item input[type=checkbox]").forEach(checkbox => {
     checkbox.addEventListener("change", () => {
-      const dayId = content.querySelector(".gym-check-item")?.closest("div")?.parentElement?.querySelector("#deleteGymDay")?.dataset.dayId
-        || content.querySelector("#deleteGymDay")?.dataset.dayId;
-      if (!dayId) return;
-
+      if (!deleteBtnRef) return;
+      const dayId = deleteBtnRef.dataset.dayId;
       const log = loadGymLog(todayKey(), dayId);
       log[checkbox.dataset.exId] = checkbox.checked;
       saveGymLog(todayKey(), dayId, log);
@@ -3753,11 +3863,10 @@ function attachGymEvents(content) {
   });
 
   // eliminar día
-  const deleteBtn = content.querySelector("#deleteGymDay");
-  if (deleteBtn) {
-    deleteBtn.addEventListener("click", () => {
+  if (deleteBtnRef) {
+    deleteBtnRef.addEventListener("click", () => {
       if (!confirm("¿Eliminar este día de rutina?")) return;
-      const days = loadGymDays().filter(d => d.id !== deleteBtn.dataset.dayId);
+      const days = loadGymDays().filter(d => d.id !== deleteBtnRef.dataset.dayId);
       saveGymDays(days);
       content.innerHTML = renderGymHome();
       attachGymEvents(content);
