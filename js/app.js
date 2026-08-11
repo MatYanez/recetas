@@ -82,7 +82,7 @@ function buildUnifiedCalendar(container, config) {
   function render() {
     const monthName = current.toLocaleString("es-ES", { month: "long", year: "numeric" });
 
-    let cells = [];
+let cells = [];
     if (expanded) {
       const year = current.getFullYear();
       const month = current.getMonth();
@@ -93,17 +93,15 @@ function buildUnifiedCalendar(container, config) {
       for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
     } else {
       const ws = weekStartOf(current);
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 7; i++) {
         const d = new Date(ws);
         d.setDate(ws.getDate() + i);
         cells.push(d);
       }
     }
 
-    const cols = expanded ? 7 : 5;
-    const headerDays = expanded
-      ? `<span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>`
-      : `<span>L</span><span>M</span><span>X</span><span>J</span><span>V</span>`;
+    const cols = 7;
+    const headerDays = `<span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>`;
 
     container.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;">
