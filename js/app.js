@@ -1766,11 +1766,97 @@ function getScoreColor(score) {
   return { color: "#9cff8f", label: "Muy bien" };
 }
 
+const LEVELS = [
+  { level: 1, name: "Novato", minXP: 0 },
+  { level: 2, name: "Aprendiz", minXP: 3000 },
+  { level: 3, name: "Constante", minXP: 8000 },
+  { level: 4, name: "Disciplinado", minXP: 18000 },
+  { level: 5, name: "Elite", minXP: 35000 },
+  { level: 6, name: "Imparable", minXP: 60000 },
+  { level: 7, name: "Leyenda", minXP: 100000 },
+];
+
+function calculateTotalXP() {
+  let total = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith("habits-")) {
+      const data = safeParse(localStorage.getItem(key), {});
+      total += calculateDailyPoints(data);
+    }
+  }
+  return total;
+}
+
+function getLevelInfo(xp) {
+  let current = LEVELS[0];
+  let next = LEVELS[1] || null;
+  for (let i = 0; i < LEVELS.length; i++) {
+    if (xp >= LEVELS[i].minXP) {
+      current = LEVELS[i];
+      next = LEVELS[i + 1] || null;
+    }
+  }
+  const progress = next
+    ? Math.round(((xp - current.minXP) / (next.minXP - current.minXP)) * 100)
+    : 100;
+  return { current, next, xp, progress };
+}
+
+function calculateCurrentStreak() {
+  let streak = 0;
+  for (let i = 0; i < 365; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    const data = loadHabitData(key);
+    const hasData = Object.keys(data).length > 0;
+
+    if (i === 0 && !hasData) continue;
+    if (!hasData) break;
+
+    const score = calculateDailyPoints(data);
+    if (score >= 700) streak++;
+    else break;
+  }
+  return streak;
+}
+
 function renderHabitsScreen() {
   const score = calculateWeeklyPoints();
   const { color, label } = getScoreColor(score);
+  const levelInfo = getLevelInfo(calculateTotalXP());
+  const streak = calculateCurrentStreak();
 
   return `
+    <!-- NIVEL Y RACHA -->
+    <div style="
+      width:100%;
+      padding:1.3rem;
+      background:linear-gradient(135deg, #111 0%, #333 100%);
+      border-radius:18px;
+      margin-bottom:1rem;
+      color:#fff;
+    ">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <div>
+          <p style="font-size:0.75rem;opacity:0.7;margin:0 0 0.2rem 0;text-transform:uppercase;letter-spacing:0.05em;">Nivel ${levelInfo.current.level}</p>
+          <h3 style="font-size:1.3rem;font-weight:800;margin:0;">${levelInfo.current.name}</h3>
+        </div>
+        <div style="text-align:right;">
+          <p style="font-size:1.6rem;font-weight:800;margin:0;">${icon("local_fire_department", "1.4rem")} ${streak}</p>
+          <p style="font-size:0.7rem;opacity:0.7;margin:0;">días seguidos</p>
+        </div>
+      </div>
+
+      <div style="width:100%;background:rgba(255,255,255,0.15);height:8px;border-radius:6px;overflow:hidden;">
+        <div style="width:${levelInfo.progress}%;height:8px;background:#fff;border-radius:6px;transition:width 0.4s;"></div>
+      </div>
+      <p style="font-size:0.75rem;opacity:0.7;margin:0.5rem 0 0 0;">
+        ${levelInfo.next ? `${levelInfo.xp - levelInfo.current.minXP} / ${levelInfo.next.minXP - levelInfo.current.minXP} XP hacia ${levelInfo.next.name}` : "¡Nivel máximo alcanzado!"}
+      </p>
+    </div>
+
     <!-- SCORE CARD -->
     <div style="
       width:100%;
@@ -2258,6 +2344,82 @@ const displayEmoji = icon(unlocked ? m.icon : "lock", "2rem");
 }
 
 
+// ---------- PERFECT DAY CELEBRATION ----------
+function animatePerfectDayAlert() {
+  const overlay = document.createElement("div");
+  Object.assign(overlay.style, {
+    position: "fixed",
+    inset: "0",
+    background: "rgba(0,0,0,0.4)",
+    zIndex: "998",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    opacity: "0",
+    transition: "opacity 0.3s ease"
+  });
+
+  const card = document.createElement("div");
+  Object.assign(card.style, {
+    background: "#fff",
+    borderRadius: "24px",
+    padding: "2rem",
+    textAlign: "center",
+    maxWidth: "280px",
+    transform: "scale(0.7)",
+    transition: "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)"
+  });
+  card.innerHTML = `
+    <div style="font-size:3rem;margin-bottom:0.5rem;">${icon("celebration", "3rem")}</div>
+    <h2 style="font-size:1.4rem;font-weight:800;margin:0 0 0.4rem 0;">¡Día perfecto!</h2>
+    <p style="color:#666;font-size:0.9rem;margin:0;">Cumpliste todos tus hábitos hoy. Sigue así.</p>
+  `;
+
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  const colors = ["#ff6b6b", "#feca57", "#1dd1a1", "#54a0ff", "#5f27cd"];
+  for (let i = 0; i < 24; i++) {
+    const piece = document.createElement("div");
+    const size = 6 + Math.random() * 6;
+    Object.assign(piece.style, {
+      position: "fixed",
+      top: "-20px",
+      left: `${Math.random() * 100}%`,
+      width: `${size}px`,
+      height: `${size}px`,
+      background: colors[Math.floor(Math.random() * colors.length)],
+      borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+      zIndex: "999",
+      opacity: "0.9"
+    });
+    document.body.appendChild(piece);
+
+    const duration = 1500 + Math.random() * 1000;
+    const drift = (Math.random() - 0.5) * 200;
+
+    piece.animate([
+      { transform: `translate(0, 0) rotate(0deg)`, opacity: 1 },
+      { transform: `translate(${drift}px, 100vh) rotate(${360 + Math.random() * 360}deg)`, opacity: 0 }
+    ], { duration, easing: "ease-in" });
+
+    setTimeout(() => piece.remove(), duration);
+  }
+
+  requestAnimationFrame(() => {
+    overlay.style.opacity = "1";
+    card.style.transform = "scale(1)";
+  });
+
+  function closeCelebration() {
+    overlay.style.opacity = "0";
+    setTimeout(() => overlay.remove(), 300);
+  }
+
+  overlay.addEventListener("click", closeCelebration);
+  setTimeout(closeCelebration, 3200);
+}
+
 // ---------- SMALL ALERT ----------
 function animateAlert() {
   const div = document.createElement("div");
@@ -2394,10 +2556,15 @@ setupHabitCalendar(calContainer, (selectedDate) => {
     });
   });
 
-  const saveBtn = document.getElementById("saveHabits");
+const saveBtn = document.getElementById("saveHabits");
   saveBtn.addEventListener("click", () => {
-saveHabitData(currentHabitDate, data);
-    animateAlert("guardado");
+    saveHabitData(currentHabitDate, data);
+    const isPerfectDay = HABITS.every(h => data[h.key] === 1);
+    if (isPerfectDay) {
+      animatePerfectDayAlert();
+    } else {
+      animateAlert();
+    }
   });
 
   const backBtn = document.getElementById("backHabits");
