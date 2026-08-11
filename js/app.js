@@ -3552,22 +3552,6 @@ function renderGymChecklist(day) {
       <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:0.3rem;">${icon(type.icon)} ${day.name}</h2>
       <p style="font-size:0.85rem;color:#777;margin-bottom:1.2rem;">${formatDateEs(day.date)}</p>
 
-      <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:0.6rem;">¿Cumpliste este día?</h3>
-      <div style="display:flex;gap:0.6rem;margin-bottom:1.5rem;">
-        <button class="gym-complete-btn" data-value="true" style="
-          flex:1;padding:0.8rem;border-radius:12px;font-weight:600;cursor:pointer;
-          border:2px solid ${completed === true ? "#15803d" : "#ddd"};
-          background:${completed === true ? "#dcfce7" : "#fff"};
-          color:${completed === true ? "#15803d" : "#333"};
-        ">${icon("check_circle", "1rem")} Cumplido</button>
-        <button class="gym-complete-btn" data-value="false" style="
-          flex:1;padding:0.8rem;border-radius:12px;font-weight:600;cursor:pointer;
-          border:2px solid ${completed === false ? "#b91c1c" : "#ddd"};
-          background:${completed === false ? "#fee2e2" : "#fff"};
-          color:${completed === false ? "#b91c1c" : "#333"};
-        ">${icon("cancel", "1rem")} No cumplido</button>
-      </div>
-
       <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.5rem;">
         ${day.exercises.map(ex => `
           <label class="gym-check-item" data-ex-id="${ex.id}" style="
@@ -3589,8 +3573,24 @@ function renderGymChecklist(day) {
       ">${day.comment || ""}</textarea>
       <button id="saveGymComment" data-day-id="${day.id}" style="
         width:100%;background:#f3f4f6;border:1px solid #ddd;border-radius:12px;
-        padding:0.8rem;font-weight:600;cursor:pointer;margin-bottom:1rem;
+        padding:0.8rem;font-weight:600;cursor:pointer;margin-bottom:1.5rem;
       ">Guardar comentario</button>
+
+      <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:0.6rem;">¿Cumpliste este día?</h3>
+      <div style="display:flex;gap:0.6rem;margin-bottom:1rem;">
+        <button class="gym-complete-btn" data-value="true" style="
+          flex:1;padding:0.8rem;border-radius:12px;font-weight:600;cursor:pointer;
+          border:2px solid ${completed === true ? "#15803d" : "#ddd"};
+          background:${completed === true ? "#dcfce7" : "#fff"};
+          color:${completed === true ? "#15803d" : "#333"};
+        ">${icon("check_circle", "1rem")} Cumplido</button>
+        <button class="gym-complete-btn" data-value="false" style="
+          flex:1;padding:0.8rem;border-radius:12px;font-weight:600;cursor:pointer;
+          border:2px solid ${completed === false ? "#b91c1c" : "#ddd"};
+          background:${completed === false ? "#fee2e2" : "#fff"};
+          color:${completed === false ? "#b91c1c" : "#333"};
+        ">${icon("cancel", "1rem")} No cumplido</button>
+      </div>
     </div>
   `;
 }
