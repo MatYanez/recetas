@@ -754,11 +754,10 @@ const found = list.find(x => x.name === name);
           showRecipeDetail(found);
           window.cameFromCalendar = true;
 
-          const organizeBtn = document.querySelector("#organizeBtn");
+const organizeBtn = document.querySelector("#organizeBtn");
           if (organizeBtn) {
             organizeBtn.style.visibility = "hidden";
             organizeBtn.style.pointerEvents = "none";
-          }
           }
         });
     });
