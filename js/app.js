@@ -2327,14 +2327,14 @@ function renderDailyHabits() {
   <h2 class="habit-title">Registrar hábitos de hoy</h2>
 </div>
 
-<div id="habitCalendarContainer" style="width:100%; margin-bottom:1.5rem;"></div>
+<div id="habitCalendarContainer" style="width:100%; margin-bottom:2rem;"></div>
 
-<div id="dailyTable" style="display:flex;flex-direction:column;gap:1rem;">
+<div id="dailyTable" style="display:flex;flex-direction:column;gap:0.8rem;">
   ${rows}
 </div>
 
 <div id="dailyScore" style="
-  margin-top:1.5rem;
+  margin-top:1.8rem;
   font-size:1.2rem;
   font-weight:700;
   text-align:center;
@@ -2343,9 +2343,9 @@ function renderDailyHabits() {
 </div>
 
 <button id="saveHabits" style="
-  width:100%; padding:1rem; background:#111;
+  width:100%; padding:1.1rem; background:#111;
   color:white; border:none; border-radius:12px; font-weight:600;
-  margin-top:1.5rem;
+  margin-top:1.2rem;
 ">Guardar</button>
 `;
 }
@@ -2603,7 +2603,7 @@ style.textContent = `
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin: 1rem 0rem;
+  margin: 1.2rem 0 1.5rem 0;
 }
 
 .habit-back {
@@ -2622,14 +2622,15 @@ style.textContent = `
   margin: 0;
 }
 
-  .habit-row {
+.habit-row {
     background:#fafafa;
     border:1px solid #eee;
-    padding:1rem;
+    padding:1.1rem 1.2rem;
     border-radius:14px;
     display:flex;
     justify-content:space-between;
     align-items:center;
+    margin-bottom:0.2rem;
   }
 
   .habit-label {
@@ -2643,8 +2644,8 @@ style.textContent = `
     gap:0.5rem;
   }
 
-  .habit-opt {
-    padding:0.4rem 0.8rem;
+ .habit-opt {
+    padding:0.55rem 1rem;
     border-radius:12px;
     border:1px solid #ddd;
     font-weight:600;
