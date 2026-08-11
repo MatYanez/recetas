@@ -3376,6 +3376,8 @@ function loadGymDays() {
     type: d.type || "gimnasio",
     name: d.name || (d.type === "futbol" ? "Partido" : "Día"),
     date: d.date || dateKeyOf(new Date()),
+    comment: d.comment || "",
+    completed: d.completed === undefined ? null : d.completed,
     exercises: (d.exercises || []).map(e => ({
       id: e.id,
       name: e.name,
@@ -3383,6 +3385,7 @@ function loadGymDays() {
     }))
   }));
 }
+
 function saveGymDays(days) {
   localStorage.setItem("gym-days", JSON.stringify(days));
 }
@@ -3401,8 +3404,10 @@ function getGymCoverageForDate(date, days) {
   let allDone = true;
   let icons = "";
   matches.forEach(day => {
-icons += icon(GYM_ACTIVITY_TYPES[day.type].icon, "0.9rem");
-    const done = day.exercises.length > 0 && day.exercises.every(e => e.done);
+    icons += icon(GYM_ACTIVITY_TYPES[day.type].icon, "0.9rem");
+    const done = (day.completed !== null && day.completed !== undefined)
+      ? day.completed
+      : (day.exercises.length > 0 && day.exercises.every(e => e.done));
     if (!done) allDone = false;
   });
 
@@ -3528,16 +3533,40 @@ function renderGymCreateDay() {
 /* ---------- Pantalla: checklist de un día ---------- */
 function renderGymChecklist(day) {
   const type = GYM_ACTIVITY_TYPES[day.type];
+  const completed = day.completed;
 
   return `
     <div style="width:100%;">
-      <button class="gym-back" data-go="home" style="
-        background:none;border:none;color:#007AFF;font-weight:600;font-size:1rem;
-        padding:0;cursor:pointer;margin-bottom:1rem;
-      ">← Volver</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <button class="gym-back" data-go="home" style="
+          background:none;border:none;color:#007AFF;font-weight:600;font-size:1rem;
+          padding:0;cursor:pointer;
+        ">← Volver</button>
 
-<h2 style="font-size:1.4rem;font-weight:700;margin-bottom:0.3rem;">${icon(type.icon)} ${day.name}</h2>
+        <button id="deleteGymDay" data-day-id="${day.id}" style="
+          background:#fff0f0;color:#d33;border:1px solid #f3c9c9;border-radius:10px;
+          width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+        ">${icon("delete", "1.1rem")}</button>
+      </div>
+
+      <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:0.3rem;">${icon(type.icon)} ${day.name}</h2>
       <p style="font-size:0.85rem;color:#777;margin-bottom:1.2rem;">${formatDateEs(day.date)}</p>
+
+      <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:0.6rem;">¿Cumpliste este día?</h3>
+      <div style="display:flex;gap:0.6rem;margin-bottom:1.5rem;">
+        <button class="gym-complete-btn" data-value="true" style="
+          flex:1;padding:0.8rem;border-radius:12px;font-weight:600;cursor:pointer;
+          border:2px solid ${completed === true ? "#15803d" : "#ddd"};
+          background:${completed === true ? "#dcfce7" : "#fff"};
+          color:${completed === true ? "#15803d" : "#333"};
+        ">${icon("check_circle", "1rem")} Cumplido</button>
+        <button class="gym-complete-btn" data-value="false" style="
+          flex:1;padding:0.8rem;border-radius:12px;font-weight:600;cursor:pointer;
+          border:2px solid ${completed === false ? "#b91c1c" : "#ddd"};
+          background:${completed === false ? "#fee2e2" : "#fff"};
+          color:${completed === false ? "#b91c1c" : "#333"};
+        ">${icon("cancel", "1rem")} No cumplido</button>
+      </div>
 
       <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.5rem;">
         ${day.exercises.map(ex => `
@@ -3553,10 +3582,15 @@ function renderGymChecklist(day) {
         `).join("")}
       </div>
 
-      <button id="deleteGymDay" data-day-id="${day.id}" style="
-        width:100%;background:#fff0f0;color:#d33;border:1px solid #f3c9c9;
-        border-radius:14px;padding:0.9rem;font-weight:600;font-size:0.95rem;cursor:pointer;
-      ">Eliminar día</button>
+      <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:0.6rem;">Comentario</h3>
+      <textarea id="gymDayComment" placeholder="¿Cómo te fue? Notas, sensaciones, etc." style="
+        width:100%;min-height:80px;padding:0.8rem;border-radius:12px;border:1px solid #ddd;
+        font-size:0.9rem;box-sizing:border-box;resize:vertical;margin-bottom:0.8rem;font-family:inherit;
+      ">${day.comment || ""}</textarea>
+      <button id="saveGymComment" data-day-id="${day.id}" style="
+        width:100%;background:#f3f4f6;border:1px solid #ddd;border-radius:12px;
+        padding:0.8rem;font-weight:600;cursor:pointer;margin-bottom:1rem;
+      ">Guardar comentario</button>
     </div>
   `;
 }
@@ -3726,7 +3760,7 @@ createBtn.addEventListener("click", () => {
     });
   }
 
-  // marcar/desmarcar ejercicio del checklist
+// marcar/desmarcar ejercicio del checklist
   const deleteBtnRef = content.querySelector("#deleteGymDay");
   content.querySelectorAll(".gym-check-item input[type=checkbox]").forEach(checkbox => {
     checkbox.addEventListener("change", () => {
@@ -3743,6 +3777,33 @@ createBtn.addEventListener("click", () => {
       label.style.color = checkbox.checked ? "#999" : "#000";
     });
   });
+
+  // marcar cumplido / no cumplido
+  content.querySelectorAll(".gym-complete-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (!deleteBtnRef) return;
+      const days = loadGymDays();
+      const day = days.find(d => d.id === deleteBtnRef.dataset.dayId);
+      if (!day) return;
+      day.completed = btn.dataset.value === "true";
+      saveGymDays(days);
+      content.innerHTML = renderGymChecklist(day);
+      attachGymEvents(content);
+    });
+  });
+
+  // guardar comentario del día
+  const saveCommentBtn = content.querySelector("#saveGymComment");
+  if (saveCommentBtn) {
+    saveCommentBtn.addEventListener("click", () => {
+      const days = loadGymDays();
+      const day = days.find(d => d.id === saveCommentBtn.dataset.dayId);
+      if (!day) return;
+      day.comment = content.querySelector("#gymDayComment").value.trim();
+      saveGymDays(days);
+      animateAlert();
+    });
+  }
 
   // eliminar día
   if (deleteBtnRef) {
